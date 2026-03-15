@@ -103,6 +103,23 @@ class Platform(str, enum.Enum):
     TIKTOK = "tiktok"
 
 
+class TaskPriority(str, enum.Enum):
+    CRITICAL = "critical"
+    HIGH = "high"
+    NORMAL = "normal"
+    LOW = "low"
+
+
+class TaskStatus(str, enum.Enum):
+    PENDING = "pending"
+    DECOMPOSED = "decomposed"
+    IN_PROGRESS = "in_progress"
+    BLOCKED = "blocked"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
 # ─── Character ──────────────────────────────────────────────────────────────
 
 
@@ -697,6 +714,70 @@ class TrendSnapshot(Base):
     trend_summary: Mapped[str] = mapped_column(Text, default="")
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+# ─── ConductorTask ────────────────────────────────────────────────────────
+
+
+class ConductorTask(Base):
+    __tablename__ = "conductor_tasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("conductor_tasks.id"), nullable=True, index=True
+    )
+
+    title: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str] = mapped_column(Text, default="")
+    agent_role: Mapped[str] = mapped_column(String(100), default="ceo_agent", index=True)
+
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus), default=TaskStatus.PENDING, index=True
+    )
+    priority: Mapped[TaskPriority] = mapped_column(
+        Enum(TaskPriority), default=TaskPriority.NORMAL, index=True
+    )
+
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    context: Mapped[str] = mapped_column(Text, default="{}")
+    instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_by: Mapped[str] = mapped_column(String(100), default="founder")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    subtasks: Mapped[list["ConductorTask"]] = relationship(
+        "ConductorTask", back_populates="parent"
+    )
+    parent: Mapped["ConductorTask | None"] = relationship(
+        "ConductorTask", remote_side=[id], back_populates="subtasks"
+    )
+    logs: Mapped[list["ConductorLog"]] = relationship(
+        "ConductorLog", back_populates="task"
+    )
+
+
+class ConductorLog(Base):
+    __tablename__ = "conductor_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("conductor_tasks.id"), index=True
+    )
+    action: Mapped[str] = mapped_column(String(100))
+    message: Mapped[str] = mapped_column(Text, default="")
+    metadata_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    task: Mapped["ConductorTask"] = relationship(
+        "ConductorTask", back_populates="logs"
+    )
 
 
 # ─── ViralContentAnalysis ──────────────────────────────────────────────────
