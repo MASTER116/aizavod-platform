@@ -1,0 +1,2366 @@
+﻿{
+    "version":  "V2",
+    "date":  "2026-03-15",
+    "total_categories":  37,
+    "total_industries":  262,
+    "industries":  [
+                       {
+                           "id":  1,
+                           "category":  "Медицина",
+                           "industry":  "Поликлиника",
+                           "okved":  "86.21",
+                           "okved_description":  "Общая врачебная практика",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  2,
+                           "category":  "Медицина",
+                           "industry":  "Стоматология",
+                           "okved":  "86.23",
+                           "okved_description":  "Стоматологическая практика",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  3,
+                           "category":  "Медицина",
+                           "industry":  "Частная клиника",
+                           "okved":  "86.10; 86.21",
+                           "okved_description":  "Больничные организации; Общая практика",
+                           "note":  "Зависит от наличия стационара",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  4,
+                           "category":  "Медицина",
+                           "industry":  "Лаборатория",
+                           "okved":  "86.90",
+                           "okved_description":  "Деятельность в области медицины прочая",
+                           "note":  "Включает рентгеновские, диагностические и прочие лаборатории",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  5,
+                           "category":  "Медицина",
+                           "industry":  "Аптека",
+                           "okved":  "47.73",
+                           "okved_description":  "Торговля розничная лекарственными средствами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  6,
+                           "category":  "Медицина",
+                           "industry":  "Психоцентр",
+                           "okved":  "86.90.5",
+                           "okved_description":  "Деятельность в области психического здоровья",
+                           "note":  "Верифицировано: 86.90.5 — точный код",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  7,
+                           "category":  "Медицина",
+                           "industry":  "Офтальмология",
+                           "okved":  "86.22",
+                           "okved_description":  "Специализированная медицинская практика",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  8,
+                           "category":  "Медицина",
+                           "industry":  "Реабилитация",
+                           "okved":  "86.90.9; 86.10",
+                           "okved_description":  "Медицина прочая; Больничные организации",
+                           "note":  "86.10 для стационарной реабилитации",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  9,
+                           "category":  "Медицина",
+                           "industry":  "Онкоцентр",
+                           "okved":  "86.10",
+                           "okved_description":  "Деятельность больничных организаций",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  10,
+                           "category":  "Медицина",
+                           "industry":  "Роддом / Перинатальный центр",
+                           "okved":  "86.10",
+                           "okved_description":  "Деятельность больничных организаций",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  11,
+                           "category":  "Медицина",
+                           "industry":  "Скорая помощь",
+                           "okved":  "86.90.9",
+                           "okved_description":  "Деятельность в области медицины прочая, не включённая в другие группировки",
+                           "note":  "Верифицировано: вкл. перевозку пациентов санитарным транспортом",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  12,
+                           "category":  "Медицина",
+                           "industry":  "МРТ/КТ-центр",
+                           "okved":  "86.90",
+                           "okved_description":  "Деятельность в области медицины прочая",
+                           "note":  "Верифицировано: вкл. диагностические центры и лаборатории",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  13,
+                           "category":  "Медицина",
+                           "industry":  "Мед. туризм",
+                           "okved":  "86.90.9; 79.90",
+                           "okved_description":  "Медицина прочая; Услуги по бронированию",
+                           "note":  "Составной: нет прямого ОКВЭД для мед.туризма",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  14,
+                           "category":  "Медицина",
+                           "industry":  "Чекап-клиника",
+                           "okved":  "86.21; 86.22",
+                           "okved_description":  "Общая + специализированная практика",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  15,
+                           "category":  "HoReCa",
+                           "industry":  "Ресторан",
+                           "okved":  "56.10.1",
+                           "okved_description":  "Деятельность ресторанов и кафе с полным обслуживанием",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  16,
+                           "category":  "HoReCa",
+                           "industry":  "Кафе / Кофейня",
+                           "okved":  "56.10.1",
+                           "okved_description":  "Деятельность ресторанов и кафе с полным обслуживанием",
+                           "note":  "Кофейня с посадкой = 56.10.1",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  17,
+                           "category":  "HoReCa",
+                           "industry":  "Бар / Паб",
+                           "okved":  "56.30",
+                           "okved_description":  "Подача напитков",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  18,
+                           "category":  "HoReCa",
+                           "industry":  "Отель",
+                           "okved":  "55.10",
+                           "okved_description":  "Деятельность гостиниц и аналогичных средств размещения",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  19,
+                           "category":  "HoReCa",
+                           "industry":  "Хостел",
+                           "okved":  "55.90",
+                           "okved_description":  "Деятельность прочих мест для временного проживания",
+                           "note":  "Выделен из Отель/Хостел — разные ОКВЭД",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  20,
+                           "category":  "HoReCa",
+                           "industry":  "Доставка еды",
+                           "okved":  "56.10.21",
+                           "okved_description":  "Деятельность предприятий общественного питания навынос",
+                           "note":  "IT-агрегатор: 63.12",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  21,
+                           "category":  "HoReCa",
+                           "industry":  "Кейтеринг",
+                           "okved":  "56.21",
+                           "okved_description":  "Деятельность по обслуживанию торжественных мероприятий",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  22,
+                           "category":  "HoReCa",
+                           "industry":  "Фудтрак",
+                           "okved":  "56.10.24",
+                           "okved_description":  "Деятельность рыночных киосков по приготовлению пищи",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  23,
+                           "category":  "HoReCa",
+                           "industry":  "Столовая",
+                           "okved":  "56.29",
+                           "okved_description":  "Деятельность по прочим видам организации питания",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  24,
+                           "category":  "HoReCa",
+                           "industry":  "Пекарня",
+                           "okved":  "10.71; 47.24",
+                           "okved_description":  "Производство хлеба; Розничная торговля хлебом",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  25,
+                           "category":  "HoReCa",
+                           "industry":  "Пивоварня",
+                           "okved":  "11.05",
+                           "okved_description":  "Производство пива",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  26,
+                           "category":  "HoReCa",
+                           "industry":  "Банкетный зал",
+                           "okved":  "56.21; 68.20",
+                           "okved_description":  "Кейтеринг; Аренда недвижимости",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  27,
+                           "category":  "IT / Digital",
+                           "industry":  "IT-компания",
+                           "okved":  "62.01",
+                           "okved_description":  "Разработка компьютерного программного обеспечения",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  28,
+                           "category":  "IT / Digital",
+                           "industry":  "SaaS-стартап",
+                           "okved":  "62.01; 63.11",
+                           "okved_description":  "Разработка ПО; Обработка данных, хостинг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  29,
+                           "category":  "IT / Digital",
+                           "industry":  "Веб-студия",
+                           "okved":  "62.01; 63.12",
+                           "okved_description":  "Разработка ПО; Веб-порталы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  30,
+                           "category":  "IT / Digital",
+                           "industry":  "Геймдев",
+                           "okved":  "62.01; 58.21",
+                           "okved_description":  "Разработка ПО; Издание компьютерных игр",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  31,
+                           "category":  "IT / Digital",
+                           "industry":  "AI / ML стартап",
+                           "okved":  "62.01; 72.19",
+                           "okved_description":  "Разработка ПО; НИОКР в области технических наук",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  32,
+                           "category":  "IT / Digital",
+                           "industry":  "Кибербезопасность",
+                           "okved":  "62.01; 62.09",
+                           "okved_description":  "Разработка ПО; Деятельность в области ИТ прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  33,
+                           "category":  "IT / Digital",
+                           "industry":  "Мобильная разработка",
+                           "okved":  "62.01",
+                           "okved_description":  "Разработка компьютерного программного обеспечения",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  34,
+                           "category":  "IT / Digital",
+                           "industry":  "Data-центр",
+                           "okved":  "63.11",
+                           "okved_description":  "Обработка данных, предоставление услуг по размещению информации",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  35,
+                           "category":  "IT / Digital",
+                           "industry":  "Блокчейн / Web3",
+                           "okved":  "62.01; 63.11",
+                           "okved_description":  "Разработка ПО; Обработка данных",
+                           "note":  "Нет специфического ОКВЭД для блокчейна",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  36,
+                           "category":  "Авто легковые",
+                           "industry":  "Автодилер",
+                           "okved":  "45.11",
+                           "okved_description":  "Торговля автомобилями и лёгкими автотранспортными средствами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  37,
+                           "category":  "Авто легковые",
+                           "industry":  "Автосервис / СТО",
+                           "okved":  "45.20",
+                           "okved_description":  "Техническое обслуживание и ремонт автотранспортных средств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  38,
+                           "category":  "Авто легковые",
+                           "industry":  "Автомойка",
+                           "okved":  "45.20.3",
+                           "okved_description":  "Мойка автотранспортных средств, полирование",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  39,
+                           "category":  "Авто легковые",
+                           "industry":  "Каршеринг / Автопрокат",
+                           "okved":  "77.11",
+                           "okved_description":  "Аренда и лизинг легковых автомобилей",
+                           "note":  "Объединены: одинаковый ОКВЭД, разница в бизнес-модели",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  40,
+                           "category":  "Авто легковые",
+                           "industry":  "Автошкола",
+                           "okved":  "85.42.1",
+                           "okved_description":  "Образование в области подготовки водителей",
+                           "note":  "Единая запись (убран дубликат из Образования)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  41,
+                           "category":  "Авто легковые",
+                           "industry":  "Шиномонтаж",
+                           "okved":  "45.20",
+                           "okved_description":  "Техническое обслуживание и ремонт автотранспортных средств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  42,
+                           "category":  "Авто легковые",
+                           "industry":  "Автозапчасти (магазин)",
+                           "okved":  "45.32",
+                           "okved_description":  "Торговля розничная автомобильными деталями",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  43,
+                           "category":  "Авто легковые",
+                           "industry":  "Тюнинг-ателье",
+                           "okved":  "45.20; 29.32",
+                           "okved_description":  "Ремонт; Производство прочих комплектующих для авто",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  44,
+                           "category":  "Авто грузовые",
+                           "industry":  "Произв. грузовиков",
+                           "okved":  "29.10.2",
+                           "okved_description":  "Производство автобусов, троллейбусов и прочих АТС",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  45,
+                           "category":  "Авто грузовые",
+                           "industry":  "Дилер грузовой техники",
+                           "okved":  "45.19",
+                           "okved_description":  "Торговля прочими автотранспортными средствами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  46,
+                           "category":  "Авто грузовые",
+                           "industry":  "Грузовой сервис / СТО",
+                           "okved":  "45.20",
+                           "okved_description":  "Техническое обслуживание и ремонт АТС",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  47,
+                           "category":  "Авто грузовые",
+                           "industry":  "Лизинг спецтехники",
+                           "okved":  "77.12",
+                           "okved_description":  "Аренда и лизинг грузовых транспортных средств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  48,
+                           "category":  "Авто грузовые",
+                           "industry":  "Произв. прицепов",
+                           "okved":  "29.20",
+                           "okved_description":  "Производство кузовов для АТС; прицепов и полуприцепов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  49,
+                           "category":  "Авто грузовые",
+                           "industry":  "Запчасти для грузовых",
+                           "okved":  "45.31",
+                           "okved_description":  "Торговля оптовая автомобильными деталями",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  50,
+                           "category":  "Авто грузовые",
+                           "industry":  "Управление автопарком / Флот",
+                           "okved":  "49.41; 62.01",
+                           "okved_description":  "Грузовой транспорт; Разработка ПО",
+                           "note":  "Флит-менеджмент SaaS = 62.01",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  51,
+                           "category":  "Производство авто",
+                           "industry":  "Автозавод (легковые)",
+                           "okved":  "29.10.1",
+                           "okved_description":  "Производство легковых автомобилей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  52,
+                           "category":  "Производство авто",
+                           "industry":  "Автозавод (грузовые)",
+                           "okved":  "29.10.2",
+                           "okved_description":  "Производство грузовых автомобилей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  53,
+                           "category":  "Производство авто",
+                           "industry":  "Произв. двигателей",
+                           "okved":  "29.10.3",
+                           "okved_description":  "Производство двигателей для АТС",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  54,
+                           "category":  "Производство авто",
+                           "industry":  "Произв. кузовов",
+                           "okved":  "29.20",
+                           "okved_description":  "Производство кузовов для АТС",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  55,
+                           "category":  "Производство авто",
+                           "industry":  "Произв. автокомпонентов",
+                           "okved":  "29.32",
+                           "okved_description":  "Производство прочих комплектующих для АТС",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  56,
+                           "category":  "Производство авто",
+                           "industry":  "Дизайн-бюро авто",
+                           "okved":  "71.12; 72.19",
+                           "okved_description":  "Инженерные изыскания; НИОКР в области техн. наук",
+                           "note":  "Нет прямого ОКВЭД для автодизайна",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  57,
+                           "category":  "Производство авто",
+                           "industry":  "Испытательный полигон",
+                           "okved":  "71.20",
+                           "okved_description":  "Технические испытания, исследования, анализ и сертификация",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  58,
+                           "category":  "Производство авто",
+                           "industry":  "Произв. электромобилей",
+                           "okved":  "29.10.1",
+                           "okved_description":  "Производство легковых автомобилей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  59,
+                           "category":  "Торговля",
+                           "industry":  "Интернет-магазин",
+                           "okved":  "47.91",
+                           "okved_description":  "Торговля розничная по информационно-коммуникационной сети Интернет",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  60,
+                           "category":  "Торговля",
+                           "industry":  "Розничный магазин",
+                           "okved":  "47.19",
+                           "okved_description":  "Торговля розничная прочая в неспециализированных магазинах",
+                           "note":  "Уточнить товарную группу для более точного ОКВЭД",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  61,
+                           "category":  "Торговля",
+                           "industry":  "Маркетплейс-селлер",
+                           "okved":  "47.91",
+                           "okved_description":  "Торговля розничная по Интернет",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  62,
+                           "category":  "Торговля",
+                           "industry":  "Маркетплейс-платформа",
+                           "okved":  "63.12",
+                           "okved_description":  "Деятельность веб-порталов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  63,
+                           "category":  "Торговля",
+                           "industry":  "Оптовая компания",
+                           "okved":  "46.90",
+                           "okved_description":  "Торговля оптовая неспециализированная",
+                           "note":  "Уточнить товарную группу для ОКВЭД 46.1x-46.7x",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  64,
+                           "category":  "Торговля",
+                           "industry":  "Вендинг",
+                           "okved":  "47.99",
+                           "okved_description":  "Торговля розничная прочая вне магазинов и рынков",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  65,
+                           "category":  "Торговля",
+                           "industry":  "Дропшиппинг",
+                           "okved":  "47.91",
+                           "okved_description":  "Торговля розничная по Интернет",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  66,
+                           "category":  "Торговля",
+                           "industry":  "Торговый центр",
+                           "okved":  "68.20",
+                           "okved_description":  "Аренда и управление собственным недвижимым имуществом",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  67,
+                           "category":  "Недвижимость",
+                           "industry":  "Агентство недвижимости",
+                           "okved":  "68.31",
+                           "okved_description":  "Деятельность агентств недвижимости",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  68,
+                           "category":  "Недвижимость",
+                           "industry":  "Строительство",
+                           "okved":  "41.20",
+                           "okved_description":  "Строительство жилых и нежилых зданий",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  69,
+                           "category":  "Недвижимость",
+                           "industry":  "Дизайн интерьеров",
+                           "okved":  "74.10",
+                           "okved_description":  "Деятельность в области дизайна",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  70,
+                           "category":  "Недвижимость",
+                           "industry":  "Клининг",
+                           "okved":  "81.22",
+                           "okved_description":  "Деятельность по чистке и уборке прочая",
+                           "note":  "Единая запись (убран дубликат из Бытовых услуг)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  71,
+                           "category":  "Недвижимость",
+                           "industry":  "Управляющая компания",
+                           "okved":  "68.32",
+                           "okved_description":  "Управление недвижимым имуществом за вознаграждение",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  72,
+                           "category":  "Недвижимость",
+                           "industry":  "Девелопмент",
+                           "okved":  "41.10",
+                           "okved_description":  "Разработка строительных проектов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  73,
+                           "category":  "Недвижимость",
+                           "industry":  "Оценка недвижимости",
+                           "okved":  "68.31.5",
+                           "okved_description":  "Оценка недвижимого имущества за вознаграждение",
+                           "note":  "Верифицировано: 68.31.5, не 68.31.1",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  74,
+                           "category":  "Недвижимость",
+                           "industry":  "Архитектурное бюро",
+                           "okved":  "71.11",
+                           "okved_description":  "Деятельность в области архитектуры",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  75,
+                           "category":  "Образование",
+                           "industry":  "Онлайн-школа",
+                           "okved":  "85.41",
+                           "okved_description":  "Образование дополнительное детей и взрослых",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  76,
+                           "category":  "Образование",
+                           "industry":  "Языковая школа",
+                           "okved":  "85.41.9",
+                           "okved_description":  "Образование дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  77,
+                           "category":  "Образование",
+                           "industry":  "Детсад",
+                           "okved":  "85.11",
+                           "okved_description":  "Образование дошкольное",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  78,
+                           "category":  "Образование",
+                           "industry":  "ВУЗ / Колледж",
+                           "okved":  "85.22; 85.21",
+                           "okved_description":  "Высшее; среднее профессиональное образование",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  79,
+                           "category":  "Образование",
+                           "industry":  "Школа / Лицей",
+                           "okved":  "85.13; 85.14",
+                           "okved_description":  "Основное общее; среднее общее образование",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  80,
+                           "category":  "Образование",
+                           "industry":  "Курсы IT",
+                           "okved":  "85.42.9",
+                           "okved_description":  "Образование профессиональное дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  81,
+                           "category":  "Образование",
+                           "industry":  "Бизнес-школа",
+                           "okved":  "85.42.9",
+                           "okved_description":  "Образование профессиональное дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  82,
+                           "category":  "Образование",
+                           "industry":  "Подготовка к ЕГЭ/ОГЭ",
+                           "okved":  "85.41.9",
+                           "okved_description":  "Образование дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  83,
+                           "category":  "Образование",
+                           "industry":  "Детский развивающий центр",
+                           "okved":  "85.41.1",
+                           "okved_description":  "Образование дополнительное детей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  84,
+                           "category":  "Образование",
+                           "industry":  "Робототехника / программирование (дети)",
+                           "okved":  "85.41.1",
+                           "okved_description":  "Образование дополнительное детей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  85,
+                           "category":  "Образование",
+                           "industry":  "Музыкальная школа",
+                           "okved":  "85.41.1",
+                           "okved_description":  "Образование дополнительное детей",
+                           "note":  "Единая запись (убран дубликат из Музыки)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  86,
+                           "category":  "Образование",
+                           "industry":  "Художественная школа",
+                           "okved":  "85.41.1",
+                           "okved_description":  "Образование дополнительное детей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  87,
+                           "category":  "Образование",
+                           "industry":  "Спортивная секция (детская)",
+                           "okved":  "85.41.1; 93.12",
+                           "okved_description":  "Доп. образование; Спортивные клубы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  88,
+                           "category":  "Образование",
+                           "industry":  "Курсы переквалификации / ДПО",
+                           "okved":  "85.42",
+                           "okved_description":  "Образование профессиональное дополнительное",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  89,
+                           "category":  "Образование",
+                           "industry":  "Репетиторский центр",
+                           "okved":  "85.41.9",
+                           "okved_description":  "Образование дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  90,
+                           "category":  "Услуги",
+                           "industry":  "Юрфирма",
+                           "okved":  "69.10",
+                           "okved_description":  "Деятельность в области права",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  91,
+                           "category":  "Услуги",
+                           "industry":  "Бухгалтерия",
+                           "okved":  "69.20",
+                           "okved_description":  "Услуги в области бухгалтерского учёта",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  92,
+                           "category":  "Услуги",
+                           "industry":  "Консалтинг",
+                           "okved":  "70.22",
+                           "okved_description":  "Консультирование по вопросам коммерческой деятельности",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  93,
+                           "category":  "Услуги",
+                           "industry":  "Страховой брокер",
+                           "okved":  "66.22",
+                           "okved_description":  "Деятельность страховых агентов и брокеров",
+                           "note":  "Переименовано: было \u0027Страхование\u0027 (65.1 = страховая компания)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  94,
+                           "category":  "Услуги",
+                           "industry":  "Кадровое агентство",
+                           "okved":  "78.10",
+                           "okved_description":  "Деятельность агентств по подбору персонала",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  95,
+                           "category":  "Услуги",
+                           "industry":  "Нотариус",
+                           "okved":  "69.10",
+                           "okved_description":  "Деятельность в области права",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  96,
+                           "category":  "Услуги",
+                           "industry":  "Детективное агентство",
+                           "okved":  "80.30",
+                           "okved_description":  "Деятельность по расследованию",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  97,
+                           "category":  "Услуги",
+                           "industry":  "Перевод / Локализация",
+                           "okved":  "74.30",
+                           "okved_description":  "Деятельность по письменному и устному переводу",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  98,
+                           "category":  "Услуги",
+                           "industry":  "Охранная компания",
+                           "okved":  "80.10",
+                           "okved_description":  "Деятельность частных охранных служб",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  99,
+                           "category":  "Производство",
+                           "industry":  "Пищевое производство",
+                           "okved":  "10.89",
+                           "okved_description":  "Производство прочих пищевых продуктов",
+                           "note":  "Уточнить тип: 10.1x-10.8x",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  100,
+                           "category":  "Производство",
+                           "industry":  "Типография",
+                           "okved":  "18.11; 18.12",
+                           "okved_description":  "Печатание газет; Прочие виды полиграфической деятельности",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  101,
+                           "category":  "Производство",
+                           "industry":  "Мебельная фабрика",
+                           "okved":  "31.01; 31.02; 31.09",
+                           "okved_description":  "Производство мебели",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  102,
+                           "category":  "Производство",
+                           "industry":  "Текстильное производство",
+                           "okved":  "13.10",
+                           "okved_description":  "Подготовка и прядение текстильных волокон",
+                           "note":  "Группа 13: текстильное производство",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  103,
+                           "category":  "Производство",
+                           "industry":  "Химическое производство",
+                           "okved":  "20.14",
+                           "okved_description":  "Производство прочих основных органических хим.веществ",
+                           "note":  "Уточнить тип: 20.1x-20.5x",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  104,
+                           "category":  "Производство",
+                           "industry":  "Фармацевтическое производство",
+                           "okved":  "21.20",
+                           "okved_description":  "Производство лекарственных препаратов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  105,
+                           "category":  "Производство",
+                           "industry":  "Электроника",
+                           "okved":  "26.11",
+                           "okved_description":  "Производство элементов электронной аппаратуры",
+                           "note":  "Группа 26: электронные и оптические изделия",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  106,
+                           "category":  "Производство",
+                           "industry":  "Стройматериалы",
+                           "okved":  "23.99",
+                           "okved_description":  "Производство прочей неметаллической минеральной продукции",
+                           "note":  "Уточнить: 23.1x-23.9x",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  107,
+                           "category":  "Производство",
+                           "industry":  "Металлообработка",
+                           "okved":  "25.62",
+                           "okved_description":  "Обработка металлов и нанесение покрытий",
+                           "note":  "Группа 25: готовые металлические изделия",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  108,
+                           "category":  "Производство",
+                           "industry":  "Деревообработка",
+                           "okved":  "16.10",
+                           "okved_description":  "Распиловка и строгание древесины",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  109,
+                           "category":  "Производство",
+                           "industry":  "Стекольный завод",
+                           "okved":  "23.11",
+                           "okved_description":  "Производство листового стекла",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  110,
+                           "category":  "Производство",
+                           "industry":  "Ювелирное производство",
+                           "okved":  "32.12",
+                           "okved_description":  "Производство ювелирных изделий и аналогичных изделий",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  111,
+                           "category":  "Красота",
+                           "industry":  "Салон красоты",
+                           "okved":  "96.02",
+                           "okved_description":  "Предоставление услуг парикмахерскими и салонами красоты",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  112,
+                           "category":  "Красота",
+                           "industry":  "Барбершоп",
+                           "okved":  "96.02",
+                           "okved_description":  "Предоставление услуг парикмахерскими и салонами красоты",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  113,
+                           "category":  "Красота",
+                           "industry":  "СПА",
+                           "okved":  "96.04",
+                           "okved_description":  "Деятельность физкультурно-оздоровительная",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  114,
+                           "category":  "Красота",
+                           "industry":  "Косметология",
+                           "okved":  "86.90.9; 96.02",
+                           "okved_description":  "Медицина прочая; Салон красоты",
+                           "note":  "Зависит от наличия медицинской лицензии",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  115,
+                           "category":  "Красота",
+                           "industry":  "Йога-студия",
+                           "okved":  "93.13",
+                           "okved_description":  "Деятельность фитнес-центров",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  116,
+                           "category":  "Красота",
+                           "industry":  "Студия загара",
+                           "okved":  "96.04",
+                           "okved_description":  "Деятельность физкультурно-оздоровительная",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  117,
+                           "category":  "Красота",
+                           "industry":  "Nail-бар",
+                           "okved":  "96.02",
+                           "okved_description":  "Предоставление услуг парикмахерскими и салонами красоты",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  118,
+                           "category":  "Красота",
+                           "industry":  "Студия эпиляции",
+                           "okved":  "96.02; 86.90",
+                           "okved_description":  "Салон красоты; Медицина прочая",
+                           "note":  "Лазерная эпиляция может требовать 86.90",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  119,
+                           "category":  "Логистика / Транспорт",
+                           "industry":  "Транспортная компания",
+                           "okved":  "49.41",
+                           "okved_description":  "Деятельность автомобильного грузового транспорта",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  120,
+                           "category":  "Логистика / Транспорт",
+                           "industry":  "Курьерская служба",
+                           "okved":  "53.20",
+                           "okved_description":  "Деятельность почтовой связи прочая и курьерская",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  121,
+                           "category":  "Логистика / Транспорт",
+                           "industry":  "Склад / Фулфилмент",
+                           "okved":  "52.10",
+                           "okved_description":  "Деятельность по складированию и хранению",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  122,
+                           "category":  "Логистика / Транспорт",
+                           "industry":  "Такси / Трансфер",
+                           "okved":  "49.32",
+                           "okved_description":  "Деятельность такси",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  123,
+                           "category":  "Логистика / Транспорт",
+                           "industry":  "Грузоперевозки",
+                           "okved":  "49.41",
+                           "okved_description":  "Деятельность автомобильного грузового транспорта",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  124,
+                           "category":  "Финансы",
+                           "industry":  "Банк",
+                           "okved":  "64.19",
+                           "okved_description":  "Денежное посредничество прочее",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  125,
+                           "category":  "Финансы",
+                           "industry":  "Микрофинансовая организация",
+                           "okved":  "64.92",
+                           "okved_description":  "Предоставление займов и прочих видов кредита",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  126,
+                           "category":  "Финансы",
+                           "industry":  "Страховая компания",
+                           "okved":  "65.11; 65.12",
+                           "okved_description":  "Страхование жизни; Страхование иное",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  127,
+                           "category":  "Финансы",
+                           "industry":  "Инвестиционная компания",
+                           "okved":  "64.99",
+                           "okved_description":  "Предоставление прочих финансовых услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  128,
+                           "category":  "Финансы",
+                           "industry":  "Платёжная система / Финтех",
+                           "okved":  "66.19",
+                           "okved_description":  "Деятельность вспомогательная в сфере финансового посредничества",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  129,
+                           "category":  "Туризм",
+                           "industry":  "Турагентство",
+                           "okved":  "79.11",
+                           "okved_description":  "Деятельность туристических агентств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  130,
+                           "category":  "Туризм",
+                           "industry":  "Санаторий / Курорт",
+                           "okved":  "86.90.4; 55.10",
+                           "okved_description":  "Санаторно-курортные организации; Гостиницы",
+                           "note":  "Верифицировано: 86.90.4 = санаторно-курортные",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  131,
+                           "category":  "Туризм",
+                           "industry":  "Экскурсионное бюро",
+                           "okved":  "79.90",
+                           "okved_description":  "Услуги по бронированию прочие",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  132,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Фермерское хозяйство / КФХ",
+                           "okved":  "01.50",
+                           "okved_description":  "Смешанное сельское хозяйство",
+                           "note":  "Объединены: Ферма/КФХ + Фермерское + Агрокомпания",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  133,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Тепличный комплекс",
+                           "okved":  "01.13",
+                           "okved_description":  "Выращивание овощей, бахчевых, корнеплодных культур",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  134,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Переработка с/х продукции",
+                           "okved":  "10.39",
+                           "okved_description":  "Прочие виды переработки и консервирования фруктов и овощей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  135,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Цветоводство",
+                           "okved":  "01.19.2",
+                           "okved_description":  "Цветоводство",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  136,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Овощеводство",
+                           "okved":  "01.13.1",
+                           "okved_description":  "Выращивание овощей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  137,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Плодоводство / Садоводство",
+                           "okved":  "01.24; 01.25",
+                           "okved_description":  "Выращивание семечковых, косточковых, прочих плодов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  138,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Виноградарство / Виноделие",
+                           "okved":  "01.21; 11.02",
+                           "okved_description":  "Выращивание винограда; Производство вин",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  139,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Грибоводство",
+                           "okved":  "01.13.6",
+                           "okved_description":  "Выращивание грибов и трюфелей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  140,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Питомник растений",
+                           "okved":  "01.30",
+                           "okved_description":  "Выращивание рассады",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  141,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Пчеловодство / Пасека",
+                           "okved":  "01.49.1",
+                           "okved_description":  "Пчеловодство",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  142,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Рыбоводство / Аквакультура",
+                           "okved":  "03.21; 03.22",
+                           "okved_description":  "Рыбоводство морское; пресноводное",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  143,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Животноводство (КРС)",
+                           "okved":  "01.41",
+                           "okved_description":  "Разведение молочного крупного рогатого скота",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  144,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Птицеводство",
+                           "okved":  "01.47",
+                           "okved_description":  "Разведение сельскохозяйственной птицы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  145,
+                           "category":  "Сельское хозяйство",
+                           "industry":  "Зерноводство",
+                           "okved":  "01.11",
+                           "okved_description":  "Выращивание зерновых культур",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  146,
+                           "category":  "Медиа / Креатив",
+                           "industry":  "Рекламное агентство",
+                           "okved":  "73.11",
+                           "okved_description":  "Деятельность рекламных агентств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  147,
+                           "category":  "Медиа / Креатив",
+                           "industry":  "Видеопродакшн",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  148,
+                           "category":  "Медиа / Креатив",
+                           "industry":  "Фотостудия",
+                           "okved":  "74.20",
+                           "okved_description":  "Деятельность в области фотографии",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  149,
+                           "category":  "Медиа / Креатив",
+                           "industry":  "SMM-агентство",
+                           "okved":  "73.11; 63.12",
+                           "okved_description":  "Рекламные агентства; Веб-порталы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  150,
+                           "category":  "Медиа / Креатив",
+                           "industry":  "Звукозаписывающая студия",
+                           "okved":  "59.20",
+                           "okved_description":  "Деятельность в области звукозаписи",
+                           "note":  "Единая запись (убран дубликат из Музыки)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  151,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Киностудия",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов и ТВ-программ",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  152,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Продюсерский центр",
+                           "okved":  "59.11; 59.12",
+                           "okved_description":  "Производство; Постпродакшн",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  153,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Произв. сериалов",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов и ТВ-программ",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  154,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Анимационная студия",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов (включая анимационные)",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  155,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Постпродакшн",
+                           "okved":  "59.12",
+                           "okved_description":  "Деятельность, связанная с производством кинофильмов (постпродакшн)",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  156,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Кинопрокат",
+                           "okved":  "59.13; 59.14",
+                           "okved_description":  "Распространение; Показ кинофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  157,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Стриминг-платформа",
+                           "okved":  "59.13; 63.12",
+                           "okved_description":  "Распространение кинофильмов; Веб-порталы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  158,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Произв. рекламных роликов",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  159,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Произв. музыкальных клипов",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  160,
+                           "category":  "Кинопроизводство",
+                           "industry":  "Произв. документальных",
+                           "okved":  "59.11",
+                           "okved_description":  "Производство кинофильмов, видеофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  161,
+                           "category":  "Музыка",
+                           "industry":  "Музыкальный лейбл",
+                           "okved":  "59.20",
+                           "okved_description":  "Деятельность в области звукозаписи и издания муз.произведений",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  162,
+                           "category":  "Музыка",
+                           "industry":  "Концертное агентство",
+                           "okved":  "90.02",
+                           "okved_description":  "Деятельность, вспомогательная для исполнительских искусств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  163,
+                           "category":  "Музыка",
+                           "industry":  "Произв. инструментов",
+                           "okved":  "32.20",
+                           "okved_description":  "Производство музыкальных инструментов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  164,
+                           "category":  "Музыка",
+                           "industry":  "Диджей / Event",
+                           "okved":  "90.01",
+                           "okved_description":  "Деятельность в области исполнительских искусств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  165,
+                           "category":  "Музыка",
+                           "industry":  "Стриминг музыки",
+                           "okved":  "59.20; 63.12",
+                           "okved_description":  "Звукозапись; Веб-порталы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  166,
+                           "category":  "Музыка",
+                           "industry":  "Музыкальный продюсер",
+                           "okved":  "59.20",
+                           "okved_description":  "Деятельность в области звукозаписи",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  167,
+                           "category":  "Музыка",
+                           "industry":  "Корпоративное обучение музыке",
+                           "okved":  "85.42.9",
+                           "okved_description":  "Образование профессиональное дополнительное прочее",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  168,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Прачечная / Химчистка",
+                           "okved":  "96.01",
+                           "okved_description":  "Стирка и химическая чистка текстильных и меховых изделий",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  169,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Ателье по ремонту одежды",
+                           "okved":  "95.29",
+                           "okved_description":  "Ремонт прочих предметов личного потребления",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  170,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Ремонт обуви / Ключи",
+                           "okved":  "95.23",
+                           "okved_description":  "Ремонт обуви и изделий из кожи",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  171,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Ломбард / Скупка",
+                           "okved":  "64.92.6",
+                           "okved_description":  "Деятельность ломбардов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  172,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Автостоянка / Паркинг",
+                           "okved":  "52.21.22",
+                           "okved_description":  "Деятельность стоянок для транспортных средств",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  173,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Фотоателье",
+                           "okved":  "74.20",
+                           "okved_description":  "Деятельность в области фотографии",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  174,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Ремонт бытовой техники",
+                           "okved":  "95.22",
+                           "okved_description":  "Ремонт бытовых приборов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  175,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Ремонт телефонов / электроники",
+                           "okved":  "95.12",
+                           "okved_description":  "Ремонт коммуникационного оборудования",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  176,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Сантехник / Электрик (вызов)",
+                           "okved":  "43.22; 43.21",
+                           "okved_description":  "Санитарно-технические; Электромонтажные работы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  177,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Мувинг / Переезды",
+                           "okved":  "49.42",
+                           "okved_description":  "Предоставление услуг по переезду",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  178,
+                           "category":  "Бытовые услуги",
+                           "industry":  "Дезинсекция / Дезинфекция",
+                           "okved":  "81.29",
+                           "okved_description":  "Деятельность по чистке и уборке прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  179,
+                           "category":  "Развлечения",
+                           "industry":  "Кинотеатр",
+                           "okved":  "59.14",
+                           "okved_description":  "Деятельность в области показа кинофильмов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  180,
+                           "category":  "Развлечения",
+                           "industry":  "Квест-комнаты",
+                           "okved":  "93.29",
+                           "okved_description":  "Деятельность зрелищно-развлекательная прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  181,
+                           "category":  "Развлечения",
+                           "industry":  "Детский центр",
+                           "okved":  "93.29; 85.41.1",
+                           "okved_description":  "Развлечения; Доп. образование детей",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  182,
+                           "category":  "Развлечения",
+                           "industry":  "Ночной клуб",
+                           "okved":  "56.30; 93.29",
+                           "okved_description":  "Подача напитков; Развлечения",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  183,
+                           "category":  "Развлечения",
+                           "industry":  "Боулинг / Бильярд",
+                           "okved":  "93.29",
+                           "okved_description":  "Деятельность зрелищно-развлекательная прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  184,
+                           "category":  "Развлечения",
+                           "industry":  "Парк аттракционов",
+                           "okved":  "93.21",
+                           "okved_description":  "Деятельность парков культуры и отдыха",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  185,
+                           "category":  "Развлечения",
+                           "industry":  "Аквапарк",
+                           "okved":  "93.21",
+                           "okved_description":  "Деятельность парков культуры и отдыха",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  186,
+                           "category":  "Спорт",
+                           "industry":  "Фитнес-клуб",
+                           "okved":  "93.13",
+                           "okved_description":  "Деятельность фитнес-центров",
+                           "note":  "Единая запись (убраны дубликаты из Красоты и Спорт-сеть)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  187,
+                           "category":  "Спорт",
+                           "industry":  "Бассейн",
+                           "okved":  "93.11",
+                           "okved_description":  "Деятельность спортивных объектов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  188,
+                           "category":  "Спорт",
+                           "industry":  "Теннисный клуб",
+                           "okved":  "93.12",
+                           "okved_description":  "Деятельность спортивных клубов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  189,
+                           "category":  "Спорт",
+                           "industry":  "Футбольная школа",
+                           "okved":  "85.41.1; 93.12",
+                           "okved_description":  "Доп. образование; Спортивные клубы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  190,
+                           "category":  "Спорт",
+                           "industry":  "MMA / Единоборства",
+                           "okved":  "93.12",
+                           "okved_description":  "Деятельность спортивных клубов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  191,
+                           "category":  "Спорт",
+                           "industry":  "Горнолыжный курорт",
+                           "okved":  "93.11; 55.10",
+                           "okved_description":  "Спортивные объекты; Гостиницы",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  192,
+                           "category":  "Спорт",
+                           "industry":  "Спортивный магазин",
+                           "okved":  "47.64",
+                           "okved_description":  "Торговля розничная спортивными товарами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  193,
+                           "category":  "Спорт",
+                           "industry":  "Букмекер",
+                           "okved":  "92.00",
+                           "okved_description":  "Деятельность по организации азартных игр и заключению пари",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  194,
+                           "category":  "Государство / НКО",
+                           "industry":  "МФЦ / Госуслуги",
+                           "okved":  "84.11",
+                           "okved_description":  "Деятельность органов государственного управления",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  195,
+                           "category":  "Государство / НКО",
+                           "industry":  "Муниципальное учреждение",
+                           "okved":  "84.11",
+                           "okved_description":  "Деятельность органов государственного управления",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  196,
+                           "category":  "Государство / НКО",
+                           "industry":  "Благотворительный фонд",
+                           "okved":  "88.99; 94.99",
+                           "okved_description":  "Социальные услуги; Общественные организации",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  197,
+                           "category":  "Государство / НКО",
+                           "industry":  "Общественная организация",
+                           "okved":  "94.99",
+                           "okved_description":  "Деятельность прочих общественных организаций",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  198,
+                           "category":  "Связь / Телеком",
+                           "industry":  "Интернет-провайдер",
+                           "okved":  "61.10",
+                           "okved_description":  "Деятельность на базе проводных технологий",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  199,
+                           "category":  "Связь / Телеком",
+                           "industry":  "Салон сотовой связи",
+                           "okved":  "47.42",
+                           "okved_description":  "Торговля розничная телекоммуникационным оборудованием",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  200,
+                           "category":  "Связь / Телеком",
+                           "industry":  "Видеонаблюдение / СКУД",
+                           "okved":  "80.20; 43.21",
+                           "okved_description":  "Системы безопасности; Электромонтаж",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  201,
+                           "category":  "Связь / Телеком",
+                           "industry":  "Системная интеграция",
+                           "okved":  "62.09",
+                           "okved_description":  "Деятельность в области ИТ прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  202,
+                           "category":  "Социальная сфера",
+                           "industry":  "Пансионат для пожилых",
+                           "okved":  "87.30",
+                           "okved_description":  "Уход с проживанием для пожилых и инвалидов",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  203,
+                           "category":  "Социальная сфера",
+                           "industry":  "Хоспис",
+                           "okved":  "87.10",
+                           "okved_description":  "Деятельность по медицинскому уходу с обеспечением проживания",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  204,
+                           "category":  "Социальная сфера",
+                           "industry":  "Реабилитация (наркология)",
+                           "okved":  "87.20",
+                           "okved_description":  "Помощь на дому лицам с психическими расстройствами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  205,
+                           "category":  "Социальная сфера",
+                           "industry":  "Дом ребёнка / Интернат",
+                           "okved":  "87.90",
+                           "okved_description":  "Деятельность по уходу с обеспечением проживания прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  206,
+                           "category":  "Социальная сфера",
+                           "industry":  "Центр социальной помощи",
+                           "okved":  "88.99",
+                           "okved_description":  "Предоставление прочих социальных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  207,
+                           "category":  "Социальная сфера",
+                           "industry":  "Центр для людей с ОВЗ",
+                           "okved":  "88.10",
+                           "okved_description":  "Социальные услуги престарелым и инвалидам без проживания",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  208,
+                           "category":  "Животные",
+                           "industry":  "Ветклиника",
+                           "okved":  "75.00",
+                           "okved_description":  "Ветеринарная деятельность",
+                           "note":  "Единая запись (убраны дубликаты Медицина/Животные)",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  209,
+                           "category":  "Животные",
+                           "industry":  "Зоомагазин",
+                           "okved":  "47.76",
+                           "okved_description":  "Торговля розничная домашними животными и кормами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  210,
+                           "category":  "Животные",
+                           "industry":  "Груминг-салон",
+                           "okved":  "96.09",
+                           "okved_description":  "Предоставление прочих персональных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  211,
+                           "category":  "Животные",
+                           "industry":  "Приют для животных",
+                           "okved":  "75.00; 94.99",
+                           "okved_description":  "Ветеринария; Общественные организации",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  212,
+                           "category":  "Event / Праздники",
+                           "industry":  "Свадебное агентство",
+                           "okved":  "96.09",
+                           "okved_description":  "Предоставление прочих персональных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  213,
+                           "category":  "Event / Праздники",
+                           "industry":  "Event-агентство",
+                           "okved":  "82.30",
+                           "okved_description":  "Деятельность по организации конференций и выставок",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  214,
+                           "category":  "Event / Праздники",
+                           "industry":  "Организация детских праздников",
+                           "okved":  "93.29; 96.09",
+                           "okved_description":  "Развлечения; Персональные услуги",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  215,
+                           "category":  "Event / Праздники",
+                           "industry":  "Шатры / Тенты (аренда)",
+                           "okved":  "77.39",
+                           "okved_description":  "Аренда прочих машин и оборудования",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  216,
+                           "category":  "Event / Праздники",
+                           "industry":  "Артисты / Ведущие (агентство)",
+                           "okved":  "90.01; 74.90",
+                           "okved_description":  "Исполнительские искусства; Прочая профессиональная деятельность",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  217,
+                           "category":  "Event / Праздники",
+                           "industry":  "Пиротехника / Салюты",
+                           "okved":  "20.51; 47.78",
+                           "okved_description":  "Производство взрывчатых веществ; Торговля прочая",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  218,
+                           "category":  "Ритуальные услуги",
+                           "industry":  "Похоронное бюро",
+                           "okved":  "96.03",
+                           "okved_description":  "Организация похорон и предоставление связанных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  219,
+                           "category":  "Ритуальные услуги",
+                           "industry":  "Крематорий",
+                           "okved":  "96.03",
+                           "okved_description":  "Организация похорон и предоставление связанных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  220,
+                           "category":  "Ритуальные услуги",
+                           "industry":  "Кладбище / Мемориальный парк",
+                           "okved":  "96.03",
+                           "okved_description":  "Организация похорон и предоставление связанных услуг",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  221,
+                           "category":  "Ритуальные услуги",
+                           "industry":  "Изготовление памятников",
+                           "okved":  "23.70",
+                           "okved_description":  "Резка, обработка и отделка камня",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  222,
+                           "category":  "Цветы / Подарки",
+                           "industry":  "Цветочный магазин / Флористика",
+                           "okved":  "47.76.1",
+                           "okved_description":  "Торговля розничная цветами и растениями",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  223,
+                           "category":  "Цветы / Подарки",
+                           "industry":  "Магазин подарков / Сувениры",
+                           "okved":  "47.78.3",
+                           "okved_description":  "Торговля розничная сувенирами",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  224,
+                           "category":  "Цветы / Подарки",
+                           "industry":  "Кондитерская мастерская",
+                           "okved":  "10.82; 47.24",
+                           "okved_description":  "Производство шоколада; Розничная торговля",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  225,
+                           "category":  "Цветы / Подарки",
+                           "industry":  "Воздушные шары / Декор",
+                           "okved":  "47.78; 82.30",
+                           "okved_description":  "Торговля прочая; Организация мероприятий",
+                           "note":  "",
+                           "is_new":  false
+                       },
+                       {
+                           "id":  226,
+                           "category":  "Энергетика",
+                           "industry":  "Электрогенерация",
+                           "okved":  "35.11",
+                           "okved_description":  "Производство электроэнергии",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  227,
+                           "category":  "Энергетика",
+                           "industry":  "Электросети",
+                           "okved":  "35.12",
+                           "okved_description":  "Передача электроэнергии",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  228,
+                           "category":  "Энергетика",
+                           "industry":  "Газоснабжение",
+                           "okved":  "35.22",
+                           "okved_description":  "Распределение газообразного топлива по газораспределительным сетям",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  229,
+                           "category":  "Энергетика",
+                           "industry":  "Теплоснабжение",
+                           "okved":  "35.30",
+                           "okved_description":  "Производство, передача и распределение пара и горячей воды",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  230,
+                           "category":  "Энергетика",
+                           "industry":  "ВИЭ / Солнечная энергетика",
+                           "okved":  "35.11.4",
+                           "okved_description":  "Производство электроэнергии из возобновляемых источников",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  231,
+                           "category":  "Добыча полезных ископаемых",
+                           "industry":  "Нефтедобыча",
+                           "okved":  "06.10",
+                           "okved_description":  "Добыча сырой нефти",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  232,
+                           "category":  "Добыча полезных ископаемых",
+                           "industry":  "Газодобыча",
+                           "okved":  "06.20",
+                           "okved_description":  "Добыча природного газа",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  233,
+                           "category":  "Добыча полезных ископаемых",
+                           "industry":  "Добыча угля",
+                           "okved":  "05.10",
+                           "okved_description":  "Добыча и обогащение угля и антрацита",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  234,
+                           "category":  "Добыча полезных ископаемых",
+                           "industry":  "Добыча руды",
+                           "okved":  "07.10; 07.29",
+                           "okved_description":  "Добыча железных руд; Добыча прочих руд",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  235,
+                           "category":  "Добыча полезных ископаемых",
+                           "industry":  "Добыча стройматериалов",
+                           "okved":  "08.11; 08.12",
+                           "okved_description":  "Добыча камня, песка, глины",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  236,
+                           "category":  "ЖКХ / Экология",
+                           "industry":  "Водоснабжение",
+                           "okved":  "36.00",
+                           "okved_description":  "Забор, очистка и распределение воды",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  237,
+                           "category":  "ЖКХ / Экология",
+                           "industry":  "Водоотведение / Канализация",
+                           "okved":  "37.00",
+                           "okved_description":  "Сбор и обработка сточных вод",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  238,
+                           "category":  "ЖКХ / Экология",
+                           "industry":  "Управление отходами",
+                           "okved":  "38.11; 38.21",
+                           "okved_description":  "Сбор неопасных отходов; Обработка и утилизация",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  239,
+                           "category":  "ЖКХ / Экология",
+                           "industry":  "Экологический консалтинг",
+                           "okved":  "71.20; 74.90",
+                           "okved_description":  "Технические испытания; Прочая профессиональная деятельность",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  240,
+                           "category":  "ЖКХ / Экология",
+                           "industry":  "Рекультивация / Ликвидация загрязнений",
+                           "okved":  "39.00",
+                           "okved_description":  "Деятельность по ликвидации загрязнений",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  241,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Авиаперевозки (пассажир.)",
+                           "okved":  "51.10.1",
+                           "okved_description":  "Перевозка воздушным пассажирским транспортом",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  242,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Авиаперевозки (грузовые)",
+                           "okved":  "51.21",
+                           "okved_description":  "Перевозка воздушным грузовым транспортом",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  243,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Аэропорт",
+                           "okved":  "52.23.1",
+                           "okved_description":  "Деятельность аэропортовая",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  244,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "ЖД-перевозки (пассажир.)",
+                           "okved":  "49.10",
+                           "okved_description":  "Деятельность ж/д пассажирского транспорта",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  245,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "ЖД-перевозки (грузовые)",
+                           "okved":  "49.20",
+                           "okved_description":  "Деятельность ж/д грузового транспорта",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  246,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Морские перевозки",
+                           "okved":  "50.10; 50.20",
+                           "okved_description":  "Морской транспорт (пассажир.; грузовой)",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  247,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Речные перевозки",
+                           "okved":  "50.30; 50.40",
+                           "okved_description":  "Внутренний водный транспорт (пассажир.; грузовой)",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  248,
+                           "category":  "Авиация / ЖД / Водный транспорт",
+                           "industry":  "Порт / Терминал",
+                           "okved":  "52.22; 52.24",
+                           "okved_description":  "Деятельность в области водного транспорта; Транспортная обработка грузов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  249,
+                           "category":  "Издательство / СМИ",
+                           "industry":  "Книжное издательство",
+                           "okved":  "58.11",
+                           "okved_description":  "Издание книг",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  250,
+                           "category":  "Издательство / СМИ",
+                           "industry":  "Издание газет / журналов",
+                           "okved":  "58.13; 58.14",
+                           "okved_description":  "Издание газет; Издание журналов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  251,
+                           "category":  "Издательство / СМИ",
+                           "industry":  "Телевещание",
+                           "okved":  "60.20",
+                           "okved_description":  "Деятельность в области телевизионного вещания",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  252,
+                           "category":  "Издательство / СМИ",
+                           "industry":  "Радиовещание",
+                           "okved":  "60.10",
+                           "okved_description":  "Деятельность в области радиовещания",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  253,
+                           "category":  "Издательство / СМИ",
+                           "industry":  "Онлайн-СМИ / Новостной портал",
+                           "okved":  "63.12",
+                           "okved_description":  "Деятельность веб-порталов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  254,
+                           "category":  "Текстиль / Одежда",
+                           "industry":  "Пошив одежды",
+                           "okved":  "14.13",
+                           "okved_description":  "Производство прочей верхней одежды",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  255,
+                           "category":  "Текстиль / Одежда",
+                           "industry":  "Магазин одежды",
+                           "okved":  "47.71",
+                           "okved_description":  "Торговля розничная одеждой",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  256,
+                           "category":  "Текстиль / Одежда",
+                           "industry":  "Магазин обуви",
+                           "okved":  "47.72",
+                           "okved_description":  "Торговля розничная обувью и изделиями из кожи",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  257,
+                           "category":  "Текстиль / Одежда",
+                           "industry":  "Производство обуви",
+                           "okved":  "15.20",
+                           "okved_description":  "Производство обуви",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  258,
+                           "category":  "ОПК / Космос",
+                           "industry":  "Оборонное производство",
+                           "okved":  "25.40",
+                           "okved_description":  "Производство оружия и боеприпасов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  259,
+                           "category":  "ОПК / Космос",
+                           "industry":  "Авиастроение",
+                           "okved":  "30.30",
+                           "okved_description":  "Производство летательных и космических аппаратов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  260,
+                           "category":  "ОПК / Космос",
+                           "industry":  "Судостроение",
+                           "okved":  "30.11",
+                           "okved_description":  "Строительство кораблей и судов",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  261,
+                           "category":  "Лесное хозяйство",
+                           "industry":  "Лесозаготовка",
+                           "okved":  "02.20",
+                           "okved_description":  "Лесозаготовки",
+                           "note":  "",
+                           "is_new":  true
+                       },
+                       {
+                           "id":  262,
+                           "category":  "Лесное хозяйство",
+                           "industry":  "Лесоводство",
+                           "okved":  "02.10",
+                           "okved_description":  "Лесоводство и прочая лесохозяйственная деятельность",
+                           "note":  "",
+                           "is_new":  true
+                       }
+                   ]
+}
