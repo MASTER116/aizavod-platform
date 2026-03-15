@@ -42,8 +42,17 @@ AGENTS: list[AgentInfo] = [
     AgentInfo(
         name="certifier",
         department="Продукт",
-        description="Консультации по сертификации товаров, ТР ТС ЕАЭС, таможня, импорт",
-        keywords=["сертифик", "тр тс", "еаэс", "декларац", "таможн", "импорт", "ввоз", "растамож", "гост", "соответств"],
+        description="Консультации по сертификации товаров, ТР ТС ЕАЭС, таможня, импорт, стоимость сертификации",
+        keywords=[
+            "сертифик", "тр тс", "еаэс", "декларац", "таможн", "импорт", "ввоз",
+            "растамож", "гост", "соответств", "оттс", "сбктс", "эра-глонасс",
+            "глонасс", "гбо", "лаборатор", "аккредит", "омологац",
+            # Марки авто — основной кейс CERTIFIER
+            "jac", "haval", "chery", "geely", "changan", "faw", "byd", "exeed",
+            "москвич", "лада", "камаз", "газ ", "уаз", "маз ",
+            # Контекст сертификации
+            "локализац", "ввоз авто", "параллельн", "спецтехник",
+        ],
         handler="_route_certifier",
     ),
     AgentInfo(
@@ -174,10 +183,10 @@ class Conductor:
         if scores:
             best = max(scores, key=scores.get)
             best_score = scores[best]
-            if best_score >= 2:
+            if best_score >= 1:
                 return RouteDecision(
                     agent=best,
-                    confidence=min(0.6 + best_score * 0.1, 0.95),
+                    confidence=min(0.5 + best_score * 0.15, 0.95),
                     reasoning=f"Ключевые слова совпали ({best_score} совпадений)",
                     reformulated_query=query,
                 )
@@ -209,7 +218,23 @@ class Conductor:
         text = resp.content[0].text.strip()
 
         try:
+            # Попытка парсить напрямую
             data = json.loads(text)
+        except json.JSONDecodeError:
+            # Извлечь JSON из markdown (```json ... ```) или найти {} в тексте
+            import re
+            json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+            if not json_match:
+                json_match = re.search(r"(\{[^{}]*\"agent\"[^{}]*\})", text, re.DOTALL)
+            if json_match:
+                try:
+                    data = json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    data = None
+            else:
+                data = None
+
+        if data and isinstance(data, dict):
             return RouteDecision(
                 agent=data.get("agent", "ceo_agent"),
                 confidence=data.get("confidence", 0.5),
@@ -218,14 +243,24 @@ class Conductor:
                 multi_agent=data.get("multi_agent", False),
                 secondary_agents=data.get("secondary_agents", []),
             )
-        except json.JSONDecodeError:
-            logger.warning("Не удалось распарсить ответ классификатора: %s", text[:200])
-            return RouteDecision(
-                agent="ceo_agent",
-                confidence=0.4,
-                reasoning="Ошибка парсинга, фоллбэк в CEO",
-                reformulated_query=query,
-            )
+
+        logger.warning("Не удалось распарсить ответ классификатора: %s", text[:200])
+        # Последний шанс: поискать имя агента в тексте
+        text_lower = text.lower()
+        for agent in AGENTS:
+            if agent.name in text_lower:
+                return RouteDecision(
+                    agent=agent.name,
+                    confidence=0.5,
+                    reasoning=f"Извлечено из текста ответа (имя агента найдено)",
+                    reformulated_query=query,
+                )
+        return RouteDecision(
+            agent="ceo_agent",
+            confidence=0.3,
+            reasoning="Не удалось классифицировать, фоллбэк в CEO",
+            reformulated_query=query,
+        )
 
     async def process(self, query: str) -> ConductorResult:
         """Главный метод: классифицировать → маршрутизировать → вернуть результат."""
