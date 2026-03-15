@@ -9,7 +9,7 @@ from aiogram.client.default import DefaultBotProperties
 
 from .config import get_bot_token
 from .middlewares import AdminOnlyMiddleware
-from .handlers import start, dashboard, content, generation, settings, agent_admin, opportunities
+from .handlers import start, dashboard, content, generation, settings, agent_admin, opportunities, money
 
 logger = logging.getLogger("aizavod.bot")
 
@@ -35,6 +35,7 @@ def create_bot_and_dispatcher() -> tuple[Bot, Dispatcher]:
     dp.include_router(settings.router)
     dp.include_router(agent_admin.router)
     dp.include_router(opportunities.router)
+    dp.include_router(money.router)
 
     return bot, dp
 
