@@ -161,6 +161,7 @@ async def list_agents():
     return [
         {
             "name": a.name,
+            "title": a.title,
             "department": a.department,
             "description": a.description,
         }

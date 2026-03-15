@@ -25,6 +25,7 @@ logger = logging.getLogger("aizavod.conductor")
 class AgentInfo:
     """Описание зарегистрированного агента."""
     name: str
+    title: str               # русское название для UI
     department: str          # директор/отдел
     description: str         # что умеет
     keywords: list[str]      # ключевые слова для быстрой маршрутизации
@@ -34,29 +35,30 @@ class AgentInfo:
 AGENTS: list[AgentInfo] = [
     AgentInfo(
         name="ceo_agent",
-        department="CEO",
+        title="Генеральный директор",
+        department="Руководство",
         description="Стратегические вопросы, планирование, декомпозиция задач, распределение по директорам",
         keywords=["стратег", "план", "приоритет", "направлен", "задач", "цел", "развит"],
         handler="_route_ceo",
     ),
     AgentInfo(
         name="certifier",
+        title="Сертификатор",
         department="Продукт",
         description="Консультации по сертификации товаров, ТР ТС ЕАЭС, таможня, импорт, стоимость сертификации",
         keywords=[
             "сертифик", "тр тс", "еаэс", "декларац", "таможн", "импорт", "ввоз",
             "растамож", "гост", "соответств", "оттс", "сбктс", "эра-глонасс",
             "глонасс", "гбо", "лаборатор", "аккредит", "омологац",
-            # Марки авто — основной кейс CERTIFIER
             "jac", "haval", "chery", "geely", "changan", "faw", "byd", "exeed",
             "москвич", "лада", "камаз", "газ ", "уаз", "маз ",
-            # Контекст сертификации
             "локализац", "ввоз авто", "параллельн", "спецтехник",
         ],
         handler="_route_certifier",
     ),
     AgentInfo(
         name="opportunity_scanner",
+        title="Сканер возможностей",
         department="Финансы",
         description="Поиск грантов, хакатонов, конкурсов, источники финансирования",
         keywords=["грант", "хакатон", "конкурс", "субсид", "фонд", "инвестиц", "финансир", "рнф", "фаси", "сколков"],
@@ -64,6 +66,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="idea_generator",
+        title="Генератор идей",
         department="Финансы",
         description="Генерация идей заработка, монетизация, бизнес-модели",
         keywords=["идея", "заработ", "монетиз", "доход", "бизнес-модел", "как заработ"],
@@ -71,6 +74,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="market_analyzer",
+        title="Аналитик рынка",
         department="Финансы",
         description="Анализ рынка, конкурентов, оценка ниши, подготовка заявок",
         keywords=["рынок", "конкурент", "ниша", "анализ рынк", "заявк", "предложен"],
@@ -78,6 +82,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="freelance_agent",
+        title="Фрилансер",
         department="Продажи",
         description="Поиск заказов на фрилансе, Kwork, Upwork, генерация откликов",
         keywords=["фриланс", "заказ", "kwork", "upwork", "отклик", "услуг", "портфолио"],
@@ -85,6 +90,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="pricing_agent",
+        title="Оценщик проектов",
         department="Продажи",
         description="Оценка стоимости проектов, генерация коммерческих предложений",
         keywords=["цен", "стоимост", "оценк", "кп ", "коммерческ", "бюджет проект", "смет"],
@@ -92,6 +98,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="outreach_agent",
+        title="Менеджер продаж",
         department="Продажи",
         description="Холодные продажи, генерация писем, поиск лидов, сегменты",
         keywords=["продаж", "лид", "клиент", "холодн", "письм", "email", "сегмент", "привлеч"],
@@ -99,6 +106,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="content_factory",
+        title="Фабрика контента",
         department="Контент",
         description="Генерация контента для Instagram, TikTok, VK — изображения, видео, тексты",
         keywords=["контент", "инстаграм", "instagram", "tiktok", "пост", "рилс", "reels", "сторис", "публикац"],
@@ -106,6 +114,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="lawyer_agent",
+        title="Юрист",
         department="Юридический",
         description="Юридические консультации: договоры, регистрация ИП/ООО, трудовое право, налоговые споры",
         keywords=[
@@ -117,6 +126,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="accountant_agent",
+        title="Бухгалтер",
         department="Бухгалтерия",
         description="Бухгалтерия, налоги, отчетность, зарплата, выбор системы налогообложения для ИП/ООО",
         keywords=[
@@ -128,6 +138,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="darwin_agent",
+        title="Эволюция",
         department="Самообучение",
         description="Анализ качества агентов, оптимизация промптов, еженедельные отчёты, поиск паттернов ошибок",
         keywords=[
@@ -138,6 +149,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="guardian_agent",
+        title="Страж безопасности",
         department="Безопасность",
         description="Антифрод, антиабьюз, проверка безопасности ввода/вывода, анализ поведения пользователей",
         keywords=[
@@ -148,6 +160,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="scholar_agent",
+        title="Учёный",
         department="Наука",
         description="Грантовые заявки, научные статьи, литобзоры, оформление по ГОСТ/ВАК",
         keywords=[
@@ -159,8 +172,9 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="herald_agent",
-        department="DevRel",
-        description="Open-source продвижение, README, статьи Habr, Telegram-канал, Product Hunt",
+        title="Глашатай",
+        department="Продвижение",
+        description="Open-source продвижение, README, статьи Хабр, Telegram-канал, Product Hunt",
         keywords=[
             "open-source", "readme", "habr", "хабр", "devrel",
             "product hunt", "github", "телеграм канал", "herald",
@@ -170,6 +184,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="namer_agent",
+        title="Нейминг",
         department="Нейминг",
         description="Генерация названий, проверка доменов, товарных знаков, ЕГРЮЛ, соцсетей",
         keywords=[
@@ -180,7 +195,8 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="guardian_ip_agent",
-        department="IP/Патенты",
+        title="Страж интеллектуальной собственности",
+        department="Патенты",
         description="Товарные знаки, патенты, IP-аудит, анализ доменов, защита интеллектуальной собственности",
         keywords=[
             "патент", "товарн знак", "фипс", "роспатент", "интеллектуальн",
@@ -190,6 +206,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="voice_agent",
+        title="Голосовой агент",
         department="Голос",
         description="Скрипты звонков, оптимизация для TTS, деловые и продающие звонки",
         keywords=[
@@ -200,7 +217,8 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="treasurer_agent",
-        department="Финансы/Казначей",
+        title="Казначей",
+        department="Казначейство",
         description="Монетизация инфраструктуры, анализ расходов, поиск доходов, ценообразование, cash flow",
         keywords=[
             "расход", "оптимиз затрат", "cash flow", "денежн поток",
