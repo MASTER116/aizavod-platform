@@ -897,45 +897,45 @@
 <script>
 const API = '/api';
 
-const AGENT_ICONS = {
-    CERTIFIER: 'C',
-    LAWYER: 'L',
-    ACCOUNTANT: 'A',
-    CONTENT: 'T',
-    GUARDIAN: 'G',
-    CONDUCTOR: 'O',
-    DARWIN: 'D',
-    HERALD: 'H',
-    TREASURER: 'R',
-    NAMER: 'N',
-    VOICE: 'V',
-    CDO: 'S',
-    LOGIST: 'I',
+const DEPT_COLORS = {
+    'Руководство': '#ef4444',
+    'Продукт': '#3b82f6',
+    'Финансы': '#22c55e',
+    'Продажи': '#f97316',
+    'Контент': '#a855f7',
+    'Юридический': '#06b6d4',
+    'Бухгалтерия': '#eab308',
+    'Самообучение': '#ec4899',
+    'Безопасность': '#ef4444',
+    'Наука': '#14b8a6',
+    'Продвижение': '#8b5cf6',
+    'Нейминг': '#f59e0b',
+    'Патенты': '#6366f1',
+    'Голос': '#10b981',
+    'Казначейство': '#f43f5e',
 };
 
 async function loadAgents() {
     try {
-        const res = await fetch(`${API}/agents`);
-        const data = await res.json();
+        const res = await fetch(`${API}/conductor/agents`);
+        const agents = await res.json();
         const grid = document.getElementById('agents-grid');
         grid.innerHTML = '';
 
-        const agents = data.agents || [];
         document.getElementById('agents-count').textContent = `${agents.length} доступно`;
 
         agents.forEach((a, i) => {
             const card = document.createElement('div');
-            card.className = `agent-card ${a.status === 'demo' ? 'active' : 'disabled'}`;
+            card.className = 'agent-card active';
             card.style.animationDelay = `${i * 0.05}s`;
-            const icon = AGENT_ICONS[a.name] || a.name.charAt(0);
+            const color = DEPT_COLORS[a.department] || '#6b7280';
             card.innerHTML = `
                 <div class="agent-card-top">
-                    <div class="agent-icon">${icon}</div>
-                    <span class="agent-status ${a.status === 'demo' ? 'demo' : 'soon'}">
-                        ${a.status === 'demo' ? 'Demo' : 'Soon'}
+                    <div class="agent-name" style="font-weight:700">${a.title}</div>
+                    <span class="agent-status demo" style="background:${color};font-size:0.65rem;padding:2px 8px;border-radius:4px">
+                        ${a.department}
                     </span>
                 </div>
-                <div class="agent-name">${a.name}</div>
                 <div class="agent-desc">${a.description}</div>`;
             grid.appendChild(card);
         });
