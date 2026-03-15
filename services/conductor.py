@@ -126,6 +126,89 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_accountant",
     ),
+    AgentInfo(
+        name="darwin_agent",
+        department="Самообучение",
+        description="Анализ качества агентов, оптимизация промптов, еженедельные отчёты, поиск паттернов ошибок",
+        keywords=[
+            "качество агент", "оптимиз промпт", "самообуч", "darwin",
+            "улучш агент", "отчёт качеств", "анализ ответ",
+        ],
+        handler="_route_darwin",
+    ),
+    AgentInfo(
+        name="guardian_agent",
+        department="Безопасность",
+        description="Антифрод, антиабьюз, проверка безопасности ввода/вывода, анализ поведения пользователей",
+        keywords=[
+            "безопасност", "фрод", "абьюз", "injection", "спам",
+            "guardian", "блокировк", "угроз", "атак", "защит",
+        ],
+        handler="_route_guardian",
+    ),
+    AgentInfo(
+        name="scholar_agent",
+        department="Наука",
+        description="Грантовые заявки, научные статьи, литобзоры, оформление по ГОСТ/ВАК",
+        keywords=[
+            "наук", "стать", "публикац", "гост", "вак", "ринц",
+            "литобзор", "диссертац", "исследован", "scholar",
+            "грантов заявк", "научн",
+        ],
+        handler="_route_scholar",
+    ),
+    AgentInfo(
+        name="herald_agent",
+        department="DevRel",
+        description="Open-source продвижение, README, статьи Habr, Telegram-канал, Product Hunt",
+        keywords=[
+            "open-source", "readme", "habr", "хабр", "devrel",
+            "product hunt", "github", "телеграм канал", "herald",
+            "продвижен", "контент маркет",
+        ],
+        handler="_route_herald",
+    ),
+    AgentInfo(
+        name="namer_agent",
+        department="Нейминг",
+        description="Генерация названий, проверка доменов, товарных знаков, ЕГРЮЛ, соцсетей",
+        keywords=[
+            "названи", "нейминг", "имя компан", "имя продукт", "домен",
+            "бренд", "нейм", "как назвать",
+        ],
+        handler="_route_namer",
+    ),
+    AgentInfo(
+        name="guardian_ip_agent",
+        department="IP/Патенты",
+        description="Товарные знаки, патенты, IP-аудит, анализ доменов, защита интеллектуальной собственности",
+        keywords=[
+            "патент", "товарн знак", "фипс", "роспатент", "интеллектуальн",
+            "ip аудит", "мкту", "авторск прав", "реестр по",
+        ],
+        handler="_route_guardian_ip",
+    ),
+    AgentInfo(
+        name="voice_agent",
+        department="Голос",
+        description="Скрипты звонков, оптимизация для TTS, деловые и продающие звонки",
+        keywords=[
+            "звонок", "звонк", "скрипт", "tts", "голос", "voice",
+            "позвонить", "переговор", "телефон",
+        ],
+        handler="_route_voice",
+    ),
+    AgentInfo(
+        name="treasurer_agent",
+        department="Финансы/Казначей",
+        description="Монетизация инфраструктуры, анализ расходов, поиск доходов, ценообразование, cash flow",
+        keywords=[
+            "расход", "оптимиз затрат", "cash flow", "денежн поток",
+            "окупаемост", "burn rate", "тариф", "ценообразован",
+            "treasurer", "монетизац инфра",
+        ],
+        handler="_route_treasurer",
+    ),
 ]
 
 
@@ -471,6 +554,113 @@ async def _route_accountant(query: str) -> str:
     elif any(kw in q for kw in ["зарплат", "ндфл", "оклад", "выплат"]):
         return await agent.payroll_calc(query)
     return await agent.consult(query)
+
+
+async def _route_darwin(query: str) -> str:
+    from services.darwin_agent import get_darwin_agent
+    agent = get_darwin_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["оптимиз", "промпт", "улучш"]):
+        return await agent.optimize_prompt("unknown", query, "")
+    elif any(kw in q for kw in ["отчёт", "отчет", "неделя", "итог"]):
+        return await agent.weekly_report(query)
+    elif any(kw in q for kw in ["паттерн", "лог", "маршрут"]):
+        return await agent.detect_patterns(query)
+    return await agent.analyze_response("unknown", query, "")
+
+
+async def _route_guardian(query: str) -> str:
+    from services.guardian_agent import get_guardian_agent
+    agent = get_guardian_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["проверь ввод", "input", "injection"]):
+        return await agent.check_input(query)
+    elif any(kw in q for kw in ["поведен", "активност", "мультиаккаунт"]):
+        return await agent.analyze_user_behavior(query)
+    elif any(kw in q for kw in ["отчёт", "отчет", "угроз"]):
+        return await agent.threat_report()
+    return await agent.check_input(query)
+
+
+async def _route_scholar(query: str) -> str:
+    from services.scholar_agent import get_scholar_agent
+    agent = get_scholar_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["грант", "заявк", "рнф", "фси"]):
+        fund = "РНФ" if "рнф" in q else "ФСИ" if "фси" in q else ""
+        return await agent.write_grant(query, fund)
+    elif any(kw in q for kw in ["литобзор", "обзор литератур", "что написано"]):
+        return await agent.literature_review(query)
+    elif any(kw in q for kw in ["оформ", "гост", "вак", "стать"]):
+        return await agent.format_article(query)
+    return await agent.research_question(query)
+
+
+async def _route_herald(query: str) -> str:
+    from services.herald_agent import get_herald_agent
+    agent = get_herald_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["readme"]):
+        return await agent.write_readme(query, "")
+    elif any(kw in q for kw in ["habr", "хабр", "стать"]):
+        return await agent.write_habr_article(query)
+    elif any(kw in q for kw in ["телеграм", "telegram", "пост"]):
+        return await agent.telegram_post(query)
+    elif any(kw in q for kw in ["product hunt", "запуск"]):
+        return await agent.product_hunt_launch(query, "")
+    return await agent.oss_strategy(query)
+
+
+async def _route_namer(query: str) -> str:
+    from services.namer_agent import get_namer_agent
+    agent = get_namer_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["проверь", "доступн", "занят"]):
+        return await agent.check_availability(query)
+    elif any(kw in q for kw in ["полн", "цикл", "от и до"]):
+        return await agent.full_naming(query)
+    return await agent.generate_names(query)
+
+
+async def _route_guardian_ip(query: str) -> str:
+    from services.guardian_ip_agent import get_guardian_ip_agent
+    agent = get_guardian_ip_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["товарн знак", "фипс", "мкту"]):
+        return await agent.check_trademark(query)
+    elif any(kw in q for kw in ["патент", "изобретен"]):
+        return await agent.check_patent(query)
+    elif any(kw in q for kw in ["домен", "whois"]):
+        return await agent.domain_analysis(query)
+    return await agent.ip_audit(query)
+
+
+async def _route_voice(query: str) -> str:
+    from services.voice_agent import get_voice_agent
+    agent = get_voice_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["делов", "переговор", "партнёр"]):
+        return await agent.business_call_script(query, "")
+    elif any(kw in q for kw in ["продаж", "продающ", "холодн"]):
+        return await agent.sales_script(query, "")
+    elif any(kw in q for kw in ["tts", "озвуч", "оптимиз"]):
+        return await agent.tts_optimize(query)
+    return await agent.routine_call_script(query)
+
+
+async def _route_treasurer(query: str) -> str:
+    from services.treasurer_agent import get_treasurer_agent
+    agent = get_treasurer_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["расход", "затрат", "оптимиз"]):
+        return await agent.analyze_expenses(query)
+    elif any(kw in q for kw in ["доход", "заработ", "источник"]):
+        return await agent.find_income_sources(query, "")
+    elif any(kw in q for kw in ["cash flow", "денежн", "поток", "прогноз"]):
+        return await agent.cash_flow_plan(query, "")
+    elif any(kw in q for kw in ["цен", "тариф", "ценообразован"]):
+        return await agent.pricing_strategy(query)
+    return await agent.find_income_sources(query, "")
 
 
 # ─── Singleton ───────────────────────────────────────────────────────────────

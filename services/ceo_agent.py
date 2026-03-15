@@ -49,6 +49,28 @@ ORG_STRUCTURE = """
   ⚖️ Юридический отдел — договоры, регистрация, трудовое право
      → LawyerAgent (юридические консультации, договоры, ИП/ООО)
      → AccountantAgent (налоги, бухгалтерия, отчетность, зарплата)
+
+  🎓 Наука и гранты
+     → ScholarAgent (грантовые заявки, научные статьи, ГОСТ/ВАК)
+
+  📢 DevRel и продвижение
+     → HeraldAgent (open-source, Habr, Telegram-канал, Product Hunt)
+
+  ✏️ Нейминг и бренд
+     → NamerAgent (генерация названий, проверка доменов/ТЗ/ЕГРЮЛ)
+
+  🔒 IP и патенты
+     → GuardianIPAgent (товарные знаки, патенты, IP-аудит)
+
+  🎙 Голосовой отдел
+     → VoiceAgent (скрипты звонков, TTS-оптимизация)
+
+  💵 Казначейство
+     → TreasurerAgent (монетизация, расходы, cash flow, ценообразование)
+
+🛡 Кросс-модули:
+  → DARWIN (самообучение, оптимизация агентов, контроль качества)
+  → GUARDIAN (антифрод, антиабьюз, безопасность ввода/вывода)
 """
 
 
@@ -73,9 +95,11 @@ class CEOAgent:
 
 ТЕКУЩЕЕ СОСТОЯНИЕ AI ZAVOD:
 - Платформа: FastAPI + PostgreSQL + Redis + Docker на Hetzner (Германия)
-- Готовые модули: CERTIFIER (сертификация ТС), Instagram Factory (контент)
-- 7 рабочих агентов: OpportunityScanner, IdeaGenerator, MarketAnalyzer,
-  FreelanceAgent, PricingAgent, OutreachAgent, CertifierService
+- 19 агентов: CEO, Certifier, OpportunityScanner, IdeaGenerator, MarketAnalyzer,
+  FreelanceAgent, PricingAgent, OutreachAgent, ContentFactory, LawyerAgent,
+  AccountantAgent, DarwinAgent, GuardianAgent, ScholarAgent, HeraldAgent,
+  NamerAgent, GuardianIPAgent, VoiceAgent, TreasurerAgent
+- CONDUCTOR — интеллектуальный маршрутизатор запросов
 - Telegram-бот управления (aiogram 3)
 - Нет ООО (план на август 2026)
 - Бюджет: ~0 (НЗ 4.5 млн не трогаем)
