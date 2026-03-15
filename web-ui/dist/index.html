@@ -2,8 +2,10 @@
 <html lang="ru" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AI Zavod -- CONDUCTOR</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#030712">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -19,19 +21,19 @@ tailwind.config = {
 </script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-body { font-family: 'Inter', sans-serif; }
-.fade-in { animation: fadeIn .3s ease; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+body { font-family: 'Inter', sans-serif; padding-bottom: 72px; }
+.fade-in { animation: fadeIn .25s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
-.tree-line { border-left: 2px solid #364fc7; margin-left: 12px; padding-left: 16px; }
+.tree-line { border-left: 2px solid #364fc7; margin-left: 10px; padding-left: 12px; }
 </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
 
-<!-- Header -->
-<header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+<!-- Header desktop -->
+<header class="border-b border-gray-800 bg-gray-950/90 backdrop-blur sticky top-0 z-50 hidden md:block">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 bg-zavod-600 rounded-lg flex items-center justify-center font-bold text-sm">AZ</div>
       <span class="font-bold text-lg">AI Zavod</span>
@@ -47,122 +49,155 @@ body { font-family: 'Inter', sans-serif; }
   </div>
 </header>
 
-<main class="max-w-6xl mx-auto px-4 py-6">
+<!-- Header mobile -->
+<header class="border-b border-gray-800 bg-gray-950/90 backdrop-blur sticky top-0 z-50 md:hidden">
+  <div class="px-4 py-3 flex items-center gap-3">
+    <div class="w-7 h-7 bg-zavod-600 rounded-lg flex items-center justify-center font-bold text-xs">AZ</div>
+    <span class="font-bold">AI Zavod</span>
+    <span class="text-xs bg-zavod-700/30 text-zavod-400 px-1.5 py-0.5 rounded-full">CONDUCTOR</span>
+  </div>
+</header>
+
+<!-- Bottom nav mobile -->
+<nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 border-t border-gray-800 backdrop-blur z-50 md:hidden safe-bottom">
+  <div class="flex justify-around py-2">
+    <button onclick="showPage('dashboard')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="dashboard">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span class="text-[10px]">Панель</span>
+    </button>
+    <button onclick="showPage('ask')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="ask">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+      <span class="text-[10px]">Запрос</span>
+    </button>
+    <button onclick="showPage('orchestrate')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="orchestrate">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+      <span class="text-[10px]">Задача</span>
+    </button>
+    <button onclick="showPage('tasks')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="tasks">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      <span class="text-[10px]">Задачи</span>
+    </button>
+    <button onclick="showPage('agents')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="agents">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span class="text-[10px]">Агенты</span>
+    </button>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-3 md:px-4 py-4 md:py-6">
 
 <!-- Dashboard -->
 <div id="page-dashboard" class="page fade-in">
-  <h1 class="text-2xl font-bold mb-6">Панель управления</h1>
-  <div id="dashboard-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div class="text-xs text-gray-500 mb-1">Всего</div>
-      <div id="stat-total" class="text-3xl font-bold">--</div>
+  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Панель управления</h1>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
+      <div class="text-[10px] md:text-xs text-gray-500 mb-1">Всего</div>
+      <div id="stat-total" class="text-2xl md:text-3xl font-bold">--</div>
     </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div class="text-xs text-gray-500 mb-1">В очереди</div>
-      <div id="stat-pending" class="text-3xl font-bold text-yellow-400">--</div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
+      <div class="text-[10px] md:text-xs text-gray-500 mb-1">В очереди</div>
+      <div id="stat-pending" class="text-2xl md:text-3xl font-bold text-yellow-400">--</div>
     </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div class="text-xs text-gray-500 mb-1">В работе</div>
-      <div id="stat-progress" class="text-3xl font-bold text-blue-400">--</div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
+      <div class="text-[10px] md:text-xs text-gray-500 mb-1">В работе</div>
+      <div id="stat-progress" class="text-2xl md:text-3xl font-bold text-blue-400">--</div>
     </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div class="text-xs text-gray-500 mb-1">Завершено</div>
-      <div id="stat-completed" class="text-3xl font-bold text-green-400">--</div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
+      <div class="text-[10px] md:text-xs text-gray-500 mb-1">Завершено</div>
+      <div id="stat-completed" class="text-2xl md:text-3xl font-bold text-green-400">--</div>
     </div>
   </div>
-  <h2 class="text-lg font-semibold mb-3">Последние задачи</h2>
+  <h2 class="text-base md:text-lg font-semibold mb-3">Последние задачи</h2>
   <div id="dashboard-recent" class="space-y-2"></div>
 </div>
 
-<!-- Ask (Router) -->
+<!-- Ask -->
 <div id="page-ask" class="page hidden fade-in">
-  <h1 class="text-2xl font-bold mb-6">Запрос к CONDUCTOR</h1>
-  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Запрос к CONDUCTOR</h1>
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
     <textarea id="ask-input" rows="3" placeholder="Задай любой вопрос..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-zavod-500 resize-none"></textarea>
     <div class="flex justify-between items-center mt-3">
       <span id="ask-status" class="text-xs text-gray-500"></span>
-      <button onclick="askConductor()" id="ask-btn" class="bg-zavod-600 hover:bg-zavod-700 px-5 py-2 rounded-lg text-sm font-medium transition">Отправить</button>
+      <button onclick="askConductor()" id="ask-btn" class="bg-zavod-600 hover:bg-zavod-700 active:bg-zavod-800 px-5 py-2.5 rounded-lg text-sm font-medium transition">Отправить</button>
     </div>
   </div>
-  <div id="ask-result" class="mt-6 hidden">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <div class="flex items-center gap-3 mb-4">
+  <div id="ask-result" class="mt-4 hidden">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
         <span id="ask-agent-badge" class="bg-zavod-700/30 text-zavod-400 px-2 py-0.5 rounded text-xs font-medium"></span>
-        <span id="ask-confidence" class="text-xs text-gray-500">Уверенность: </span>
+        <span id="ask-confidence" class="text-xs text-gray-500"></span>
         <span id="ask-duration" class="text-xs text-gray-500"></span>
       </div>
-      <div id="ask-response" class="text-sm leading-relaxed whitespace-pre-wrap"></div>
+      <div id="ask-response" class="text-sm leading-relaxed whitespace-pre-wrap break-words"></div>
     </div>
   </div>
 </div>
 
 <!-- Orchestrate -->
 <div id="page-orchestrate" class="page hidden fade-in">
-  <h1 class="text-2xl font-bold mb-6">Оркестрация задачи</h1>
-  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-    <textarea id="orch-input" rows="3" placeholder="Опиши задачу (напр. Сделай лендинг AI Zavod)..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-zavod-500 resize-none"></textarea>
-    <div class="flex justify-between items-center mt-3">
-      <select id="orch-priority" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm">
+  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Оркестрация задачи</h1>
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+    <textarea id="orch-input" rows="3" placeholder="Опиши задачу..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-zavod-500 resize-none"></textarea>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3">
+      <select id="orch-priority" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
         <option value="normal">Обычный</option>
         <option value="high">Высокий</option>
         <option value="critical">Критический</option>
         <option value="low">Низкий</option>
       </select>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
         <span id="orch-status" class="text-xs text-gray-500"></span>
-        <button onclick="orchestrateTask()" id="orch-btn" class="bg-zavod-600 hover:bg-zavod-700 px-5 py-2 rounded-lg text-sm font-medium transition">Декомпозировать</button>
+        <button onclick="orchestrateTask()" id="orch-btn" class="bg-zavod-600 hover:bg-zavod-700 active:bg-zavod-800 px-5 py-2.5 rounded-lg text-sm font-medium transition w-full sm:w-auto">Декомпозировать</button>
       </div>
     </div>
   </div>
-  <div id="orch-result" class="mt-6 hidden">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <div class="flex items-center gap-3 mb-4">
+  <div id="orch-result" class="mt-4 hidden">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
         <span class="text-xs text-gray-500">Задача:</span>
         <span id="orch-task-id" class="text-xs font-mono text-zavod-400"></span>
         <span id="orch-duration" class="text-xs text-gray-500 ml-auto"></span>
       </div>
       <p id="orch-analysis" class="text-sm text-gray-400 mb-4 italic"></p>
-      <div id="orch-tree"></div>
+      <div id="orch-tree" class="overflow-x-auto"></div>
     </div>
   </div>
 </div>
 
 <!-- Tasks -->
 <div id="page-tasks" class="page hidden fade-in">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Задачи</h1>
-    <div class="flex gap-2">
-      <select id="task-filter" onchange="loadTasks()" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm">
-        <option value="">Все</option>
-        <option value="pending">В очереди</option>
-        <option value="in_progress">В работе</option>
-        <option value="decomposed">Декомпозированы</option>
-        <option value="completed">Завершены</option>
-        <option value="failed">Ошибки</option>
-      </select>
-    </div>
+  <div class="flex items-center justify-between mb-4 md:mb-6">
+    <h1 class="text-xl md:text-2xl font-bold">Задачи</h1>
+    <select id="task-filter" onchange="loadTasks()" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+      <option value="">Все</option>
+      <option value="pending">В очереди</option>
+      <option value="in_progress">В работе</option>
+      <option value="decomposed">Декомпозированы</option>
+      <option value="completed">Завершены</option>
+      <option value="failed">Ошибки</option>
+    </select>
   </div>
   <div id="tasks-list" class="space-y-2"></div>
 </div>
 
 <!-- Task Detail -->
 <div id="page-task-detail" class="page hidden fade-in">
-  <button onclick="showPage('tasks')" class="text-sm text-zavod-400 hover:text-zavod-300 mb-4 inline-block">&larr; Назад к задачам</button>
+  <button onclick="showPage('tasks')" class="text-sm text-zavod-400 hover:text-zavod-300 mb-4 inline-block">&larr; Назад</button>
   <div id="task-detail-content"></div>
 </div>
 
 <!-- Agents -->
 <div id="page-agents" class="page hidden fade-in">
-  <h1 class="text-2xl font-bold mb-6">Агенты</h1>
-  <div id="agents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Агенты</h1>
+  <div id="agents-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
 </div>
 
 </main>
 
 <script>
 const API = '/api/conductor';
-
-// ─── Navigation ─────────────────────────────────────────────
+const STATUS_RU = {pending:'в очереди',in_progress:'в работе',completed:'завершено',failed:'ошибка',decomposed:'декомпозировано',blocked:'заблокировано',cancelled:'отменено'};
+const PRIORITY_RU = {critical:'критический',high:'высокий',normal:'обычный',low:'низкий'};
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
@@ -171,45 +206,40 @@ function showPage(name) {
     b.classList.toggle('bg-gray-800', b.dataset.page === name);
     b.classList.toggle('text-zavod-400', b.dataset.page === name);
   });
+  document.querySelectorAll('.mob-nav').forEach(b => {
+    const active = b.dataset.page === name;
+    b.classList.toggle('text-zavod-400', active);
+    b.classList.toggle('text-gray-500', !active);
+  });
   if (name === 'dashboard') loadDashboard();
   if (name === 'tasks') loadTasks();
   if (name === 'agents') loadAgents();
+  window.scrollTo(0, 0);
 }
-
-// ─── Dashboard ──────────────────────────────────────────────
 
 async function loadDashboard() {
   try {
-    const r = await fetch(API + '/dashboard');
-    const d = await r.json();
+    const d = await (await fetch(API + '/dashboard')).json();
     document.getElementById('stat-total').textContent = d.total || 0;
     document.getElementById('stat-pending').textContent = (d.by_status?.pending || 0) + (d.by_status?.decomposed || 0);
     document.getElementById('stat-progress').textContent = d.by_status?.in_progress || 0;
     document.getElementById('stat-completed').textContent = d.by_status?.completed || 0;
-    const box = document.getElementById('dashboard-recent');
-    box.innerHTML = (d.recent || []).map(t => taskCard(t)).join('');
+    document.getElementById('dashboard-recent').innerHTML = (d.recent || []).map(t => taskCard(t)).join('') || '<p class="text-gray-600 text-sm">Нет задач</p>';
   } catch(e) { console.error(e); }
 }
 
-// ─── Ask ────────────────────────────────────────────────────
-
 async function askConductor() {
-  const input = document.getElementById('ask-input');
-  const q = input.value.trim();
+  const q = document.getElementById('ask-input').value.trim();
   if (!q) return;
   const btn = document.getElementById('ask-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>';
   document.getElementById('ask-status').textContent = 'Обработка...';
   try {
-    const r = await fetch(API + '/route', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({query: q})
-    });
-    const d = await r.json();
+    const d = await (await fetch(API + '/route', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query: q})})).json();
     document.getElementById('ask-result').classList.remove('hidden');
-    document.getElementById('ask-agent-badge').textContent = d.agent + ' [' + d.department + ']';
+    document.getElementById('ask-agent-badge').textContent = (d.title || d.agent) + ' [' + d.department + ']';
     document.getElementById('ask-confidence').textContent = 'Уверенность: ' + (d.confidence * 100).toFixed(0) + '%';
-    document.getElementById('ask-duration').textContent = (d.duration_ms / 1000).toFixed(1) + 's';
+    document.getElementById('ask-duration').textContent = (d.duration_ms / 1000).toFixed(1) + ' сек';
     document.getElementById('ask-response').textContent = d.response;
     document.getElementById('ask-status').textContent = '';
   } catch(e) {
@@ -217,30 +247,22 @@ async function askConductor() {
   }
   btn.disabled = false; btn.textContent = 'Отправить';
 }
-
 document.getElementById('ask-input').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askConductor(); }
 });
 
-// ─── Orchestrate ────────────────────────────────────────────
-
 async function orchestrateTask() {
-  const input = document.getElementById('orch-input');
-  const q = input.value.trim();
+  const q = document.getElementById('orch-input').value.trim();
   if (!q) return;
   const priority = document.getElementById('orch-priority').value;
   const btn = document.getElementById('orch-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span> Декомпозиция...';
+  btn.disabled = true; btn.innerHTML = '<span class="spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span> Анализ...';
   document.getElementById('orch-status').textContent = 'CEO анализирует...';
   try {
-    const r = await fetch(API + '/orchestrate', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({task: q, priority})
-    });
-    const d = await r.json();
+    const d = await (await fetch(API + '/orchestrate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({task: q, priority})})).json();
     document.getElementById('orch-result').classList.remove('hidden');
     document.getElementById('orch-task-id').textContent = '#' + (d.task_id || '?');
-    document.getElementById('orch-duration').textContent = (d.duration_ms / 1000).toFixed(1) + 's';
+    document.getElementById('orch-duration').textContent = (d.duration_ms / 1000).toFixed(1) + ' сек';
     document.getElementById('orch-analysis').textContent = d.analysis || '';
     document.getElementById('orch-tree').innerHTML = renderOrchTree(d.directors || []);
     document.getElementById('orch-status').textContent = '';
@@ -250,43 +272,39 @@ async function orchestrateTask() {
   btn.disabled = false; btn.textContent = 'Декомпозировать';
 }
 
-function renderOrchTree(directors) {
-  return directors.map(d => {
-    const depts = (d.departments || []).map(dept =>
-      `<div class="tree-line py-2">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-gray-600"></span>
-          <span class="text-xs font-medium text-gray-400">${dept.department || ''}</span>
-          <span class="text-xs text-gray-600">${dept.estimated_hours || 0}h</span>
+function renderOrchTree(dirs) {
+  const prColor = {critical:'text-red-400 bg-red-500/10',high:'text-orange-400 bg-orange-500/10',normal:'text-gray-400 bg-gray-500/10',low:'text-gray-600 bg-gray-500/10'};
+  return dirs.map(d => {
+    const depts = (d.departments || []).map(dp =>
+      `<div class="tree-line py-1.5">
+        <div class="flex items-start gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 flex-shrink-0"></span>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-gray-400">${dp.department || ''}</span>
+            <span class="text-[10px] text-gray-600 ml-1">${dp.estimated_hours || 0}ч</span>
+            <p class="text-xs text-gray-500 mt-0.5 break-words">${dp.task || ''}</p>
+          </div>
         </div>
-        <p class="text-xs text-gray-500 mt-1 ml-4">${dept.task || ''}</p>
-      </div>`
-    ).join('');
-
-    const prColor = {critical:'text-red-400',high:'text-orange-400',normal:'text-gray-400',low:'text-gray-600'}[d.priority] || 'text-gray-400';
-
+      </div>`).join('');
+    const pc = prColor[d.priority] || prColor.normal;
     return `<div class="mb-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="w-3 h-3 rounded bg-zavod-600"></span>
+      <div class="flex flex-wrap items-center gap-2 mb-1">
+        <span class="w-2.5 h-2.5 rounded bg-zavod-600 flex-shrink-0"></span>
         <span class="font-semibold text-sm">${d.title || d.role?.toUpperCase()}</span>
-        <span class="text-xs ${prColor}">${d.priority}</span>
-        <span class="text-xs text-gray-600">${d.estimated_hours || 0}h</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded ${pc}">${PRIORITY_RU[d.priority] || d.priority}</span>
+        <span class="text-[10px] text-gray-600">${d.estimated_hours || 0}ч</span>
       </div>
-      <p class="text-xs text-gray-400 ml-5 mb-2">${d.task || ''}</p>
-      ${d.depends_on?.length ? `<p class="text-xs text-yellow-600 ml-5 mb-1">Зависит от: ${d.depends_on.join(', ')}</p>` : ''}
-      <div class="ml-3">${depts}</div>
+      <p class="text-xs text-gray-400 ml-5 mb-1 break-words">${d.task || ''}</p>
+      ${d.depends_on?.length ? `<p class="text-[10px] text-yellow-600 ml-5 mb-1">Зависит от: ${d.depends_on.join(', ')}</p>` : ''}
+      <div class="ml-2">${depts}</div>
     </div>`;
   }).join('');
 }
 
-// ─── Tasks ──────────────────────────────────────────────────
-
 async function loadTasks() {
-  const filter = document.getElementById('task-filter').value;
-  const url = API + '/tasks' + (filter ? '?status=' + filter : '') + '&limit=50';
+  const f = document.getElementById('task-filter').value;
   try {
-    const r = await fetch(url);
-    const tasks = await r.json();
+    const tasks = await (await fetch(API + '/tasks' + (f ? '?status=' + f : '') + '&limit=50')).json();
     document.getElementById('tasks-list').innerHTML = tasks.length
       ? tasks.map(t => taskCard(t, true)).join('')
       : '<p class="text-gray-600 text-sm">Нет задач</p>';
@@ -305,17 +323,17 @@ function taskCard(t, clickable) {
   };
   const c = colors[t.status] || colors.pending;
   const click = clickable ? `onclick="loadTaskDetail(${t.id})" style="cursor:pointer"` : '';
-  const level = t.level ? `<span class="text-xs text-gray-600">${t.level}</span>` : '';
   const role = t.role || t.agent_role || t.assigned_to || '';
-  return `<div ${click} class="bg-gray-900 border border-gray-800 rounded-lg p-3 hover:border-gray-700 transition">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2 min-w-0">
-        <span class="text-xs font-mono text-gray-600">#${t.id}</span>
-        ${level}
-        ${role ? `<span class="text-xs text-zavod-400">${role}</span>` : ''}
-        <span class="text-sm truncate">${t.title}</span>
+  return `<div ${click} class="bg-gray-900 border border-gray-800 rounded-lg p-3 hover:border-gray-700 active:bg-gray-800/50 transition">
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-1.5 mb-1">
+          <span class="text-[10px] font-mono text-gray-600">#${t.id}</span>
+          ${role ? `<span class="text-[10px] text-zavod-400">${role}</span>` : ''}
+        </div>
+        <p class="text-sm truncate">${t.title}</p>
       </div>
-      <span class="text-xs px-2 py-0.5 rounded border ${c} whitespace-nowrap">${t.status}</span>
+      <span class="text-[10px] px-1.5 py-0.5 rounded border ${c} whitespace-nowrap flex-shrink-0">${STATUS_RU[t.status] || t.status}</span>
     </div>
   </div>`;
 }
@@ -323,80 +341,66 @@ function taskCard(t, clickable) {
 async function loadTaskDetail(id) {
   showPage('task-detail');
   try {
-    // Load tree
-    const r = await fetch(API + '/tree/' + id);
-    const tree = await r.json();
-    // Load detail
-    const r2 = await fetch(API + '/tasks/' + id);
-    const detail = await r2.json();
-
-    const box = document.getElementById('task-detail-content');
+    const [tree, detail] = await Promise.all([
+      (await fetch(API + '/tree/' + id)).json(),
+      (await fetch(API + '/tasks/' + id)).json(),
+    ]);
     const colors = {pending:'text-yellow-400',in_progress:'text-blue-400',completed:'text-green-400',failed:'text-red-400',decomposed:'text-purple-400'};
-
-    box.innerHTML = `
-      <h1 class="text-xl font-bold mb-2">#${detail.id} ${detail.title}</h1>
-      <div class="flex gap-3 mb-4">
-        <span class="text-xs ${colors[detail.status] || ''}">${detail.status}</span>
-        <span class="text-xs text-gray-500">${detail.priority}</span>
+    document.getElementById('task-detail-content').innerHTML = `
+      <h1 class="text-lg md:text-xl font-bold mb-2 break-words">#${detail.id} ${detail.title}</h1>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-800 ${colors[detail.status] || ''}">${STATUS_RU[detail.status] || detail.status}</span>
+        <span class="text-xs text-gray-500">${PRIORITY_RU[detail.priority] || detail.priority}</span>
         <span class="text-xs text-zavod-400">${detail.assigned_to || detail.agent_role || ''}</span>
-        ${detail.estimated_hours ? `<span class="text-xs text-gray-600">${detail.estimated_hours}h</span>` : ''}
+        ${detail.estimated_hours ? `<span class="text-xs text-gray-600">${detail.estimated_hours}ч</span>` : ''}
       </div>
-      ${detail.description ? `<p class="text-sm text-gray-400 mb-4">${detail.description}</p>` : ''}
-      ${detail.result ? `<div class="bg-gray-900 border border-green-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-green-400 mb-1">Результат:</p><p class="text-sm whitespace-pre-wrap">${detail.result}</p></div>` : ''}
-      ${detail.error ? `<div class="bg-gray-900 border border-red-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-red-400 mb-1">Ошибка:</p><p class="text-sm">${detail.error}</p></div>` : ''}
-      ${tree.children?.length ? `<h2 class="text-lg font-semibold mb-3 mt-6">Дерево задач</h2><div>${renderTaskTree(tree)}</div>` : ''}
-      ${detail.logs?.length ? `<h2 class="text-lg font-semibold mb-3 mt-6">Журнал действий</h2><div class="space-y-1">${detail.logs.map(l => `<div class="flex gap-2 text-xs"><span class="text-gray-600">${l.at?.split('T')[1]?.split('.')[0] || ''}</span><span class="text-zavod-400">${l.action}</span><span class="text-gray-500 truncate">${l.message?.slice(0,100) || ''}</span></div>`).join('')}</div>` : ''}
-    `;
+      ${detail.description ? `<p class="text-sm text-gray-400 mb-4 break-words">${detail.description}</p>` : ''}
+      ${detail.result ? `<div class="bg-gray-900 border border-green-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-green-400 mb-1">Результат:</p><p class="text-sm whitespace-pre-wrap break-words">${detail.result}</p></div>` : ''}
+      ${detail.error ? `<div class="bg-gray-900 border border-red-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-red-400 mb-1">Ошибка:</p><p class="text-sm break-words">${detail.error}</p></div>` : ''}
+      ${tree.children?.length ? `<h2 class="text-base font-semibold mb-3 mt-6">Дерево задач</h2><div class="overflow-x-auto">${renderTaskTree(tree)}</div>` : ''}
+      ${detail.logs?.length ? `<h2 class="text-base font-semibold mb-3 mt-6">Журнал</h2><div class="space-y-1">${detail.logs.map(l => `<div class="flex gap-2 text-xs"><span class="text-gray-600 flex-shrink-0">${l.at?.split('T')[1]?.split('.')[0] || ''}</span><span class="text-zavod-400 flex-shrink-0">${l.action}</span><span class="text-gray-500 truncate">${l.message?.slice(0,80) || ''}</span></div>`).join('')}</div>` : ''}`;
   } catch(e) { console.error(e); }
 }
 
 function renderTaskTree(node, depth=0) {
   if (!node) return '';
-  const colors = {pending:'bg-yellow-500',in_progress:'bg-blue-500',completed:'bg-green-500',failed:'bg-red-500',decomposed:'bg-purple-500'};
-  const dot = colors[node.status] || 'bg-gray-500';
+  const dots = {pending:'bg-yellow-500',in_progress:'bg-blue-500',completed:'bg-green-500',failed:'bg-red-500',decomposed:'bg-purple-500'};
+  const dot = dots[node.status] || 'bg-gray-500';
   const children = (node.children || []).map(c => renderTaskTree(c, depth+1)).join('');
-  const indent = depth > 0 ? 'tree-line' : '';
-  return `<div class="${indent} py-1">
-    <div class="flex items-center gap-2 cursor-pointer hover:bg-gray-800/50 rounded px-2 py-1" onclick="loadTaskDetail(${node.id})">
+  return `<div class="${depth > 0 ? 'tree-line' : ''} py-1">
+    <div class="flex items-center gap-1.5 cursor-pointer hover:bg-gray-800/50 rounded px-1 py-0.5" onclick="loadTaskDetail(${node.id})">
       <span class="w-2 h-2 rounded-full ${dot} flex-shrink-0"></span>
-      <span class="text-xs text-gray-600">${node.level || ''}</span>
-      <span class="text-xs text-zavod-400">${node.assigned_to || ''}</span>
-      <span class="text-sm truncate">${node.title}</span>
-    </div>
-    ${children}
-  </div>`;
+      <span class="text-[10px] text-zavod-400 flex-shrink-0">${node.assigned_to || ''}</span>
+      <span class="text-xs truncate">${node.title}</span>
+    </div>${children}</div>`;
 }
-
-// ─── Agents ─────────────────────────────────────────────────
 
 async function loadAgents() {
   try {
-    const r = await fetch(API + '/agents');
-    const agents = await r.json();
-    const deptColors = {
-      'CEO':'bg-purple-500/10 text-purple-400','Продукт':'bg-blue-500/10 text-blue-400',
+    const agents = await (await fetch(API + '/agents')).json();
+    const dc = {
+      'Руководство':'bg-purple-500/10 text-purple-400','Продукт':'bg-blue-500/10 text-blue-400',
       'Финансы':'bg-green-500/10 text-green-400','Продажи':'bg-orange-500/10 text-orange-400',
       'Контент':'bg-pink-500/10 text-pink-400','Юридический':'bg-red-500/10 text-red-400',
       'Бухгалтерия':'bg-emerald-500/10 text-emerald-400','Самообучение':'bg-cyan-500/10 text-cyan-400',
       'Безопасность':'bg-red-500/10 text-red-400','Наука':'bg-indigo-500/10 text-indigo-400',
-      'DevRel':'bg-teal-500/10 text-teal-400','Нейминг':'bg-amber-500/10 text-amber-400',
-      'IP/Патенты':'bg-rose-500/10 text-rose-400','Голос':'bg-sky-500/10 text-sky-400',
-      'Финансы/Казначей':'bg-lime-500/10 text-lime-400',
+      'Продвижение':'bg-teal-500/10 text-teal-400','Нейминг':'bg-amber-500/10 text-amber-400',
+      'Патенты':'bg-rose-500/10 text-rose-400','Голос':'bg-sky-500/10 text-sky-400',
+      'Казначейство':'bg-lime-500/10 text-lime-400',
     };
     document.getElementById('agents-grid').innerHTML = agents.map(a => {
-      const c = deptColors[a.department] || 'bg-gray-500/10 text-gray-400';
+      const c = dc[a.department] || 'bg-gray-500/10 text-gray-400';
       return `<div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition">
         <div class="flex items-center gap-2 mb-2">
-          <span class="text-sm font-semibold">${a.name}</span>
-          <span class="text-xs px-2 py-0.5 rounded ${c}">${a.department}</span>
+          <span class="text-sm font-semibold">${a.title || a.name}</span>
         </div>
+        <span class="text-[10px] px-2 py-0.5 rounded ${c} inline-block mb-2">${a.department}</span>
         <p class="text-xs text-gray-500">${a.description}</p>
       </div>`;
     }).join('');
   } catch(e) { console.error(e); }
 }
 
-// ─── Init ───────────────────────────────────────────────────
 showPage('dashboard');
 </script>
 </body>
