@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 
 from telegram_bot.keyboards import (
     main_menu_kb, money_menu_kb, sales_menu_kb,
-    content_menu_kb, status_menu_kb, task_menu_kb,
+    content_menu_kb, status_menu_kb, task_menu_kb, legal_menu_kb,
 )
 
 router = Router()
@@ -52,6 +52,20 @@ TASK_TEXT = """🧠 **Задача / Запрос**
 
 Могу ответить на любой стратегический вопрос."""
 
+LEGAL_TEXT = """⚖️ **Юрист / Бухгалтер**
+
+Юридический отдел:
+• Консультации по праву РФ
+• Анализ договоров
+• Регистрация ИП/ООО
+• Трудовое право
+
+Бухгалтерия:
+• Налоги и взносы
+• Сравнение УСН/ОСН/Патент
+• Календарь отчетности
+• Расчет зарплаты"""
+
 STATUS_TEXT = """📊 **Статус системы**
 
 Мониторинг AI Zavod:
@@ -80,6 +94,12 @@ async def cb_money_menu(callback: CallbackQuery):
 @router.callback_query(F.data == "menu_sales")
 async def cb_sales_menu(callback: CallbackQuery):
     await callback.message.edit_text(SALES_TEXT, reply_markup=sales_menu_kb(), parse_mode="Markdown")
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_legal")
+async def cb_legal_menu(callback: CallbackQuery):
+    await callback.message.edit_text(LEGAL_TEXT, reply_markup=legal_menu_kb(), parse_mode="Markdown")
     await callback.answer()
 
 

@@ -11,6 +11,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="💰 Привлечь инвестиции", callback_data="menu_money")],
         [InlineKeyboardButton(text="🛒 Продажи и фриланс", callback_data="menu_sales")],
+        [InlineKeyboardButton(text="⚖️ Юрист / Бухгалтер", callback_data="menu_legal")],
         [InlineKeyboardButton(text="📱 Фабрика контента", callback_data="menu_content")],
         [InlineKeyboardButton(text="🧠 Задача / Запрос", callback_data="menu_task")],
         [InlineKeyboardButton(text="📊 Статус системы", callback_data="menu_status")],
@@ -87,6 +88,30 @@ def task_menu_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="📋 Поставить задачу", callback_data="task_assign")],
         [InlineKeyboardButton(text="🔄 Стратегический план", callback_data="task_strategy")],
         [InlineKeyboardButton(text="◀️ Главное меню", callback_data="main_menu")],
+    ])
+
+
+# ─── Юрист / Бухгалтер ─────────────────────────────────────────────────
+
+
+def legal_menu_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="⚖️ Юридическая консультация", callback_data="legal_consult")],
+        [InlineKeyboardButton(text="📄 Проверка договора", callback_data="legal_contract")],
+        [InlineKeyboardButton(text="📝 Регистрация ИП", callback_data="legal_ip_reg")],
+        [InlineKeyboardButton(text="👷 Трудовое право", callback_data="legal_labor")],
+        [InlineKeyboardButton(text="🧮 Налоговая консультация", callback_data="acc_consult")],
+        [InlineKeyboardButton(text="📊 Сравнить УСН/ОСН/Патент", callback_data="acc_tax_compare")],
+        [InlineKeyboardButton(text="📅 Календарь отчетности", callback_data="acc_calendar")],
+        [InlineKeyboardButton(text="💰 Расчет зарплаты", callback_data="acc_payroll")],
+        [InlineKeyboardButton(text="◀️ Главное меню", callback_data="main_menu")],
+    ])
+
+
+def back_to_legal_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="◀️ Юрист / Бухгалтер", callback_data="menu_legal")],
+        [InlineKeyboardButton(text="🏠 Главное меню", callback_data="main_menu")],
     ])
 
 
