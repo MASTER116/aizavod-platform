@@ -1,13 +1,17 @@
 """Хендлеры раздела «Привлечь инвестиции» — полный цикл грантов.
 
-Поток: сканирование → выбор конкурса → глубокий анализ → генерация идей →
-Excel-калькуляция → документы на подачу → сохранение идей.
+Поток (кнопочный):
+1. Сканировать → список грантов (кнопки)
+2. Клик по гранту → авто глубокий анализ + авто генерация идей → список идей (кнопки)
+3. Клик по идее → авто Excel-калькуляция → файл в чат
+4. Документы на подачу / Сохранить идею
 """
 from __future__ import annotations
 
 import json
 import logging
 import os
+import re
 
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message, FSInputFile
@@ -15,8 +19,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 from telegram_bot.keyboards import (
-    back_to_money_kb, money_menu_kb, grant_actions_kb,
-    idea_actions_kb, saved_ideas_kb,
+    back_to_money_kb, money_menu_kb,
+    scan_results_kb, ideas_list_kb, idea_selected_kb,
+    saved_ideas_kb,
 )
 
 logger = logging.getLogger("aizavod.bot.opportunities")
@@ -30,10 +35,6 @@ class MoneyStates(StatesGroup):
     waiting_proposal_input = State()
     waiting_market_input = State()
     waiting_competitors_input = State()
-    waiting_grant_url = State()
-    waiting_grant_choice = State()
-    waiting_idea_choice = State()
-    waiting_budget_params = State()
 
 
 def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
@@ -53,10 +54,34 @@ def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
     return parts
 
 
-# ─── 1. Сканирование грантов ────────────────────────────────────────────
+def _parse_ideas(ideas_text: str) -> list[dict]:
+    """Парсим текст идей в список словарей {title, text}."""
+    ideas: list[dict] = []
+    # Ищем паттерн: ## Идея N: Название или ## N. Название
+    pattern = re.compile(r"##\s*(?:Идея\s*)?\[?\d+\]?[.:]\s*(.+)")
+    blocks = pattern.split(ideas_text)
+
+    if len(blocks) < 2:
+        # Fallback: разделяем по ## или по номерам
+        alt_pattern = re.compile(r"(?:^|\n)##\s+(.+)")
+        parts = alt_pattern.split(ideas_text)
+        if len(parts) >= 2:
+            blocks = parts
+
+    # blocks: [preamble, title1, body1, title2, body2, ...]
+    for i in range(1, len(blocks) - 1, 2):
+        title = blocks[i].strip().strip("*").strip()
+        body = blocks[i + 1].strip() if i + 1 < len(blocks) else ""
+        if title:
+            ideas.append({"title": title, "text": body})
+
+    return ideas
+
+
+# ─── 1. Сканирование грантов (кнопки результатов) ────────────────────────
 
 @router.callback_query(F.data == "money_scan")
-async def cb_scan(callback: CallbackQuery):
+async def cb_scan(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer("🔍 Сканирую гранты, хакатоны, конкурсы...")
 
@@ -68,6 +93,8 @@ async def cb_scan(callback: CallbackQuery):
         await callback.message.answer("Ничего не найдено.", reply_markup=back_to_money_kb())
         return
 
+    # Сохраняем результаты в FSM для дальнейшей работы
+    scan_data = []
     lines = [f"Найдено: <b>{len(results)}</b> возможностей\n"]
     for i, r in enumerate(results[:10], 1):
         rel = "🟢" if r.relevance_score > 0.6 else "🟡" if r.relevance_score > 0.3 else "⚪"
@@ -75,149 +102,139 @@ async def cb_scan(callback: CallbackQuery):
         if r.description:
             lines.append(f"   {r.description[:120]}")
         lines.append(f"   <a href=\"{r.url}\">Ссылка</a> | {r.type}\n")
+        scan_data.append({
+            "title": r.title,
+            "url": r.url,
+            "type": r.type,
+            "description": r.description or "",
+            "relevance": r.relevance_score,
+        })
 
-    lines.append("\nВыбери номер конкурса для глубокого анализа (отправь цифру)")
-    lines.append("Или нажми кнопку ниже")
+    await state.update_data(scan_results=scan_data)
 
+    lines.append("\nНажми на конкурс для глубокого анализа + генерации идей:")
     text = "\n".join(lines)[:MAX_TG_MSG]
+
     await callback.message.answer(
         text, parse_mode="HTML", disable_web_page_preview=True,
-        reply_markup=back_to_money_kb(),
+        reply_markup=scan_results_kb(scan_data),
     )
 
 
-# ─── 2. Глубокий анализ конкурса ────────────────────────────────────────
+# ─── 2. Клик по гранту → авто анализ + авто идеи ────────────────────────
 
-@router.callback_query(F.data == "money_deep_analyze")
-async def cb_deep_analyze_start(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(F.data.startswith("scan_grant_"))
+async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await state.set_state(MoneyStates.waiting_grant_url)
-    await callback.message.answer(
-        "🔍 Введи название конкурса и ссылку:\n\n"
-        "Формат: <b>Название | Ссылка</b>\n"
-        "Пример: <i>Старт-ИИ | https://fasie.ru/programs/start-ai/</i>\n\n"
-        "Или просто название — проанализирую на основе знаний.",
-        parse_mode="HTML",
-    )
+    idx = int(callback.data.split("_")[-1])
 
+    data = await state.get_data()
+    scan_results = data.get("scan_results", [])
 
-@router.message(MoneyStates.waiting_grant_url)
-async def on_grant_url(message: Message, state: FSMContext):
-    text = message.text.strip()
-    parts = text.split("|", 1)
-    title = parts[0].strip()
-    url = parts[1].strip() if len(parts) > 1 else ""
+    if idx >= len(scan_results):
+        await callback.message.answer("Результат не найден. Сканируй заново.",
+                                       reply_markup=money_menu_kb())
+        return
+
+    grant = scan_results[idx]
+    title = grant["title"]
+    url = grant["url"]
+    desc = grant.get("description", "")
 
     await state.update_data(grant_title=title, grant_url=url)
-    await state.clear()
 
-    await message.answer(f"🔍 Анализирую конкурс: <b>{title}</b>...", parse_mode="HTML")
+    # Шаг 1: Глубокий анализ
+    await callback.message.answer(
+        f"🔬 Глубокий анализ: <b>{title[:70]}</b>...", parse_mode="HTML"
+    )
 
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
-    analysis = await scanner.deep_analyze(title, url)
+    analysis = await scanner.deep_analyze(title, url, desc)
 
-    # Сохраняем анализ в state для следующих шагов
-    await state.update_data(
-        grant_title=title,
-        grant_url=url,
-        grant_analysis=analysis,
-    )
+    await state.update_data(grant_analysis=analysis)
 
     for part in _split(analysis):
-        await message.answer(part)
-
-    await message.answer(
-        "⬆️ Анализ конкурса выше. Что дальше?",
-        reply_markup=grant_actions_kb(),
-    )
-
-
-# ─── 3. Генерация идей ПОД КОНКУРС ─────────────────────────────────────
-
-@router.callback_query(F.data == "grant_ideas")
-async def cb_grant_ideas(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    data = await state.get_data()
-    grant_title = data.get("grant_title", "")
-    grant_analysis = data.get("grant_analysis", "")
-
-    if not grant_title:
-        await callback.message.answer(
-            "Сначала выбери конкурс через '🔍 Глубокий анализ'",
-            reply_markup=money_menu_kb(),
-        )
-        return
-
-    await callback.message.answer(
-        f"💡 Генерирую идеи для: <b>{grant_title}</b>...",
-        parse_mode="HTML",
-    )
-
-    from services.opportunity_scanner import get_scanner
-    scanner = get_scanner()
-    ideas = await scanner.generate_ideas_for_grant(grant_title, grant_analysis)
-
-    await state.update_data(grant_ideas=ideas)
-
-    for part in _split(ideas):
         await callback.message.answer(part)
 
+    # Шаг 2: Автоматическая генерация идей
     await callback.message.answer(
-        "⬆️ Идеи выше. Что дальше?",
-        reply_markup=idea_actions_kb(),
+        f"💡 Генерирую идеи для: <b>{title[:70]}</b>...", parse_mode="HTML"
     )
 
+    ideas_text = await scanner.generate_ideas_for_grant(title, analysis)
+    await state.update_data(grant_ideas_text=ideas_text)
 
-# ─── 4. Excel-калькуляция ───────────────────────────────────────────────
-
-@router.callback_query(F.data == "grant_excel")
-async def cb_grant_excel(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    data = await state.get_data()
-    grant_title = data.get("grant_title", "")
-
-    if not grant_title:
+    # Парсим идеи в список
+    parsed = _parse_ideas(ideas_text)
+    if not parsed:
+        # Если парсинг не удался — показываем текст и кнопки назад
+        for part in _split(ideas_text):
+            await callback.message.answer(part)
         await callback.message.answer(
-            "Сначала выбери конкурс и сгенерируй идеи",
-            reply_markup=money_menu_kb(),
+            "Не удалось разбить идеи на список. Текст выше.",
+            reply_markup=back_to_money_kb(),
         )
         return
 
-    await state.set_state(MoneyStates.waiting_budget_params)
+    await state.update_data(parsed_ideas=[
+        {"title": idea["title"], "text": idea["text"]} for idea in parsed
+    ])
+
+    # Показываем текст идей
+    for part in _split(ideas_text):
+        await callback.message.answer(part)
+
+    # Кнопки выбора идей
     await callback.message.answer(
-        "📊 Укажи параметры для калькуляции:\n\n"
-        "Формат: <b>Название идеи | Сумма гранта | Срок (мес)</b>\n"
-        "Пример: <i>AI-ассистент для МСП | 3 000 000 руб | 12 мес</i>",
+        "Выбери идею для Excel-калькуляции:",
+        reply_markup=ideas_list_kb([{"title": p["title"]} for p in parsed]),
+    )
+
+
+# ─── 3. Клик по идее → авто Excel ────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("idea_"))
+async def cb_idea_click(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    idx = int(callback.data.split("_")[-1])
+
+    data = await state.get_data()
+    parsed_ideas = data.get("parsed_ideas", [])
+    grant_title = data.get("grant_title", "")
+
+    if idx >= len(parsed_ideas):
+        await callback.message.answer("Идея не найдена.", reply_markup=money_menu_kb())
+        return
+
+    idea = parsed_ideas[idx]
+    idea_title = idea["title"]
+    idea_text = idea["text"]
+
+    await state.update_data(
+        selected_idea_idx=idx,
+        idea_title=idea_title,
+        idea_text=idea_text,
+    )
+
+    await callback.message.answer(
+        f"📊 Генерирую Excel-калькуляцию для:\n<b>{idea_title[:70]}</b>...",
         parse_mode="HTML",
     )
 
-
-@router.message(MoneyStates.waiting_budget_params)
-async def on_budget_params(message: Message, state: FSMContext):
-    await state.clear()
-    text = message.text.strip()
-    parts = text.split("|")
-    idea_title = parts[0].strip() if parts else text
-    grant_amount = parts[1].strip() if len(parts) > 1 else "3 000 000 руб"
-    duration = parts[2].strip() if len(parts) > 2 else "12 мес"
-
-    data = await state.get_data()
-    grant_title = data.get("grant_title", idea_title)
-
-    await message.answer("📊 Генерирую смету и Excel-файл...")
+    # Извлекаем сумму из текста идеи или анализа гранта
+    grant_analysis = data.get("grant_analysis", "")
+    amount_match = re.search(r"(\d[\d\s]*(?:000|млн|руб))", grant_analysis)
+    grant_amount = amount_match.group(1) if amount_match else "3 000 000 руб"
+    duration = "12 мес"
 
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
-    budget_json = await scanner.generate_budget_json(idea_title, grant_amount, duration)
-
-    # Сохраняем JSON
-    await state.update_data(
-        idea_title=idea_title,
-        budget_json=budget_json,
-        grant_amount=grant_amount,
-        duration=duration,
+    budget_json = await scanner.generate_budget_json(
+        f"{idea_title} ({grant_title})", grant_amount, duration
     )
+
+    await state.update_data(budget_json=budget_json)
 
     # Генерируем Excel
     from services.excel_generator import generate_budget_excel
@@ -225,23 +242,62 @@ async def on_budget_params(message: Message, state: FSMContext):
 
     if excel_path and os.path.exists(excel_path):
         doc = FSInputFile(excel_path)
-        await message.answer_document(
+        await callback.message.answer_document(
             doc,
-            caption=f"📊 Смета: {idea_title}\nСумма: {grant_amount}\nСрок: {duration}",
+            caption=f"📊 Смета: {idea_title[:60]}\nКонкурс: {grant_title[:60]}",
         )
         await state.update_data(excel_path=excel_path)
     else:
-        # Отправляем текстом если Excel не удалось создать
         for part in _split(budget_json):
-            await message.answer(f"<pre>{part[:4000]}</pre>", parse_mode="HTML")
+            await callback.message.answer(f"<pre>{part[:4000]}</pre>", parse_mode="HTML")
 
-    await message.answer(
-        "⬆️ Калькуляция выше. Файл можно открыть в Excel и редактировать.",
-        reply_markup=idea_actions_kb(),
+    await callback.message.answer(
+        "Файл можно открыть в Excel и редактировать.\nЧто дальше?",
+        reply_markup=idea_selected_kb(idx),
     )
 
 
-# ─── 5. Генерация документов на подачу ──────────────────────────────────
+# ─── 3.1. Назад к списку идей ────────────────────────────────────────────
+
+@router.callback_query(F.data == "back_to_ideas")
+async def cb_back_to_ideas(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    data = await state.get_data()
+    parsed_ideas = data.get("parsed_ideas", [])
+
+    if not parsed_ideas:
+        await callback.message.answer("Идеи не найдены. Сканируй заново.",
+                                       reply_markup=money_menu_kb())
+        return
+
+    await callback.message.answer(
+        "Выбери идею для Excel-калькуляции:",
+        reply_markup=ideas_list_kb([{"title": p["title"]} for p in parsed_ideas]),
+    )
+
+
+# ─── 4. Ручной глубокий анализ (кнопка из меню) ──────────────────────────
+
+@router.callback_query(F.data == "money_deep_analyze")
+async def cb_deep_analyze_manual(callback: CallbackQuery, state: FSMContext):
+    """Если нажали 'Глубокий анализ' из меню — предлагаем сначала сканировать."""
+    await callback.answer()
+    data = await state.get_data()
+    scan_results = data.get("scan_results", [])
+
+    if scan_results:
+        await callback.message.answer(
+            "Выбери конкурс из списка:",
+            reply_markup=scan_results_kb(scan_results),
+        )
+    else:
+        await callback.message.answer(
+            "Сначала сканируй гранты — нажми '🔍 Сканировать гранты и конкурсы'",
+            reply_markup=money_menu_kb(),
+        )
+
+
+# ─── 5. Генерация документов на подачу ───────────────────────────────────
 
 @router.callback_query(F.data == "grant_docs")
 async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
@@ -249,19 +305,19 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     grant_title = data.get("grant_title", "")
     idea_title = data.get("idea_title", "")
-    grant_ideas = data.get("grant_ideas", "")
+    grant_ideas_text = data.get("grant_ideas_text", "")
     budget_json = data.get("budget_json", "")
 
     if not grant_title:
         await callback.message.answer(
-            "Сначала выбери конкурс и сгенерируй идеи",
+            "Сначала выбери конкурс через сканирование.",
             reply_markup=money_menu_kb(),
         )
         return
 
-    description = idea_title or grant_ideas[:1000]
+    description = idea_title or grant_ideas_text[:1000]
     await callback.message.answer(
-        f"📄 Генерирую документы для подачи на: <b>{grant_title}</b>...",
+        f"📄 Генерирую документы для подачи на: <b>{grant_title[:70]}</b>...",
         parse_mode="HTML",
     )
 
@@ -278,12 +334,12 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(part)
 
     await callback.message.answer(
-        "⬆️ Пакет документов выше",
-        reply_markup=idea_actions_kb(),
+        "Пакет документов выше",
+        reply_markup=idea_selected_kb(data.get("selected_idea_idx", 0)),
     )
 
 
-# ─── 6. Сохранить идею ─────────────────────────────────────────────────
+# ─── 6. Сохранить текущую идею ───────────────────────────────────────────
 
 @router.callback_query(F.data == "grant_save_idea")
 async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
@@ -291,13 +347,13 @@ async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     grant_title = data.get("grant_title", "")
     idea_title = data.get("idea_title", grant_title)
-    grant_ideas = data.get("grant_ideas", "")
+    idea_text = data.get("idea_text", "")
     budget_json = data.get("budget_json", "")
     grant_analysis = data.get("grant_analysis", "")
 
     if not idea_title and not grant_title:
         await callback.message.answer(
-            "Нечего сохранять. Сначала выбери конкурс и сгенерируй идеи.",
+            "Нечего сохранять. Сначала выбери конкурс и идею.",
             reply_markup=money_menu_kb(),
         )
         return
@@ -308,7 +364,6 @@ async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
 
         db = SessionLocal()
         try:
-            # Сохраняем анализ гранта
             grant = None
             if grant_title:
                 grant = GrantAnalysis(
@@ -319,11 +374,10 @@ async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
                 db.add(grant)
                 db.flush()
 
-            # Сохраняем идею
             idea = SavedIdea(
                 grant_id=grant.id if grant else None,
                 title=idea_title,
-                description=grant_ideas[:5000] if grant_ideas else "",
+                description=idea_text[:5000] if idea_text else "",
                 budget_json=budget_json,
                 status=IdeaStatus.SAVED,
                 excel_path=data.get("excel_path", ""),
@@ -333,7 +387,7 @@ async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
             db.commit()
 
             await callback.message.answer(
-                f"✅ Идея сохранена: <b>{idea_title}</b>\n"
+                f"💾 Сохранено: <b>{idea_title[:60]}</b>\n"
                 f"ID: {idea.id}\n"
                 f"Конкурс: {grant_title or 'не указан'}",
                 parse_mode="HTML",
@@ -349,7 +403,63 @@ async def cb_save_idea(callback: CallbackQuery, state: FSMContext):
         )
 
 
-# ─── 7. Мои идеи (просмотр сохранённых) ────────────────────────────────
+# ─── 6.1. Сохранить все идеи ─────────────────────────────────────────────
+
+@router.callback_query(F.data == "grant_save_all")
+async def cb_save_all_ideas(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    data = await state.get_data()
+    grant_title = data.get("grant_title", "")
+    grant_analysis = data.get("grant_analysis", "")
+    parsed_ideas = data.get("parsed_ideas", [])
+
+    if not parsed_ideas:
+        await callback.message.answer("Нет идей для сохранения.", reply_markup=money_menu_kb())
+        return
+
+    try:
+        from backend.database import SessionLocal
+        from backend.models import SavedIdea, GrantAnalysis, IdeaStatus
+
+        db = SessionLocal()
+        try:
+            grant = None
+            if grant_title:
+                grant = GrantAnalysis(
+                    title=grant_title,
+                    source_url=data.get("grant_url", ""),
+                    full_analysis=grant_analysis,
+                )
+                db.add(grant)
+                db.flush()
+
+            saved = 0
+            for idea in parsed_ideas:
+                obj = SavedIdea(
+                    grant_id=grant.id if grant else None,
+                    title=idea["title"],
+                    description=idea["text"][:5000],
+                    status=IdeaStatus.SAVED,
+                    created_by="telegram",
+                )
+                db.add(obj)
+                saved += 1
+
+            db.commit()
+
+            await callback.message.answer(
+                f"💾 Сохранено <b>{saved}</b> идей для конкурса: <b>{grant_title[:60]}</b>",
+                parse_mode="HTML",
+                reply_markup=money_menu_kb(),
+            )
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error("Ошибка сохранения идей: %s", e)
+        await callback.message.answer(f"Ошибка: {e}", reply_markup=money_menu_kb())
+
+
+# ─── 7. Мои идеи (просмотр сохранённых) ─────────────────────────────────
 
 @router.callback_query(F.data == "money_my_ideas")
 async def cb_my_ideas(callback: CallbackQuery):
@@ -375,7 +485,7 @@ async def cb_my_ideas(callback: CallbackQuery):
                 )
                 return
 
-            lines = [f"📋 <b>Сохранённые идеи ({len(ideas)}):</b>\n"]
+            lines = [f"<b>Сохранённые идеи ({len(ideas)}):</b>\n"]
             for idea in ideas:
                 status_val = idea.status.value if hasattr(idea.status, 'value') else str(idea.status)
                 status_emoji = {
@@ -397,10 +507,7 @@ async def cb_my_ideas(callback: CallbackQuery):
             db.close()
     except Exception as e:
         logger.error("Ошибка загрузки идей: %s", e)
-        await callback.message.answer(
-            f"Ошибка загрузки: {e}",
-            reply_markup=money_menu_kb(),
-        )
+        await callback.message.answer(f"Ошибка: {e}", reply_markup=money_menu_kb())
 
 
 # ─── Старые хендлеры (без изменений) ────────────────────────────────────
@@ -416,7 +523,7 @@ async def cb_ideas(callback: CallbackQuery):
 
     for part in _split(ideas):
         await callback.message.answer(part)
-    await callback.message.answer("⬆️ Идеи выше", reply_markup=back_to_money_kb())
+    await callback.message.answer("Идеи выше", reply_markup=back_to_money_kb())
 
 
 @router.callback_query(F.data == "money_proposal")
@@ -447,7 +554,7 @@ async def on_proposal_input(message: Message, state: FSMContext):
 
     for part in _split(result):
         await message.answer(part)
-    await message.answer("⬆️ Заявка выше", reply_markup=back_to_money_kb())
+    await message.answer("Заявка выше", reply_markup=back_to_money_kb())
 
 
 @router.callback_query(F.data == "money_market")
@@ -473,7 +580,7 @@ async def on_market_input(message: Message, state: FSMContext):
 
     for part in _split(result):
         await message.answer(part)
-    await message.answer("⬆️ Анализ выше", reply_markup=back_to_money_kb())
+    await message.answer("Анализ выше", reply_markup=back_to_money_kb())
 
 
 @router.callback_query(F.data == "money_competitors")
@@ -499,7 +606,7 @@ async def on_competitors_input(message: Message, state: FSMContext):
 
     for part in _split(result):
         await message.answer(part)
-    await message.answer("⬆️ Анализ выше", reply_markup=back_to_money_kb())
+    await message.answer("Анализ выше", reply_markup=back_to_money_kb())
 
 
 @router.callback_query(F.data == "money_sources")

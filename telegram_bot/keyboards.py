@@ -60,9 +60,49 @@ def idea_actions_kb() -> InlineKeyboardMarkup:
 def saved_ideas_kb() -> InlineKeyboardMarkup:
     """Клавиатура для списка сохранённых идей."""
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔬 Глубокий анализ конкурса", callback_data="money_deep_analyze")],
+        [InlineKeyboardButton(text="🔍 Сканировать гранты", callback_data="money_scan")],
         [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
         [InlineKeyboardButton(text="🏠 Главное меню", callback_data="main_menu")],
+    ])
+
+
+def scan_results_kb(results: list[dict]) -> InlineKeyboardMarkup:
+    """Динамическая клавиатура: кнопка на каждый найденный грант."""
+    rows = []
+    for i, r in enumerate(results[:10]):
+        rel = r.get("relevance", 0)
+        icon = "🟢" if rel > 0.6 else "🟡" if rel > 0.3 else "⚪"
+        title = r.get("title", "")[:50]
+        rows.append([InlineKeyboardButton(
+            text=f"{icon} {i+1}. {title}",
+            callback_data=f"scan_grant_{i}",
+        )])
+    rows.append([InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def ideas_list_kb(ideas: list[dict]) -> InlineKeyboardMarkup:
+    """Динамическая клавиатура: кнопка на каждую сгенерированную идею."""
+    rows = []
+    for i, idea in enumerate(ideas[:7]):
+        title = idea.get("title", "")[:50]
+        rows.append([InlineKeyboardButton(
+            text=f"💡 {i+1}. {title}",
+            callback_data=f"idea_{i}",
+        )])
+    rows.append([InlineKeyboardButton(text="💾 Сохранить все идеи", callback_data="grant_save_all")])
+    rows.append([InlineKeyboardButton(text="📄 Документы на подачу", callback_data="grant_docs")])
+    rows.append([InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def idea_selected_kb(idea_idx: int) -> InlineKeyboardMarkup:
+    """Клавиатура после выбора конкретной идеи и генерации Excel."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📄 Документы на подачу", callback_data="grant_docs")],
+        [InlineKeyboardButton(text="💾 Сохранить идею", callback_data="grant_save_idea")],
+        [InlineKeyboardButton(text="💡 Назад к идеям", callback_data="back_to_ideas")],
+        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
     ])
 
 
