@@ -172,7 +172,7 @@ AGENTS: list[AgentInfo] = [
     ),
     AgentInfo(
         name="herald_agent",
-        title="Глашатай",
+        title="Пиарщик",
         department="Продвижение",
         description="Open-source продвижение, README, статьи Хабр, Telegram-канал, Product Hunt",
         keywords=[
