@@ -4,10 +4,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from .config import get_admin_panel_config
+from .config import get_admin_panel_config, get_backend_api_key
 
 security = HTTPBearer(auto_error=False)
 
@@ -37,8 +37,15 @@ def verify_token(token: str) -> str:
 
 
 def verify_admin_token(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> str:
+    # Allow internal access via X-API-Key (for telegram bot)
+    api_key = request.headers.get("X-API-Key", "")
+    backend_key = get_backend_api_key()
+    if api_key and backend_key and api_key == backend_key:
+        return "bot"
+
     if not credentials or credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
