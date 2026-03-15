@@ -908,13 +908,13 @@ class WorkPlan(Base):
     title: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[WorkPlanCategory] = mapped_column(
-        Enum(WorkPlanCategory), default=WorkPlanCategory.DEVELOPMENT, index=True
+        Enum(WorkPlanCategory, create_type=False), default=WorkPlanCategory.DEVELOPMENT, index=True
     )
     status: Mapped[WorkPlanStatus] = mapped_column(
-        Enum(WorkPlanStatus), default=WorkPlanStatus.BACKLOG, index=True
+        Enum(WorkPlanStatus, create_type=False), default=WorkPlanStatus.BACKLOG, index=True
     )
     priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority), default=TaskPriority.NORMAL, index=True
+        Enum(TaskPriority, create_type=False), default=TaskPriority.NORMAL, index=True
     )
 
     # Назначение: "founder" или имя агента ("ceo_agent", "certifier" и т.д.)
