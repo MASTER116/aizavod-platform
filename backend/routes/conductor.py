@@ -1,6 +1,7 @@
 """CONDUCTOR API — маршрутизация запросов + управление задачами."""
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Optional
 
@@ -50,6 +51,106 @@ async def route_query(req: ConductorRequest):
         duration_ms=result.duration_ms,
         secondary_responses=result.secondary_responses,
     )
+
+
+class OrchestrateRequest(BaseModel):
+    task: str
+    priority: str = "normal"
+
+
+@router.post("/orchestrate")
+async def orchestrate_task(req: OrchestrateRequest, db: Session = Depends(get_db)):
+    """Полная оркестрация: CEO → директора → отделы → специалисты."""
+    from services.conductor import get_conductor
+
+    conductor = get_conductor()
+    tree = await conductor.orchestrate(req.task)
+
+    if tree.get("status") == "error":
+        return tree
+
+    # Сохранить в БД: parent task + director tasks + department tasks
+    parent = ConductorTask(
+        title=req.task,
+        description=tree.get("analysis", ""),
+        level="conductor",
+        assigned_to="conductor",
+        priority=TaskPriority(req.priority),
+        status=TaskStatus.DECOMPOSED,
+        created_by="founder",
+    )
+    db.add(parent)
+    db.flush()
+
+    for d in tree.get("directors", []):
+        dir_task = ConductorTask(
+            parent_id=parent.id,
+            title=d["task"],
+            level="director",
+            assigned_to=d["role"],
+            agent_role=d["role"],
+            priority=TaskPriority(d.get("priority", "normal")),
+            estimated_hours=d.get("estimated_hours", 0),
+            deliverables=json.dumps(d.get("deliverables", []), ensure_ascii=False),
+            dependencies=json.dumps(d.get("depends_on", []), ensure_ascii=False),
+            status=TaskStatus.DECOMPOSED if d.get("departments") else TaskStatus.PENDING,
+            created_by="conductor",
+        )
+        db.add(dir_task)
+        db.flush()
+
+        for dept in d.get("departments", []):
+            dept_task = ConductorTask(
+                parent_id=dir_task.id,
+                title=dept.get("task", ""),
+                level="department",
+                assigned_to=f"{d['role']}.{dept.get('department', '')}",
+                agent_role=d["role"],
+                priority=TaskPriority(d.get("priority", "normal")),
+                estimated_hours=dept.get("estimated_hours", 0),
+                deliverables=json.dumps(dept.get("deliverables", []), ensure_ascii=False),
+                dependencies=json.dumps(dept.get("depends_on", []), ensure_ascii=False),
+                created_by="conductor",
+            )
+            db.add(dept_task)
+
+    db.add(ConductorLog(
+        task_id=parent.id,
+        action="orchestrated",
+        message=f"Декомпозиция: {len(tree.get('directors', []))} директоров",
+    ))
+    db.commit()
+    db.refresh(parent)
+
+    tree["task_id"] = parent.id
+    return tree
+
+
+@router.get("/tree/{task_id}")
+async def get_task_tree(task_id: int, db: Session = Depends(get_db)):
+    """Дерево задач с подзадачами."""
+    task = db.get(ConductorTask, task_id)
+    if not task:
+        return {"error": "not found"}
+
+    def build_node(t):
+        children = db.execute(
+            select(ConductorTask).where(ConductorTask.parent_id == t.id)
+        ).scalars().all()
+        node = {
+            "id": t.id,
+            "title": t.title,
+            "level": t.level,
+            "assigned_to": t.assigned_to,
+            "status": t.status.value,
+            "priority": t.priority.value,
+            "estimated_hours": t.estimated_hours,
+        }
+        if children:
+            node["children"] = [build_node(c) for c in children]
+        return node
+
+    return build_node(task)
 
 
 @router.get("/agents")

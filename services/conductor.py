@@ -1,11 +1,11 @@
-"""CONDUCTOR — главный маршрутизатор запросов AI Zavod.
+"""CONDUCTOR — мета-оркестратор AI Zavod.
 
-Принимает произвольный запрос на естественном языке,
-классифицирует намерение через Claude, маршрутизирует
-к нужному агенту/сервису и возвращает результат.
+Два режима:
+  1. Роутер: вопрос → keyword/Claude классификация → один агент → ответ
+  2. Оркестратор: задача → CEO-декомпозиция → директора → отделы → специалисты → сборка
 
-Архитектура:
-  Пользователь → CONDUCTOR → Классификация → Агент → Ответ
+Иерархия:
+  Основатель → CONDUCTOR → Директора → Начальники отделов → Специалисты
 """
 from __future__ import annotations
 
@@ -239,6 +239,129 @@ CLASSIFIER_PROMPT = """Ты — CONDUCTOR, маршрутизатор запро
 """
 
 
+# ─── Иерархия директоров ─────────────────────────────────────────────────
+
+DIRECTORS = {
+    "cto": {
+        "title": "Технический директор (CTO)",
+        "departments": ["backend", "frontend", "devops", "ai_ml", "security", "qa"],
+        "scope": "Архитектура, код, инфраструктура, DevOps, AI/ML, безопасность, тестирование",
+    },
+    "cfo": {
+        "title": "Финансовый директор (CFO)",
+        "departments": ["accounting", "grants", "freelance", "analytics"],
+        "scope": "Финансы, бюджет, гранты, фриланс, unit-экономика, налоги",
+    },
+    "cmo": {
+        "title": "Маркетинговый директор (CMO)",
+        "departments": ["content", "seo", "devrel", "outreach"],
+        "scope": "Маркетинг, контент, соцсети, PR, DevRel, продвижение",
+    },
+    "coo": {
+        "title": "Операционный директор (COO)",
+        "departments": ["processes", "partners", "support"],
+        "scope": "Операции, процессы, автоматизация, партнёры, поддержка",
+    },
+    "cpo": {
+        "title": "Продуктовый директор (CPO)",
+        "departments": ["certifier", "saas", "research"],
+        "scope": "Продукт, roadmap, фичи, UX, приоритизация бэклога",
+    },
+    "cdo": {
+        "title": "Дизайн-директор (CDO)",
+        "departments": ["uiux", "brand", "motion"],
+        "scope": "Дизайн, UI/UX, брендинг, промдизайн, анимации",
+    },
+    "chro": {
+        "title": "HR-директор (CHRO)",
+        "departments": ["hiring", "culture"],
+        "scope": "Кадры, найм, обучение, культура, аутсорс",
+    },
+    "clo": {
+        "title": "Юридический директор (CLO)",
+        "departments": ["ip", "contracts", "registration"],
+        "scope": "Юридическое, договоры, IP, патенты, регистрация, compliance",
+    },
+}
+
+# ─── Промпт CEO-декомпозиции ─────────────────────────────────────────────
+
+CEO_DECOMPOSE_PROMPT = """Ты — CEO компании AI Zavod. Основатель дал тебе задачу.
+Разбей её на подзадачи для директоров.
+
+ДИРЕКТОРА:
+{directors_list}
+
+ЗАДАЧА ОТ ОСНОВАТЕЛЯ:
+{task}
+
+Ответь ТОЛЬКО JSON (без markdown):
+{{
+  "analysis": "краткий анализ задачи (1-2 предложения)",
+  "directors": [
+    {{
+      "role": "cto",
+      "task": "конкретная задача для этого директора",
+      "priority": "critical|high|normal|low",
+      "estimated_hours": 2.0,
+      "deliverables": ["что должен сделать"],
+      "depends_on": []
+    }}
+  ]
+}}
+
+Правила:
+- Привлекай ТОЛЬКО нужных директоров (не всех)
+- Задачи должны быть конкретными, не абстрактными
+- Укажи зависимости: если CDO должен сделать дизайн до CTO — depends_on: ["cdo"]
+- estimated_hours — реалистичная оценка
+- deliverables — конкретные результаты
+"""
+
+DIRECTOR_DECOMPOSE_PROMPT = """Ты — {director_title} компании AI Zavod.
+CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
+
+ТВОИ ОТДЕЛЫ:
+{departments_list}
+
+ЗАДАЧА ОТ CEO:
+{task}
+
+Ответь ТОЛЬКО JSON (без markdown):
+{{
+  "tasks": [
+    {{
+      "department": "название_отдела",
+      "task": "конкретная задача",
+      "estimated_hours": 1.0,
+      "deliverables": ["что должен сделать"],
+      "depends_on": []
+    }}
+  ]
+}}
+
+Правила:
+- Привлекай только нужные отделы
+- Задачи конкретные, выполнимые за 1-4 часа
+- Если задача простая — один отдел, одна задача
+"""
+
+# ─── Определение режима ──────────────────────────────────────────────────
+
+TASK_KEYWORDS = [
+    "сделай", "создай", "разработай", "построй", "реализуй", "запусти",
+    "настрой", "подготовь", "напиши", "спроектируй", "деплой", "мигрируй",
+    "автоматизируй", "интегрируй", "оптимизируй", "рефактор",
+    "добавь", "обнови", "исправь", "почини", "переделай",
+]
+
+QUESTION_KEYWORDS = [
+    "сколько", "что такое", "как работает", "почему", "зачем",
+    "можно ли", "есть ли", "какой", "какая", "какие",
+    "расскажи", "объясни", "покажи",
+]
+
+
 @dataclass
 class RouteDecision:
     """Результат классификации запроса."""
@@ -366,6 +489,123 @@ class Conductor:
             reasoning="Не удалось классифицировать, фоллбэк в CEO",
             reformulated_query=query,
         )
+
+    def _detect_mode(self, query: str) -> str:
+        """Определить режим: 'router' (вопрос) или 'orchestrator' (задача)."""
+        q = query.lower().strip()
+        # Явные маркеры задачи
+        for kw in TASK_KEYWORDS:
+            if q.startswith(kw) or f" {kw} " in f" {q} ":
+                return "orchestrator"
+        # Явные маркеры вопроса
+        for kw in QUESTION_KEYWORDS:
+            if q.startswith(kw):
+                return "router"
+        # По умолчанию — роутер (безопаснее)
+        return "router"
+
+    async def _call_claude(self, prompt: str, max_tokens: int = 2000) -> str:
+        """Вызвать Claude API."""
+        if not self._api_key:
+            return "{}"
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=self._api_key)
+        resp = await client.messages.create(
+            model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514"),
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        return resp.content[0].text.strip()
+
+    async def _parse_json(self, text: str) -> dict | None:
+        """Извлечь JSON из ответа Claude."""
+        import re
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+            if not m:
+                m = re.search(r"(\{.*\})", text, re.DOTALL)
+            if m:
+                try:
+                    return json.loads(m.group(1))
+                except json.JSONDecodeError:
+                    pass
+        return None
+
+    async def orchestrate(self, task: str) -> dict:
+        """Полная оркестрация: CEO → директора → отделы → результат."""
+        start = time.monotonic()
+        logger.info("ORCHESTRATOR: начинаю декомпозицию: '%s'", task[:100])
+
+        # ── Шаг 1: CEO-декомпозиция ──
+        directors_text = "\n".join(
+            f"- {code}: {d['title']} — {d['scope']}"
+            for code, d in DIRECTORS.items()
+        )
+        ceo_prompt = CEO_DECOMPOSE_PROMPT.format(
+            directors_list=directors_text,
+            task=task,
+        )
+        ceo_response = await self._call_claude(ceo_prompt)
+        ceo_data = await self._parse_json(ceo_response)
+
+        if not ceo_data or "directors" not in ceo_data:
+            return {
+                "status": "error",
+                "message": "CEO не смог декомпозировать задачу",
+                "raw": ceo_response[:500],
+            }
+
+        analysis = ceo_data.get("analysis", "")
+        director_tasks = ceo_data["directors"]
+        logger.info("CEO: %d директоров задействовано", len(director_tasks))
+
+        # ── Шаг 2: Директорская декомпозиция ──
+        full_tree = {
+            "task": task,
+            "analysis": analysis,
+            "directors": [],
+            "duration_ms": 0,
+        }
+
+        for dt in director_tasks:
+            role = dt.get("role", "cto")
+            director = DIRECTORS.get(role)
+            if not director:
+                continue
+
+            dept_list = "\n".join(f"- {d}" for d in director["departments"])
+            dir_prompt = DIRECTOR_DECOMPOSE_PROMPT.format(
+                director_title=director["title"],
+                departments_list=dept_list,
+                task=dt["task"],
+            )
+            dir_response = await self._call_claude(dir_prompt, max_tokens=1500)
+            dir_data = await self._parse_json(dir_response)
+
+            dept_tasks = []
+            if dir_data and "tasks" in dir_data:
+                dept_tasks = dir_data["tasks"]
+
+            director_node = {
+                "role": role,
+                "title": director["title"],
+                "task": dt["task"],
+                "priority": dt.get("priority", "normal"),
+                "estimated_hours": dt.get("estimated_hours", 0),
+                "deliverables": dt.get("deliverables", []),
+                "depends_on": dt.get("depends_on", []),
+                "departments": dept_tasks,
+            }
+            full_tree["directors"].append(director_node)
+            logger.info(
+                "  %s: %d отделов", role.upper(), len(dept_tasks)
+            )
+
+        full_tree["duration_ms"] = (time.monotonic() - start) * 1000
+        return full_tree
 
     async def process(self, query: str) -> ConductorResult:
         """Главный метод: классифицировать → маршрутизировать → вернуть результат."""

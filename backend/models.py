@@ -731,6 +731,14 @@ class ConductorTask(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     agent_role: Mapped[str] = mapped_column(String(100), default="ceo_agent", index=True)
 
+    # Иерархия: conductor → director → department → specialist
+    level: Mapped[str] = mapped_column(String(20), default="conductor", index=True)
+    assigned_to: Mapped[str] = mapped_column(String(100), default="", index=True)
+    execution_order: Mapped[str] = mapped_column(String(20), default="parallel")
+    dependencies: Mapped[str] = mapped_column(Text, default="[]")
+    estimated_hours: Mapped[float] = mapped_column(Float, default=0.0)
+    deliverables: Mapped[str] = mapped_column(Text, default="[]")
+
     status: Mapped[TaskStatus] = mapped_column(
         Enum(TaskStatus), default=TaskStatus.PENDING, index=True
     )
