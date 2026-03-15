@@ -120,6 +120,27 @@ class TaskStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class WorkPlanStatus(str, enum.Enum):
+    BACKLOG = "backlog"
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
+    REVIEW = "review"
+    DONE = "done"
+    CANCELLED = "cancelled"
+
+
+class WorkPlanCategory(str, enum.Enum):
+    DEVELOPMENT = "development"
+    BUSINESS = "business"
+    MARKETING = "marketing"
+    OPERATIONS = "operations"
+    FINANCE = "finance"
+    LEGAL = "legal"
+    CONTENT = "content"
+    SALES = "sales"
+    OTHER = "other"
+
+
 # ─── Character ──────────────────────────────────────────────────────────────
 
 
@@ -874,3 +895,54 @@ class ViralContentAnalysis(Base):
     content_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+# ─── WorkPlan (планирование работ) ───────────────────────────────────────
+
+
+class WorkPlan(Base):
+    """Задача/план работы — личная или делегированная агенту."""
+    __tablename__ = "work_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str] = mapped_column(Text, default="")
+    category: Mapped[WorkPlanCategory] = mapped_column(
+        Enum(WorkPlanCategory), default=WorkPlanCategory.DEVELOPMENT, index=True
+    )
+    status: Mapped[WorkPlanStatus] = mapped_column(
+        Enum(WorkPlanStatus), default=WorkPlanStatus.BACKLOG, index=True
+    )
+    priority: Mapped[TaskPriority] = mapped_column(
+        Enum(TaskPriority), default=TaskPriority.NORMAL, index=True
+    )
+
+    # Назначение: "founder" или имя агента ("ceo_agent", "certifier" и т.д.)
+    assignee: Mapped[str] = mapped_column(String(100), default="founder", index=True)
+
+    # Связь с ConductorTask
+    conductor_task_id: Mapped[int | None] = mapped_column(
+        ForeignKey("conductor_tasks.id"), nullable=True, index=True
+    )
+
+    # Сроки
+    planned_date: Mapped[date | None] = mapped_column(Date, nullable=True, index=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    estimated_hours: Mapped[float] = mapped_column(Float, default=0.0)
+    actual_hours: Mapped[float] = mapped_column(Float, default=0.0)
+
+    # Прогресс 0-100
+    progress: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Результат
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    conductor_task: Mapped["ConductorTask | None"] = relationship("ConductorTask")

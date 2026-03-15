@@ -197,3 +197,6 @@ app.include_router(opportunities_router)
 
 from .routes.conductor import router as conductor_router
 app.include_router(conductor_router)
+
+from .routes.planning import router as planning_router
+app.include_router(planning_router)
