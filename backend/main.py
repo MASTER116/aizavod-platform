@@ -118,7 +118,7 @@ app.add_middleware(
 )
 
 _BACKEND_API_KEY = get_backend_api_key()
-_PUBLIC_PREFIXES = ("/health", "/admin", "/docs", "/openapi.json", "/redoc", "/api/certifier", "/api/opportunities", "/api/conductor")
+_PUBLIC_PREFIXES = ("/health", "/admin", "/docs", "/openapi.json", "/redoc", "/api/certifier", "/api/opportunities", "/api/conductor", "/api/planning")
 
 
 @app.middleware("http")
