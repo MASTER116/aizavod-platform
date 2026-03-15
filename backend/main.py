@@ -118,7 +118,7 @@ app.add_middleware(
 )
 
 _BACKEND_API_KEY = get_backend_api_key()
-_PUBLIC_PREFIXES = ("/health", "/admin", "/docs", "/openapi.json", "/redoc", "/api/certifier")
+_PUBLIC_PREFIXES = ("/health", "/admin", "/docs", "/openapi.json", "/redoc", "/api/certifier", "/api/opportunities")
 
 
 @app.middleware("http")
@@ -191,3 +191,6 @@ app.include_router(deals.router)
 
 from .routes.certifier import router as certifier_router
 app.include_router(certifier_router)
+
+from .routes.opportunities import router as opportunities_router
+app.include_router(opportunities_router)

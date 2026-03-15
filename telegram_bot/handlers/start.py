@@ -9,17 +9,21 @@ from telegram_bot.keyboards import main_menu_kb
 
 router = Router()
 
-WELCOME_TEXT = """🤖 **AIZAVOD — AI Instagram Factory**
+WELCOME_TEXT = """🤖 **AIZAVOD — AI Command Center**
 
-Управление AI-фитнес аккаунтом в Instagram.
-
+**Instagram Factory:**
 📊 Dashboard — метрики и статистика
 📋 Next Posts — предпросмотр постов
 🎨 Generate — генерация нового контента
-📸 Stories — управление Stories
 ⚙️ Settings — настройки автономности
-💰 Costs — отчет по расходам API
-🔔 Alerts — уведомления"""
+
+**Агенты заработка:**
+/scan — поиск грантов, хакатонов, конкурсов
+/ideas — генерация идей для заработка
+/market тема — анализ рынка
+/competitors ниша — анализ конкурентов
+/proposal название — заявка на конкурс
+/sources — все источники возможностей"""
 
 
 @router.message(Command("start"))
