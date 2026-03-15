@@ -137,6 +137,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/nginx-aizavod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web-ui/dist:/opt/aizavod/web-ui/dist:ro
       - ./media:/var/www/media:ro
       - ./static:/opt/aizavod/static:ro
       - ./deploy/ssl:/etc/nginx/ssl:ro
