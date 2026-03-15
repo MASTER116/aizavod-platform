@@ -1,0 +1,118 @@
+{
+  "name": "AIZAVOD — Daily Content Pipeline",
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [0, 0],
+      "parameters": {
+        "rule": {
+          "interval": [{"triggerAtHour": 2}]
+        }
+      }
+    },
+    {
+      "name": "Generate Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [220, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.BACKEND_BASE_URL}}/api/webhooks/generate",
+        "headers": {
+          "X-API-Key": "={{$env.BACKEND_API_KEY}}"
+        },
+        "body": {
+          "count": 1,
+          "platform": "instagram"
+        },
+        "options": { "timeout": 120000 }
+      }
+    },
+    {
+      "name": "Check Post IDs",
+      "type": "n8n-nodes-base.if",
+      "position": [440, 0],
+      "parameters": {
+        "conditions": {
+          "number": [{
+            "value1": "={{$json.generated_count}}",
+            "operation": "largerThan",
+            "value2": 0
+          }]
+        }
+      }
+    },
+    {
+      "name": "Compliance Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [660, -60],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.BACKEND_BASE_URL}}/api/webhooks/compliance",
+        "headers": {
+          "X-API-Key": "={{$env.BACKEND_API_KEY}}"
+        },
+        "body": {
+          "post_id": "={{$json.post_ids[0]}}"
+        }
+      }
+    },
+    {
+      "name": "Check Compliance",
+      "type": "n8n-nodes-base.if",
+      "position": [880, -60],
+      "parameters": {
+        "conditions": {
+          "boolean": [{
+            "value1": "={{$json.passed}}",
+            "value2": true
+          }]
+        }
+      }
+    },
+    {
+      "name": "Publish Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1100, -120],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.BACKEND_BASE_URL}}/api/webhooks/publish",
+        "headers": {
+          "X-API-Key": "={{$env.BACKEND_API_KEY}}"
+        },
+        "body": {
+          "post_id": "={{$json.post_ids[0]}}"
+        }
+      }
+    },
+    {
+      "name": "Notify: Review Needed",
+      "type": "n8n-nodes-base.noOp",
+      "position": [1100, 0],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{"node": "Generate Content", "type": "main", "index": 0}]]
+    },
+    "Generate Content": {
+      "main": [[{"node": "Check Post IDs", "type": "main", "index": 0}]]
+    },
+    "Check Post IDs": {
+      "main": [
+        [{"node": "Compliance Check", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "Compliance Check": {
+      "main": [[{"node": "Check Compliance", "type": "main", "index": 0}]]
+    },
+    "Check Compliance": {
+      "main": [
+        [{"node": "Publish Post", "type": "main", "index": 0}],
+        [{"node": "Notify: Review Needed", "type": "main", "index": 0}]
+      ]
+    }
+  }
+}

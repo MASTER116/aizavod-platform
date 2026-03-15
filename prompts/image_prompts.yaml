@@ -1,0 +1,113 @@
+# Flux prompt templates for image generation
+# Variables: {name}, {hair_color}, {hair_style}, {body_type}, {ethnicity}, {age_range}
+
+workout:
+  - name: "Gym Training"
+    scene: "modern gym with natural lighting through large windows"
+    pose: "performing a deadlift with perfect form, focused expression"
+    outfit: "matching sports bra and high-waisted leggings, sneakers"
+    camera: "full body shot, slightly low angle"
+
+  - name: "Dumbbell Workout"
+    scene: "bright fitness studio with mirrors"
+    pose: "doing bicep curls with dumbbells, smiling at camera"
+    outfit: "fitted tank top and shorts"
+    camera: "upper body portrait, front view"
+
+  - name: "Yoga Outdoors"
+    scene: "sunrise on a rooftop terrace with city skyline"
+    pose: "warrior pose, arms extended, serene expression"
+    outfit: "form-fitting yoga set, barefoot"
+    camera: "full body, side angle, golden hour lighting"
+
+lifestyle:
+  - name: "Morning Coffee"
+    scene: "cozy modern apartment, soft morning light through curtains"
+    pose: "sitting on a kitchen counter holding a coffee mug, relaxed smile"
+    outfit: "oversized hoodie and shorts, messy bun"
+    camera: "medium shot, warm tones"
+
+  - name: "Walking in City"
+    scene: "trendy urban street with cafes and shops"
+    pose: "walking confidently, looking over shoulder at camera"
+    outfit: "athleisure outfit, sunglasses, sneakers"
+    camera: "full body, street photography style"
+
+motivation:
+  - name: "Mirror Selfie"
+    scene: "gym locker room with good lighting"
+    pose: "flexing in mirror, confident expression"
+    outfit: "sports bra showing abs, leggings"
+    camera: "mirror selfie, phone visible"
+
+  - name: "Sunset Silhouette"
+    scene: "beach at golden hour"
+    pose: "standing with hands on hips, looking at horizon"
+    outfit: "athletic wear"
+    camera: "silhouette shot, dramatic lighting"
+
+outfit:
+  - name: "Gym OOTD"
+    scene: "clean white wall or gym entrance"
+    pose: "standing pose showing full outfit, hand on hip"
+    outfit: "new matching activewear set with sneakers"
+    camera: "full body, fashion photography style"
+
+  - name: "Athleisure Look"
+    scene: "urban setting, cafe terrace"
+    pose: "casual standing pose, holding gym bag"
+    outfit: "stylish athleisure: bomber jacket over sports bra, joggers"
+    camera: "three-quarter shot"
+
+nutrition:
+  - name: "Meal Prep"
+    scene: "modern kitchen, marble countertop, containers with food"
+    pose: "arranging meal prep containers, looking at camera smiling"
+    outfit: "casual home clothes, hair in ponytail"
+    camera: "medium shot from above, top-down angle"
+
+  - name: "Smoothie Bowl"
+    scene: "bright kitchen or cafe, natural light"
+    pose: "holding a colorful smoothie bowl, taking a bite"
+    outfit: "casual sporty top"
+    camera: "close-up portrait with food"
+
+behind_scenes:
+  - name: "Getting Ready"
+    scene: "bedroom or bathroom, natural light"
+    pose: "putting on sneakers or tying hair, candid moment"
+    outfit: "casual workout prep clothes"
+    camera: "candid shot, documentary style"
+
+transformation:
+  - name: "Progress Photo"
+    scene: "gym or bathroom mirror, consistent lighting"
+    pose: "front-facing flexing pose showing physique"
+    outfit: "minimal sportswear to show body"
+    camera: "full body mirror shot"
+
+tutorial:
+  - name: "Exercise Demo"
+    scene: "gym with equipment visible"
+    pose: "demonstrating a squat, mid-movement"
+    outfit: "fitted workout clothes"
+    camera: "full body, side view, instructional angle"
+
+  - name: "Stretching Guide"
+    scene: "yoga mat in bright room"
+    pose: "deep stretch position, peaceful expression"
+    outfit: "flexible yoga wear"
+    camera: "full body, eye level"
+
+reel:
+  - name: "Dynamic Workout"
+    scene: "gym with dramatic lighting"
+    pose: "mid-jump or explosive movement, powerful expression"
+    outfit: "fitted athletic wear"
+    camera: "action shot, slight motion blur"
+
+  - name: "Dance Fitness"
+    scene: "bright studio with colorful lights"
+    pose: "energetic dance pose, big smile"
+    outfit: "colorful sports outfit"
+    camera: "full body, dynamic angle"

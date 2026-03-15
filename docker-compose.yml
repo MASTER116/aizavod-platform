@@ -1,59 +1,30 @@
 version: "3.9"
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: aizavod-backend
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://aizavod:aizavod_secret@db:5432/aizavod
-      - REDIS_URL=redis://redis:6379/0
-      - ENVIRONMENT=development
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./backend/app:/app/app
-      - ./data:/app/data
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: aizavod-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
-
-  db:
+  # ─── PostgreSQL ────────────────────────────────────────
+  postgres:
     image: postgres:16-alpine
-    container_name: aizavod-db
+    restart: unless-stopped
     environment:
-      - POSTGRES_USER=aizavod
-      - POSTGRES_PASSWORD=aizavod_secret
-      - POSTGRES_DB=aizavod
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: aizavod
+      POSTGRES_USER: aizavod
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aizavod_secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aizavod"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
 
+  # ─── Redis ─────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: aizavod-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
     healthcheck:
@@ -61,7 +32,110 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # ─── FastAPI Backend ───────────────────────────────────
+  backend:
+    build: .
     restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
+      USE_CELERY: "true"
+    volumes:
+      - ./media:/app/media
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+
+  # ─── Celery Worker ─────────────────────────────────────
+  celery-worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
+      USE_CELERY: "true"
+    volumes:
+      - ./media:/app/media
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A services.celery_app:celery_app worker --loglevel=info --concurrency=2
+
+  # ─── Celery Beat ───────────────────────────────────────
+  celery-beat:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
+      USE_CELERY: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A services.celery_app:celery_app beat --loglevel=info
+
+  # ─── Telegram Bot ──────────────────────────────────────
+  telegram-bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BACKEND_BASE_URL: http://backend:8000
+    depends_on:
+      - backend
+    command: python -m telegram_bot.main
+
+  # ─── n8n ───────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD:-admin}
+      BACKEND_BASE_URL: http://backend:8000
+      BACKEND_API_KEY: ${BACKEND_API_KEY:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    ports:
+      - "5678:5678"
+    depends_on:
+      - backend
+
+  # ─── Nginx Reverse Proxy ───────────────────────────────
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx-aizavod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./media:/var/www/media:ro
+      - ./static:/opt/aizavod/static:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - n8n
 
 volumes:
   postgres_data:
+  redis_data:
+  n8n_data:
