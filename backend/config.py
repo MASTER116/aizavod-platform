@@ -242,6 +242,17 @@ def get_celery_config() -> CeleryConfig:
     )
 
 
+@dataclass
+class CertifierConfig:
+    groq_api_key: str = field(default_factory=lambda: os.getenv("GROQ_API_KEY", ""))
+    groq_model: str = field(default_factory=lambda: os.getenv("CERTIFIER_MODEL", "llama-3.3-70b-versatile"))
+    knowledge_dir: str = field(default_factory=lambda: os.getenv("CERTIFIER_KNOWLEDGE_DIR", "data/certifier"))
+
+
+def get_certifier_config() -> CertifierConfig:
+    return CertifierConfig()
+
+
 def get_backend_api_key() -> str:
     return os.getenv("BACKEND_API_KEY", "")
 
