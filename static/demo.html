@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIZAVOD — TikTok Integration Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: #111; color: #fff; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .user { font-size: 14px; color: #aaa; }
+        .nav { background: #1a1a1a; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: #aaa; text-decoration: none; padding: 14px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a.active { color: #fff; border-bottom-color: #fe2c55; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .card { background: #fff; border-radius: 12px; padding: 30px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; }
+        .card p { color: #666; margin-bottom: 15px; line-height: 1.5; }
+        .status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .status.connected { background: #e8f5e9; color: #2e7d32; }
+        .status.disconnected { background: #fce4ec; color: #c62828; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected .status-dot { background: #4caf50; }
+        .status.disconnected .status-dot { background: #f44336; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s; }
+        .btn-tiktok { background: #fe2c55; color: #fff; }
+        .btn-tiktok:hover { background: #e02549; }
+        .btn-publish { background: #111; color: #fff; }
+        .btn-publish:hover { background: #333; }
+        .btn-publish:disabled { background: #ccc; cursor: not-allowed; }
+        .tiktok-icon { width: 20px; height: 20px; }
+        .account-info { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 15px 0; }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; background: #fe2c55; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 18px; }
+        .account-details { flex: 1; }
+        .account-details .name { font-weight: 600; font-size: 15px; }
+        .account-details .handle { color: #888; font-size: 13px; }
+        .upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 40px; text-align: center; margin: 15px 0; cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { border-color: #fe2c55; background: #fff5f7; }
+        .upload-area.has-file { border-color: #4caf50; background: #f1f8e9; }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 14px; }
+        .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .progress-bar { height: 6px; background: #eee; border-radius: 3px; margin: 15px 0; overflow: hidden; display: none; }
+        .progress-bar .fill { height: 100%; background: #fe2c55; border-radius: 3px; transition: width 0.3s; }
+        .success-msg { display: none; background: #e8f5e9; color: #2e7d32; padding: 15px 20px; border-radius: 8px; margin-top: 15px; font-weight: 500; }
+        .steps { display: flex; gap: 15px; margin-bottom: 20px; }
+        .step { flex: 1; text-align: center; padding: 12px; border-radius: 8px; background: #f5f5f5; font-size: 13px; }
+        .step.active { background: #fe2c55; color: #fff; }
+        .step.done { background: #e8f5e9; color: #2e7d32; }
+        .step-num { font-weight: 700; display: block; margin-bottom: 4px; }
+        #step2, #step3 { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AIZAVOD</h1>
+        <span class="user">admin@aizavod.com</span>
+    </div>
+    <div class="nav">
+        <a href="#">Dashboard</a>
+        <a href="#">Content</a>
+        <a href="#" class="active">TikTok</a>
+        <a href="#">Instagram</a>
+        <a href="#">Telegram</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <div class="container">
+        <div class="steps">
+            <div class="step active" id="s1"><span class="step-num">1</span>Connect</div>
+            <div class="step" id="s2"><span class="step-num">2</span>Upload</div>
+            <div class="step" id="s3"><span class="step-num">3</span>Publish</div>
+        </div>
+
+        <!-- Step 1: Connect TikTok -->
+        <div id="step1">
+            <div class="card">
+                <h2>Connect TikTok Account</h2>
+                <p>Link your TikTok account to publish videos directly from AIZAVOD using the Content Posting API.</p>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span class="status disconnected"><span class="status-dot"></span> Not connected</span>
+                    <button class="btn btn-tiktok" onclick="connectTikTok()">
+                        <svg class="tiktok-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z"/></svg>
+                        Connect TikTok Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Upload Video -->
+        <div id="step2">
+            <div class="card">
+                <h2>TikTok Account</h2>
+                <div class="account-info">
+                    <div class="avatar">N</div>
+                    <div class="account-details">
+                        <div class="name">Nika Flex</div>
+                        <div class="handle">@nika_flex_official</div>
+                    </div>
+                    <span class="status connected"><span class="status-dot"></span> Connected</span>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Publish New Video</h2>
+                <div class="upload-area" id="uploadArea" onclick="selectVideo()">
+                    <div class="upload-icon">🎬</div>
+                    <p style="font-weight:500;">Click to select video file</p>
+                    <p style="font-size:12px;color:#999;">MP4, MOV — max 50MB</p>
+                </div>
+                <input type="file" id="videoInput" accept="video/mp4,video/mov" style="display:none" onchange="fileSelected(this)">
+                <div class="form-group">
+                    <label>Caption</label>
+                    <textarea id="caption" placeholder="Write a caption for your TikTok video...">Morning workout vibes 💪 Who else starts their day like this? #fitness #motivation #workout #fyp</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Privacy Level</label>
+                    <select>
+                        <option>Public</option>
+                        <option>Friends only</option>
+                        <option>Private</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" checked> Allow comments</label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" checked> Allow duet</label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" checked> Allow stitch</label>
+                </div>
+                <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+                <div style="margin-top:20px;text-align:right;">
+                    <button class="btn btn-publish" id="publishBtn" onclick="publishVideo()">Publish to TikTok</button>
+                </div>
+                <div class="success-msg" id="successMsg">
+                    ✅ Video published successfully! TikTok publish_id: <strong>v_pub_28fka93md</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function connectTikTok() {
+            const btn = document.querySelector('.btn-tiktok');
+            btn.textContent = 'Connecting...';
+            btn.disabled = true;
+
+            // Simulate OAuth redirect
+            setTimeout(() => {
+                // Show "redirecting to TikTok" overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;';
+                overlay.innerHTML = '<div style="background:#fff;padding:40px;border-radius:16px;text-align:center;"><p style="font-size:16px;font-weight:600;margin-bottom:10px;">Redirecting to TikTok...</p><p style="color:#888;font-size:14px;">Authorize AIZAVOD to access your account</p></div>';
+                document.body.appendChild(overlay);
+
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                    // Show connected state
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    document.getElementById('s1').className = 'step done';
+                    document.getElementById('s2').className = 'step active';
+                }, 2000);
+            }, 500);
+        }
+
+        function selectVideo() {
+            document.getElementById('videoInput').click();
+        }
+
+        function fileSelected(input) {
+            if (input.files.length > 0) {
+                const area = document.getElementById('uploadArea');
+                area.className = 'upload-area has-file';
+                area.innerHTML = '<div class="upload-icon">✅</div><p style="font-weight:500;">' + input.files[0].name + '</p><p style="font-size:12px;color:#666;">' + (input.files[0].size / 1024 / 1024).toFixed(1) + ' MB</p>';
+            }
+        }
+
+        function publishVideo() {
+            const btn = document.getElementById('publishBtn');
+            const bar = document.getElementById('progressBar');
+            const fill = document.getElementById('progressFill');
+
+            btn.disabled = true;
+            btn.textContent = 'Publishing...';
+            bar.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15 + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    fill.style.width = '100%';
+                    setTimeout(() => {
+                        bar.style.display = 'none';
+                        document.getElementById('successMsg').style.display = 'block';
+                        btn.textContent = 'Published!';
+                        document.getElementById('s2').className = 'step done';
+                        document.getElementById('s3').className = 'step done';
+                    }, 500);
+                }
+                fill.style.width = progress + '%';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

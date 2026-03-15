@@ -1,0 +1,15 @@
+[Unit]
+Description=AIZAVOD - AI Instagram Factory
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aizavod
+ExecStart=/opt/aizavod/.venv/bin/python run.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
