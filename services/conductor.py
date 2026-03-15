@@ -650,6 +650,15 @@ class Conductor:
 
         duration = (time.monotonic() - start) * 1000
 
+        # 4. DARWIN: фоновая оценка качества (не блокирует ответ)
+        try:
+            import asyncio
+            asyncio.create_task(
+                self._darwin_background_eval(query, agent_info.name, response)
+            )
+        except Exception:
+            pass  # Не ломаем основной поток
+
         return ConductorResult(
             query=query,
             route=route,
@@ -659,6 +668,21 @@ class Conductor:
             duration_ms=duration,
             secondary_responses=secondary_responses,
         )
+
+    async def _darwin_background_eval(self, query: str, agent_name: str, response: str):
+        """Фоновая оценка качества ответа через DARWIN."""
+        try:
+            from services.darwin_agent import get_darwin_agent
+            from services.conductor_autonomy import _extract_score
+            darwin = get_darwin_agent()
+            evaluation = await darwin.analyze_response(agent_name, query, response[:2000])
+            score = _extract_score(evaluation)
+            logger.info(
+                "DARWIN: %s ответил на '%s' — оценка %.1f/10",
+                agent_name, query[:40], score,
+            )
+        except Exception as e:
+            logger.debug("DARWIN eval skip: %s", e)
 
 
 # ─── Обработчики маршрутов (route handlers) ─────────────────────────────────

@@ -1,10 +1,11 @@
-"""OpportunityScanner — поиск конкурсов, грантов, хакатонов, тендеров.
+"""OpportunityScanner — глубокий поиск и анализ конкурсов, грантов, хакатонов.
 
-Сканирует источники, фильтрует по релевантности для AI Zavod,
-генерирует краткую сводку через Claude API.
+Полный цикл: поиск → анализ правил → генерация идей под конкурс →
+Excel-калькуляция → генерация документов на подачу → сохранение идей.
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -60,7 +61,6 @@ SOURCES: list[dict[str, str]] = [
      "programs": "ML соревнования, призы $10K-$1M"},
 ]
 
-# Ключевые слова AI Zavod для фильтрации
 RELEVANCE_KEYWORDS = [
     "искусственный интеллект", "ИИ", "AI", "нейросет", "машинное обучение",
     "ML", "NLP", "LLM", "чат-бот", "chatbot", "автоматизация", "SaaS",
@@ -69,6 +69,19 @@ RELEVANCE_KEYWORDS = [
     "сертификация", "ЕАЭС", "малый бизнес", "МСП",
     "генерация контента", "computer vision", "обработка данных",
 ]
+
+AI_ZAVOD_CONTEXT = """О НАС (AI Zavod):
+- Мультиагентная SaaS-платформа для автоматизации бизнес-процессов
+- 19 рабочих агентов, CONDUCTOR-маршрутизатор
+- 37 категорий, 262 отрасли (ОКВЭД-2), целевая архитектура 148 агентов
+- Стек: FastAPI, Claude API (Anthropic), PostgreSQL, Redis, Docker, aiogram 3
+- Готовые модули: CERTIFIER (сертификация ТС ЕАЭС), Instagram Factory, LAWYER, ACCOUNTANT, SCHOLAR
+- 1 человек (основатель, инженер МАЗ Москвич), вечерами + выходные
+- Регистрация ООО планируется август 2026
+- Локация: Набережные Челны, Татарстан → Москва
+- Claude (Anthropic) — основной исполнитель всех задач
+- Бюджет: ~0 руб (НЗ 4.5 млн неприкосновенны)
+- Сервер: Hetzner (Германия), Docker 24/7"""
 
 
 @dataclass
@@ -86,15 +99,30 @@ class Opportunity:
 
 
 class OpportunityScanner:
-    """Scans multiple sources for money-making opportunities."""
+    """Глубокий поиск и анализ возможностей для AI Zavod."""
 
     def __init__(self) -> None:
         self._anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
         self._model = os.getenv("SCANNER_MODEL", "claude-haiku-4-5-20251001")
         self._found: list[Opportunity] = []
 
+    async def _call_llm(self, prompt: str, *, max_tokens: int = 3000, temperature: float = 0.4) -> str:
+        if not self._anthropic_key:
+            return "ANTHROPIC_API_KEY не настроен"
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=self._anthropic_key)
+        response = await client.messages.create(
+            model=self._model,
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+        )
+        return response.content[0].text
+
+    # ─── 1. Поиск ───────────────────────────────────────────────────────────
+
     async def scan_web(self, query: str | None = None) -> list[Opportunity]:
-        """Search the web for current opportunities matching AI Zavod profile."""
+        """Поиск конкурсов и грантов в интернете."""
         queries = [
             query or "гранты ИИ стартап Россия 2026",
             "хакатон искусственный интеллект Россия 2026 призы",
@@ -104,7 +132,6 @@ class OpportunityScanner:
         ]
 
         results: list[Opportunity] = []
-
         async with httpx.AsyncClient(timeout=15.0) as client:
             for q in queries:
                 try:
@@ -113,7 +140,6 @@ class OpportunityScanner:
                 except Exception as exc:
                     logger.warning("Search failed for %r: %s", q, exc)
 
-        # Deduplicate by URL
         seen_urls: set[str] = set()
         unique: list[Opportunity] = []
         for opp in results:
@@ -121,84 +147,211 @@ class OpportunityScanner:
                 seen_urls.add(opp.url)
                 unique.append(opp)
 
-        # Score relevance
         for opp in unique:
             opp.relevance_score = self._calc_relevance(opp)
 
-        # Sort by relevance
         unique.sort(key=lambda x: x.relevance_score, reverse=True)
-        self._found = unique[:20]  # top 20
+        self._found = unique[:20]
         return self._found
 
-    async def analyze_opportunity(self, opp: Opportunity) -> str:
-        """Deep analysis of a specific opportunity using Claude."""
-        if not self._anthropic_key:
-            return "ANTHROPIC_API_KEY не настроен"
+    # ─── 2. Глубокий анализ конкурса ────────────────────────────────────────
 
-        import anthropic
+    async def deep_analyze(self, title: str, url: str, description: str = "") -> str:
+        """Полный анализ конкурса: правила, требования, отчётность, сроки."""
+        prompt = f"""Проведи ГЛУБОКИЙ анализ конкурса/гранта.
 
-        prompt = f"""Проанализируй эту возможность для IT-стартапа AI Zavod:
+КОНКУРС: {title}
+ССЫЛКА: {url}
+ОПИСАНИЕ: {description}
 
-ВОЗМОЖНОСТЬ:
-- Название: {opp.title}
-- Тип: {opp.type}
-- Источник: {opp.source}
-- Дедлайн: {opp.deadline or 'не указан'}
-- Приз/сумма: {opp.prize or 'не указано'}
-- Описание: {opp.description}
+{AI_ZAVOD_CONTEXT}
 
-О НАС (AI Zavod):
-- Мультиагентная SaaS-платформа для автоматизации бизнес-процессов
-- 37 категорий, 262 отрасли, 148 AI-агентов
-- Стек: FastAPI, Claude API, PostgreSQL, Docker, Telegram
-- Готовые модули: CERTIFIER (сертификация ТС ЕАЭС), Instagram Factory (генерация контента)
-- 1 человек (основатель), регистрация ООО планируется август 2026
-- Локация: Россия (Набережные Челны)
+Дай ПОЛНЫЙ анализ по разделам:
 
-ОТВЕТЬ КРАТКО:
-1. Подходит ли нам? (да/нет/частично) и почему
-2. Что подать/показать (конкретный модуль или идея)
-3. Шансы на победу (низкие/средние/высокие)
-4. Конкретные шаги (3-5 пунктов)
-5. Потенциальный выигрыш (деньги, связи, клиенты)"""
+## 1. Общая информация
+- Организатор и фонд
+- Тип (грант/конкурс/хакатон/акселератор)
+- Сумма финансирования
+- Сроки подачи заявки (дедлайн)
+- Сроки реализации проекта
 
-        client = anthropic.AsyncAnthropic(api_key=self._anthropic_key)
-        response = await client.messages.create(
-            model=self._model,
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.4,
-        )
-        analysis = response.content[0].text
-        opp.ai_analysis = analysis
-        return analysis
+## 2. Правила участия
+- Кто может участвовать (юрлицо/физлицо/ИП)
+- Требования к команде (размер, квалификация)
+- Требования к проекту (TRL, стадия, сфера)
+- Ограничения (возраст, регион, ОПФ)
+- Нужно ли ООО? (критично для нас — ООО будет только в августе 2026)
+
+## 3. Требования к отчётности
+- Промежуточные отчёты (частота, формат)
+- Финальный отчёт
+- Финансовая отчётность
+- Подтверждающие документы
+- Штрафы за невыполнение
+
+## 4. Подходит ли AI Zavod?
+- Оценка соответствия (0-10)
+- Сильные стороны нашей заявки
+- Слабые стороны / риски
+- Что нужно доработать до подачи
+
+## 5. Конкретные шаги для подачи
+- Пошаговый чек-лист (5-10 пунктов)
+- Документы для подготовки
+- Ключевые даты"""
+        return await self._call_llm(prompt, max_tokens=4000)
+
+    # ─── 3. Генерация идей ПОД КОНКРЕТНЫЙ конкурс ───────────────────────────
+
+    async def generate_ideas_for_grant(self, grant_title: str, grant_analysis: str) -> str:
+        """Генерация идей именно для этого конкурса — быстрая реализация, мин. риски."""
+        prompt = f"""Ты — стратегический советник AI Zavod.
+
+КОНКУРС: {grant_title}
+
+АНАЛИЗ КОНКУРСА:
+{grant_analysis[:3000]}
+
+{AI_ZAVOD_CONTEXT}
+
+КОНТЕКСТ РФ — Стратегия развития до 2030-2035:
+- Национальные проекты: «Экономика данных», «Кадры», «Молодёжь и дети»
+- Цифровая трансформация: госуслуги, здравоохранение, образование, транспорт
+- Импортозамещение ПО: реестр отечественного ПО, льготы IT-компаниям
+- AI/ML: Национальная стратегия развития ИИ (Указ 490)
+- Технологический суверенитет: микроэлектроника, ПО, телеком
+- МСП: поддержка малого и среднего бизнеса, цифровизация МСП
+- ЕАЭС: единые стандарты, сертификация, таможня
+
+СГЕНЕРИРУЙ 5-7 ИДЕЙ ПРОЕКТОВ для этого конкурса.
+
+Критерии (ВСЕ обязательны):
+1. **Быстрая реализация** — MVP за 2-4 недели силами Claude + 1 человек
+2. **Минимальные инвестиции** — 0 руб или покрывается из гранта
+3. **Минимальные риски** — используем уже готовые модули AI Zavod
+4. **Соответствие конкурсу** — точно попадает в требования
+5. **Соответствие стратегии РФ 2030/2035** — связь с нацпроектами
+
+Формат каждой идеи:
+## Идея [N]: [Название]
+- **Суть**: что конкретно делаем (2-3 предложения)
+- **Связь с конкурсом**: почему подходит под требования
+- **Связь с РФ 2030**: какой нацпроект/стратегию поддерживает
+- **Используемые модули AI Zavod**: какие агенты задействованы
+- **Срок MVP**: сколько дней/недель
+- **Бюджет**: сколько нужно денег (0 = идеально)
+- **Риски**: что может пойти не так
+- **Ожидаемый результат**: метрики успеха"""
+        return await self._call_llm(prompt, max_tokens=4000, temperature=0.6)
+
+    # ─── 4. Генерация Excel-калькуляции ─────────────────────────────────────
+
+    async def generate_budget_json(self, idea_title: str, grant_amount: str, duration: str) -> str:
+        """Генерация структуры бюджета в JSON для последующей конвертации в Excel."""
+        prompt = f"""Составь детальную смету проекта для грантовой заявки.
+
+ПРОЕКТ: {idea_title}
+СУММА ГРАНТА: {grant_amount}
+СРОК РЕАЛИЗАЦИИ: {duration}
+
+{AI_ZAVOD_CONTEXT}
+
+Ответь СТРОГО в JSON формате (без markdown):
+{{
+  "project_title": "название",
+  "total_budget": 0,
+  "grant_amount": 0,
+  "own_funds": 0,
+  "duration_months": 0,
+  "categories": [
+    {{
+      "name": "ФОТ (фонд оплаты труда)",
+      "items": [
+        {{"name": "Руководитель проекта", "unit": "мес", "quantity": 6, "price": 50000, "total": 300000}},
+        {{"name": "Разработчик AI/ML", "unit": "мес", "quantity": 6, "price": 80000, "total": 480000}}
+      ],
+      "subtotal": 780000
+    }},
+    {{
+      "name": "Инфраструктура",
+      "items": [
+        {{"name": "Облачный сервер (Hetzner)", "unit": "мес", "quantity": 6, "price": 5000, "total": 30000}},
+        {{"name": "API Claude (Anthropic)", "unit": "мес", "quantity": 6, "price": 10000, "total": 60000}}
+      ],
+      "subtotal": 90000
+    }},
+    {{
+      "name": "Прочие расходы",
+      "items": [...],
+      "subtotal": 0
+    }}
+  ],
+  "timeline": [
+    {{"stage": "Этап 1: MVP", "months": "1-2", "deliverables": ["MVP платформы"], "budget": 0}},
+    {{"stage": "Этап 2: Тестирование", "months": "3-4", "deliverables": ["Пилот"], "budget": 0}}
+  ]
+}}
+
+Правила:
+- Смету считать близко к верхнему порогу гранта
+- ФОТ максимальный в рамках разумного
+- Учесть налоги на ФОТ (страховые взносы ~30% или 7.6% для IT)
+- Все суммы в рублях
+- Итого должно равняться сумме гранта"""
+        return await self._call_llm(prompt, max_tokens=3000, temperature=0.2)
+
+    # ─── 5. Генерация документов на подачу ──────────────────────────────────
+
+    async def generate_submission_docs(self, idea_title: str, idea_description: str,
+                                        grant_title: str, budget_json: str = "") -> str:
+        """Генерация пакета документов для подачи заявки."""
+        prompt = f"""Подготовь пакет документов для подачи заявки на грант/конкурс.
+
+КОНКУРС: {grant_title}
+ПРОЕКТ: {idea_title}
+ОПИСАНИЕ: {idea_description}
+БЮДЖЕТ: {budget_json[:2000] if budget_json else 'не указан'}
+
+{AI_ZAVOD_CONTEXT}
+
+Подготовь следующие документы:
+
+## 1. ЗАЯВКА (аннотация проекта)
+- Название проекта
+- Аннотация (до 500 слов)
+- Актуальность и проблема
+- Цель и задачи
+- Научная/техническая новизна
+- Ожидаемые результаты
+- Практическая значимость
+
+## 2. ТЕХНИЧЕСКОЕ ЗАДАНИЕ
+- Описание текущего состояния
+- Требования к результату
+- Этапы выполнения
+- Критерии приёмки
+
+## 3. ПЛАН РАБОТ
+- Этапы с датами и ответственными
+- Контрольные точки (milestones)
+- Риски и митигация
+
+## 4. ОБОСНОВАНИЕ БЮДЖЕТА
+- По каждой статье: зачем нужно, почему такая сумма
+
+## 5. ЧЕК-ЛИСТ ПОДАЧИ
+- Все документы для прикрепления
+- Форматы и требования
+- Кто подписывает"""
+        return await self._call_llm(prompt, max_tokens=4000)
+
+    # ─── 6. Генерация общих идей ────────────────────────────────────────────
 
     async def generate_ideas(self, context: str = "") -> str:
-        """Generate money-making ideas based on current AI Zavod capabilities."""
-        if not self._anthropic_key:
-            return "ANTHROPIC_API_KEY не настроен"
-
-        import anthropic
-
+        """Генерация идей заработка (общая, без привязки к конкурсу)."""
         prompt = f"""Ты — стратегический советник IT-стартапа AI Zavod.
 
-ТЕКУЩИЕ ВОЗМОЖНОСТИ:
-- Мультиагентная SaaS-платформа (FastAPI + Claude API + PostgreSQL)
-- Telegram-боты (aiogram 3)
-- Генерация контента (изображения через fal.ai, видео через Kling)
-- Instagram/TikTok автопубликация
-- RAG-система с BM25
-- Сервер Hetzner (Docker, 24/7)
-
-ГОТОВЫЕ МОДУЛИ:
-- CERTIFIER: AI-консультант по сертификации ТС ЕАЭС
-- Instagram Factory: автоматическая генерация и публикация фитнес-контента
-
-ОГРАНИЧЕНИЯ:
-- 1 человек (работает вечерами после основной работы)
-- Бюджет: ~0 руб (есть НЗ 4.5 млн, но его нельзя трогать)
-- Нет ООО (планируется август 2026)
-- Нет портфолио клиентов
+{AI_ZAVOD_CONTEXT}
 
 {f'ДОПОЛНИТЕЛЬНЫЙ КОНТЕКСТ: {context}' if context else ''}
 
@@ -214,18 +367,12 @@ class OpportunityScanner:
 - **Сколько:** ожидаемый доход
 - **Срок:** время до первых денег
 - **Как начать:** 3 конкретных шага"""
+        return await self._call_llm(prompt, temperature=0.7)
 
-        client = anthropic.AsyncAnthropic(api_key=self._anthropic_key)
-        response = await client.messages.create(
-            model=self._model,
-            max_tokens=3000,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-        )
-        return response.content[0].text
+    # ─── 7. Сводка источников ───────────────────────────────────────────────
 
     async def scan_sources_summary(self) -> str:
-        """Return formatted summary of all known sources."""
+        """Форматированная сводка всех известных источников."""
         lines = ["<b>Источники возможностей для AI Zavod:</b>\n"]
         by_type: dict[str, list[dict]] = {}
         for s in SOURCES:
@@ -248,13 +395,37 @@ class OpportunityScanner:
 
         return "\n".join(lines)
 
-    # ─── internals ──────────────────────────────────────────
+    # ─── 8. Анализ отдельной возможности ────────────────────────────────────
+
+    async def analyze_opportunity(self, opp: Opportunity) -> str:
+        """Быстрый анализ найденной возможности."""
+        prompt = f"""Проанализируй эту возможность для AI Zavod:
+
+ВОЗМОЖНОСТЬ:
+- Название: {opp.title}
+- Тип: {opp.type}
+- Источник: {opp.source}
+- Дедлайн: {opp.deadline or 'не указан'}
+- Приз/сумма: {opp.prize or 'не указано'}
+- Описание: {opp.description}
+
+{AI_ZAVOD_CONTEXT}
+
+ОТВЕТЬ КРАТКО:
+1. Подходит ли нам? (да/нет/частично) и почему
+2. Что подать/показать
+3. Шансы на победу (низкие/средние/высокие)
+4. Конкретные шаги (3-5 пунктов)
+5. Потенциальный выигрыш"""
+        result = await self._call_llm(prompt, max_tokens=1500)
+        opp.ai_analysis = result
+        return result
+
+    # ─── Internals ──────────────────────────────────────────────────────────
 
     async def _search_query(
         self, client: httpx.AsyncClient, query: str
     ) -> list[Opportunity]:
-        """Search using a simple web search approach."""
-        # Use DuckDuckGo HTML (no API key needed)
         url = "https://html.duckduckgo.com/html/"
         try:
             resp = await client.post(url, data={"q": query}, headers={
@@ -268,18 +439,13 @@ class OpportunityScanner:
             return []
 
     def _parse_ddg_results(self, html: str, query: str) -> list[Opportunity]:
-        """Parse DuckDuckGo HTML results into Opportunity objects."""
         results: list[Opportunity] = []
-
-        # Simple regex parsing of DDG HTML results
-        # Look for result links and snippets
         link_pattern = re.compile(
             r'class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.DOTALL
         )
         snippet_pattern = re.compile(
             r'class="result__snippet"[^>]*>(.*?)</[^>]+>', re.DOTALL
         )
-
         links = link_pattern.findall(html)
         snippets = snippet_pattern.findall(html)
 
@@ -289,7 +455,6 @@ class OpportunityScanner:
             if i < len(snippets):
                 snippet = re.sub(r"<[^>]+>", "", snippets[i]).strip()
 
-            # Decode DDG redirect URL
             if "uddg=" in url:
                 match = re.search(r"uddg=([^&]+)", url)
                 if match:
@@ -305,17 +470,12 @@ class OpportunityScanner:
                     break
 
             results.append(Opportunity(
-                title=title,
-                source="DuckDuckGo",
-                url=url,
-                type=opp_type,
-                description=snippet,
+                title=title, source="DuckDuckGo", url=url,
+                type=opp_type, description=snippet,
             ))
-
         return results
 
     def _calc_relevance(self, opp: Opportunity) -> float:
-        """Calculate relevance score 0-1 based on keyword matching."""
         text = f"{opp.title} {opp.description}".lower()
         matches = sum(1 for kw in RELEVANCE_KEYWORDS if kw.lower() in text)
         return min(matches / 5.0, 1.0)

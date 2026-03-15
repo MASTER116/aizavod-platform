@@ -239,6 +239,14 @@ def start_scheduler() -> None:
         replace_existing=True,
     )
 
+    # ─── CONDUCTOR Autonomy Jobs ─────────────────────────────────────────
+
+    try:
+        from services.conductor_autonomy import register_autonomy_jobs
+        register_autonomy_jobs(scheduler)
+    except Exception as e:
+        logger.error("Failed to register autonomy jobs: %s", e)
+
     scheduler.start()
     logger.info("Scheduler started with %d jobs", len(scheduler.get_jobs()))
 

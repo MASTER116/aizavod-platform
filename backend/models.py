@@ -788,6 +788,71 @@ class ConductorLog(Base):
     )
 
 
+# ─── Гранты и сохранённые идеи ──────────────────────────────────────────
+
+
+class IdeaStatus(str, enum.Enum):
+    DRAFT = "draft"
+    SAVED = "saved"
+    IN_PROGRESS = "in_progress"
+    SUBMITTED = "submitted"
+    WON = "won"
+    REJECTED = "rejected"
+
+
+class GrantAnalysis(Base):
+    """Анализ конкурса/гранта — правила, требования, сроки."""
+    __tablename__ = "grant_analyses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(500))
+    source_url: Mapped[str] = mapped_column(String(1000), default="")
+    grant_type: Mapped[str] = mapped_column(String(100), default="grant")
+    fund_name: Mapped[str] = mapped_column(String(300), default="")
+    deadline: Mapped[str] = mapped_column(String(200), default="")
+    prize_amount: Mapped[str] = mapped_column(String(200), default="")
+    requirements: Mapped[str] = mapped_column(Text, default="")
+    reporting_rules: Mapped[str] = mapped_column(Text, default="")
+    eligibility: Mapped[str] = mapped_column(Text, default="")
+    timeline: Mapped[str] = mapped_column(Text, default="")
+    full_analysis: Mapped[str] = mapped_column(Text, default="")
+    ai_fit_score: Mapped[float] = mapped_column(Float, default=0.0)
+    created_by: Mapped[str] = mapped_column(String(100), default="system")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    ideas: Mapped[list["SavedIdea"]] = relationship("SavedIdea", back_populates="grant")
+
+
+class SavedIdea(Base):
+    """Сохранённая идея для конкурса/гранта."""
+    __tablename__ = "saved_ideas"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    grant_id: Mapped[int | None] = mapped_column(
+        ForeignKey("grant_analyses.id"), nullable=True, index=True
+    )
+    title: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str] = mapped_column(Text, default="")
+    budget_json: Mapped[str] = mapped_column(Text, default="{}")
+    timeline_plan: Mapped[str] = mapped_column(Text, default="")
+    risks: Mapped[str] = mapped_column(Text, default="")
+    expected_result: Mapped[str] = mapped_column(Text, default="")
+    documents_json: Mapped[str] = mapped_column(Text, default="{}")
+    status: Mapped[IdeaStatus] = mapped_column(
+        Enum(IdeaStatus), default=IdeaStatus.DRAFT
+    )
+    excel_path: Mapped[str] = mapped_column(String(500), default="")
+    created_by: Mapped[str] = mapped_column(String(100), default="telegram")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    grant: Mapped["GrantAnalysis | None"] = relationship(
+        "GrantAnalysis", back_populates="ideas"
+    )
+
+
 # ─── ViralContentAnalysis ──────────────────────────────────────────────────
 
 
