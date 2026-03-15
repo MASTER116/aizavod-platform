@@ -213,21 +213,20 @@ class CertifierService:
         context = "\n\n---\n\n".join(c["text"] for c in top_chunks)
         sources = list({c["source"] for c in top_chunks})
 
-        # Try Groq LLM
-        groq_api_key = os.getenv("GROQ_API_KEY", "")
-        if groq_api_key:
+        # Try Claude API (Anthropic)
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if anthropic_key:
             try:
-                answer = await self._ask_groq(question, context, groq_api_key)
+                model = os.getenv("CERTIFIER_MODEL", "claude-haiku-4-5-20251001")
+                answer = await self._ask_claude(question, context, anthropic_key, model)
                 return {
                     "answer": answer,
                     "sources": sources,
                     "confidence": "high" if top_chunks else "low",
-                    "model": os.getenv(
-                        "CERTIFIER_MODEL", "llama-3.3-70b-versatile"
-                    ),
+                    "model": model,
                 }
             except Exception as exc:
-                logger.error("Groq API error: %s", exc)
+                logger.error("Claude API error: %s", exc)
 
         # Fallback
         answer = _fallback_answer(question)
@@ -252,11 +251,11 @@ class CertifierService:
         return [self._chunks[idx] for idx, score in ranked if score > 0]
 
     @staticmethod
-    async def _ask_groq(question: str, context: str, api_key: str) -> str:
-        """Call Groq API with context-augmented prompt."""
-        from groq import AsyncGroq
-
-        model = os.getenv("CERTIFIER_MODEL", "llama-3.3-70b-versatile")
+    async def _ask_claude(
+        question: str, context: str, api_key: str, model: str
+    ) -> str:
+        """Call Anthropic Claude API with context-augmented prompt."""
+        import anthropic
 
         system_prompt = (
             "Ты — эксперт-консультант по сертификации транспортных средств "
@@ -268,17 +267,15 @@ class CertifierService:
             f"{context}"
         )
 
-        client = AsyncGroq(api_key=api_key)
-        response = await client.chat.completions.create(
+        client = anthropic.AsyncAnthropic(api_key=api_key)
+        response = await client.messages.create(
             model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": question},
-            ],
-            temperature=0.3,
             max_tokens=1500,
+            system=system_prompt,
+            messages=[{"role": "user", "content": question}],
+            temperature=0.3,
         )
-        return response.choices[0].message.content
+        return response.content[0].text
 
 
 # ---------------------------------------------------------------------------

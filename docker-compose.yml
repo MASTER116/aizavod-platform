@@ -102,6 +102,18 @@ services:
       - backend
     command: python -m telegram_bot.main
 
+  # ─── CERTIFIER Telegram Bot ───────────────────────────
+  certifier-bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - backend
+    command: python -m certifier_bot.main
+
   # ─── n8n ───────────────────────────────────────────────
   n8n:
     image: n8nio/n8n:latest
