@@ -1,4 +1,4 @@
-"""Start command and main menu handler."""
+"""Команда /start и главное меню."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -9,13 +9,13 @@ from telegram_bot.keyboards import main_menu_kb
 
 router = Router()
 
-WELCOME_TEXT = """🤖 **AIZAVOD — AI Command Center**
+WELCOME_TEXT = """🤖 **AIZAVOD — Командный центр**
 
-**Instagram Factory:**
-📊 Dashboard — метрики и статистика
-📋 Next Posts — предпросмотр постов
-🎨 Generate — генерация нового контента
-⚙️ Settings — настройки автономности
+**Фабрика контента:**
+📊 Дашборд — метрики и статистика
+📋 Посты — предпросмотр постов
+🎨 Создать — генерация нового контента
+⚙️ Настройки — автоматизация
 
 **Агенты заработка:**
 /scan — поиск грантов, хакатонов, конкурсов

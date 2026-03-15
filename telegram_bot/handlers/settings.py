@@ -1,4 +1,4 @@
-"""Settings management handler."""
+"""Управление настройками."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -25,18 +25,17 @@ async def _api(method: str, path: str, json_data: dict = None) -> dict:
 
 @router.callback_query(F.data == "settings")
 async def cb_settings(callback: CallbackQuery):
-    """Show current settings with toggle buttons."""
     try:
         settings = await _api("GET", "/admin/api/settings")
-        text = f"""⚙️ **Settings**
+        text = f"""⚙️ **Настройки**
 
-📊 Posts/day: {settings['posts_per_day']}
-📸 Stories/day: {settings['stories_per_day']}
-🎬 Reels/week: {settings['reels_per_week']}
-🌐 Language: {settings['caption_language']}
-🖼 Quality: {settings['image_quality']}
+📊 Постов/день: {settings['posts_per_day']}
+📸 Сторис/день: {settings['stories_per_day']}
+🎬 Рилс/неделю: {settings['reels_per_week']}
+🌐 Язык: {settings['caption_language']}
+🖼 Качество: {settings['image_quality']}
 
-Toggle automation below:"""
+Переключи автоматизацию ниже:"""
 
         await callback.message.edit_text(
             text,
@@ -49,13 +48,12 @@ Toggle automation below:"""
             parse_mode="Markdown",
         )
     except Exception as e:
-        await callback.message.edit_text(f"❌ Error: {e}", reply_markup=back_kb())
+        await callback.message.edit_text(f"Ошибка: {e}", reply_markup=back_kb())
     await callback.answer()
 
 
 @router.callback_query(F.data.startswith("toggle_"))
 async def cb_toggle_setting(callback: CallbackQuery):
-    """Toggle an automation setting."""
     setting_name = callback.data.replace("toggle_", "")
 
     try:
@@ -64,17 +62,14 @@ async def cb_toggle_setting(callback: CallbackQuery):
 
         await _api("PUT", "/admin/api/settings", json_data={setting_name: new_value})
 
-        # Refresh settings view
         await cb_settings(callback)
     except Exception as e:
-        await callback.answer(f"Error: {e}", show_alert=True)
+        await callback.answer(f"Ошибка: {e}", show_alert=True)
 
 
 @router.callback_query(F.data == "costs")
 async def cb_costs(callback: CallbackQuery):
-    """Show API cost summary."""
     try:
-        # For now, calculate from posts
         posts = await _api("GET", "/admin/api/posts?limit=200")
         if isinstance(posts, list):
             total_cost = sum(p.get("generation_cost_usd", 0) for p in posts)
@@ -83,13 +78,13 @@ async def cb_costs(callback: CallbackQuery):
             total_cost = 0
             total_posts = 0
 
-        text = f"""💰 **Cost Report**
+        text = f"""💰 **Отчёт о расходах**
 
-📊 Total posts: {total_posts}
-💵 Total spent: ${total_cost:.2f}
-📈 Avg per post: ${(total_cost / total_posts) if total_posts else 0:.3f}"""
+📊 Всего постов: {total_posts}
+💵 Потрачено: ${total_cost:.2f}
+📈 Среднее за пост: ${(total_cost / total_posts) if total_posts else 0:.3f}"""
 
         await callback.message.edit_text(text, reply_markup=back_kb(), parse_mode="Markdown")
     except Exception as e:
-        await callback.message.edit_text(f"❌ Error: {e}", reply_markup=back_kb())
+        await callback.message.edit_text(f"Ошибка: {e}", reply_markup=back_kb())
     await callback.answer()

@@ -1,4 +1,4 @@
-"""Manual content generation handler."""
+"""Ручная генерация контента."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -27,9 +27,8 @@ async def _api(method: str, path: str, json_data: dict = None, params: dict = No
 
 @router.callback_query(F.data == "generate")
 async def cb_generate(callback: CallbackQuery):
-    """Show category selection for manual generation."""
     await callback.message.edit_text(
-        "🎨 **Generate New Post**\n\nSelect content category:",
+        "🎨 **Создать новый пост**\n\nВыбери категорию:",
         reply_markup=category_kb(),
         parse_mode="Markdown",
     )
@@ -43,8 +42,8 @@ async def cb_category_selected(callback: CallbackQuery, state: FSMContext):
     await state.set_state(ManualPostStates.entering_prompt)
 
     await callback.message.edit_text(
-        f"📂 Category: **{category}**\n\n"
-        "Enter a description for the image (or send 'auto' for AI-generated prompt):",
+        f"📂 Категория: **{category}**\n\n"
+        "Введи описание для изображения (или отправь 'auto' для AI-генерации):",
         parse_mode="Markdown",
     )
     await callback.answer()
@@ -56,19 +55,17 @@ async def on_prompt_entered(message: Message, state: FSMContext):
     category = data["category"]
     prompt = message.text.strip()
 
-    await message.answer("⏳ Generating post... This may take 30-60 seconds.")
+    await message.answer("⏳ Генерирую пост... Это может занять 30-60 секунд.")
 
     try:
-        # Get active character
         characters = await _api("GET", "/admin/api/characters")
         if not characters:
-            await message.answer("❌ No character configured. Create one first.", reply_markup=back_kb())
+            await message.answer("Персонаж не настроен. Сначала создай персонажа.", reply_markup=back_kb())
             await state.clear()
             return
 
         character_id = characters[0]["id"]
 
-        # Create post
         post = await _api("POST", "/admin/api/posts", json_data={
             "character_id": character_id,
             "category": category,
@@ -80,15 +77,13 @@ async def on_prompt_entered(message: Message, state: FSMContext):
                 "caption_ru": prompt,
             })
 
-        # Generate image + caption
         result = await _api("POST", f"/admin/api/posts/{post['id']}/generate")
 
-        # Show result
         from telegram_bot.keyboards import post_review_kb
-        text = f"""✨ **Post Generated!**
+        text = f"""✨ **Пост создан!**
 
-📂 Category: {result['category']}
-💰 Cost: ${result.get('generation_cost_usd', 0):.3f}
+📂 Категория: {result['category']}
+💰 Стоимость: ${result.get('generation_cost_usd', 0):.3f}
 
 🇷🇺 {result.get('caption_ru', '')}
 
@@ -113,6 +108,6 @@ async def on_prompt_entered(message: Message, state: FSMContext):
         await message.answer(text, reply_markup=post_review_kb(result["id"]), parse_mode="Markdown")
 
     except Exception as e:
-        await message.answer(f"❌ Generation failed: {e}", reply_markup=back_kb())
+        await message.answer(f"Ошибка генерации: {e}", reply_markup=back_kb())
 
     await state.clear()

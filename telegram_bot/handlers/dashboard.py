@@ -1,4 +1,4 @@
-"""Dashboard handler — quick metrics overview."""
+"""Дашборд — обзор метрик."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -12,7 +12,6 @@ router = Router()
 
 
 async def _api(method: str, path: str) -> dict:
-    """Call backend API."""
     url = f"{get_backend_url()}{path}"
     headers = {}
     api_key = get_backend_api_key()
@@ -27,8 +26,6 @@ async def _api(method: str, path: str) -> dict:
 @router.callback_query(F.data == "dashboard")
 async def cb_dashboard(callback: CallbackQuery):
     try:
-        # Get overview from analytics endpoint if available
-        # For now, show basic stats from posts
         posts = await _api("GET", "/admin/api/posts?status=published&limit=1")
         scheduled = await _api("GET", "/admin/api/posts?status=scheduled&limit=200")
         pending = await _api("GET", "/admin/api/posts?status=generated&limit=200")
@@ -37,16 +34,16 @@ async def cb_dashboard(callback: CallbackQuery):
         scheduled_count = len(scheduled) if isinstance(scheduled, list) else 0
         pending_count = len(pending) if isinstance(pending, list) else 0
 
-        text = f"""📊 **Dashboard**
+        text = f"""📊 **Дашборд**
 
-📈 Published: {published_count} posts
-📅 Scheduled: {scheduled_count} posts
-⏳ Pending review: {pending_count} posts
+📈 Опубликовано: {published_count} постов
+📅 Запланировано: {scheduled_count} постов
+⏳ На проверку: {pending_count} постов
 
-_Use /start for main menu_"""
+_/start — главное меню_"""
 
     except Exception as e:
-        text = f"❌ Failed to fetch dashboard: {e}"
+        text = f"Ошибка загрузки дашборда: {e}"
 
     await callback.message.edit_text(text, reply_markup=back_kb(), parse_mode="Markdown")
     await callback.answer()

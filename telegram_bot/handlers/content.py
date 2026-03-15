@@ -1,4 +1,4 @@
-"""Content preview and approval handlers."""
+"""Просмотр и одобрение контента."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -28,7 +28,6 @@ async def _api(method: str, path: str, json_data: dict = None) -> dict | list:
 
 @router.callback_query(F.data == "next_posts")
 async def cb_next_posts(callback: CallbackQuery):
-    """Show next 5 scheduled/generated posts for review."""
     try:
         posts = await _api("GET", "/admin/api/posts?status=generated&limit=5")
         if not posts:
@@ -36,43 +35,47 @@ async def cb_next_posts(callback: CallbackQuery):
 
         if not posts:
             await callback.message.edit_text(
-                "📋 No pending posts to review.",
+                "📋 Нет постов на проверку.",
                 reply_markup=back_kb(),
             )
             await callback.answer()
             return
 
-        # Show first post
         post = posts[0]
         await _show_post(callback, post)
 
     except Exception as e:
         await callback.message.edit_text(
-            f"❌ Error: {e}",
+            f"Ошибка: {e}",
             reply_markup=back_kb(),
         )
     await callback.answer()
 
 
 async def _show_post(callback: CallbackQuery, post: dict):
-    """Display a post with image and review buttons."""
     status_emoji = {
         "draft": "📝", "generating": "⏳", "generated": "✨",
         "approved": "✅", "scheduled": "📅", "published": "📱",
         "failed": "❌",
     }
+    status_label = {
+        "draft": "черновик", "generating": "генерация", "generated": "создан",
+        "approved": "одобрен", "scheduled": "запланирован", "published": "опубликован",
+        "failed": "ошибка",
+    }
 
     emoji = status_emoji.get(post["status"], "❓")
-    text = f"""{emoji} **Post #{post['id']}** [{post['status']}]
+    label = status_label.get(post["status"], post["status"])
+    text = f"""{emoji} **Пост #{post['id']}** [{label}]
 
-📂 Category: {post['category']}
-🖼 Type: {post['content_type']}
+📂 Категория: {post['category']}
+🖼 Тип: {post['content_type']}
 
-🇷🇺 {post.get('caption_ru', 'No caption') or 'No caption'}
+🇷🇺 {post.get('caption_ru', 'Нет подписи') or 'Нет подписи'}
 
-🇬🇧 {post.get('caption_en', 'No caption') or 'No caption'}
+🇬🇧 {post.get('caption_en', 'Нет подписи') or 'Нет подписи'}
 
-💰 Cost: ${post.get('generation_cost_usd', 0):.3f}"""
+💰 Стоимость: ${post.get('generation_cost_usd', 0):.3f}"""
 
     if post.get("image_path"):
         image_abs = _PROJECT_ROOT / post["image_path"].lstrip("/")
@@ -99,11 +102,11 @@ async def cb_approve(callback: CallbackQuery):
     try:
         post = await _api("POST", f"/admin/api/posts/{post_id}/approve")
         await callback.message.edit_caption(
-            caption=f"✅ Post #{post_id} approved!",
+            caption=f"✅ Пост #{post_id} одобрен!",
             reply_markup=back_kb(),
         )
     except Exception as e:
-        await callback.answer(f"Error: {e}", show_alert=True)
+        await callback.answer(f"Ошибка: {e}", show_alert=True)
     await callback.answer()
 
 
@@ -113,23 +116,23 @@ async def cb_reject(callback: CallbackQuery):
     try:
         await _api("POST", f"/admin/api/posts/{post_id}/reject")
         await callback.message.edit_caption(
-            caption=f"❌ Post #{post_id} rejected. Moved to draft.",
+            caption=f"❌ Пост #{post_id} отклонён. Перемещён в черновик.",
             reply_markup=back_kb(),
         )
     except Exception as e:
-        await callback.answer(f"Error: {e}", show_alert=True)
+        await callback.answer(f"Ошибка: {e}", show_alert=True)
     await callback.answer()
 
 
 @router.callback_query(F.data.startswith("regen_"))
 async def cb_regenerate(callback: CallbackQuery):
     post_id = int(callback.data.split("_")[1])
-    await callback.answer("🔄 Regenerating... This may take a moment.", show_alert=True)
+    await callback.answer("🔄 Переделываю... Может занять некоторое время.", show_alert=True)
     try:
         post = await _api("POST", f"/admin/api/posts/{post_id}/generate")
         await _show_post(callback, post)
     except Exception as e:
         await callback.message.edit_text(
-            f"❌ Regeneration failed: {e}",
+            f"Ошибка переделки: {e}",
             reply_markup=back_kb(),
         )

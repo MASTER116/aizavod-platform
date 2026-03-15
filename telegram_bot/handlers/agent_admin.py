@@ -1,4 +1,4 @@
-"""Telegram handlers for agent management — status, deals, DMs."""
+"""Управление агентом — статус, сделки, ЛС."""
 from __future__ import annotations
 
 from aiogram import Router, F
@@ -12,7 +12,6 @@ router = Router()
 
 
 async def _api(method: str, path: str, json_body: dict = None) -> dict:
-    """Call backend API."""
     url = f"{get_backend_url()}{path}"
     headers = {}
     api_key = get_backend_api_key()
@@ -24,153 +23,160 @@ async def _api(method: str, path: str, json_body: dict = None) -> dict:
         return resp.json()
 
 
-# ─── Agent Status ─────────────────────────────────────────────────────────
+# ─── Статус агента ───────────────────────────────────────────────────────
 
 
 @router.message(Command("agent"))
 async def cmd_agent_status(message: Message):
-    """Show agent orchestrator status."""
     try:
         status = await _api("GET", "/admin/api/agent/status")
 
         text = (
-            f"🤖 *Agent Status*\n\n"
-            f"Model: `{status['model']}`\n"
-            f"Decisions today: {status['decisions_today']}/{status['max_daily_decisions']}\n"
-            f"Remaining: {status['decisions_remaining']}\n"
-            f"Errors today: {status['errors_today']}\n"
-            f"Last action: {status.get('last_action', 'none')}\n"
-            f"Last decision: {status.get('last_decision_at', 'never')}"
+            f"🤖 *Статус агента*\n\n"
+            f"Модель: `{status['model']}`\n"
+            f"Решений сегодня: {status['decisions_today']}/{status['max_daily_decisions']}\n"
+            f"Осталось: {status['decisions_remaining']}\n"
+            f"Ошибок сегодня: {status['errors_today']}\n"
+            f"Последнее действие: {status.get('last_action', 'нет')}\n"
+            f"Последнее решение: {status.get('last_decision_at', 'никогда')}"
         )
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔄 Trigger Cycle", callback_data="agent_trigger")],
-            [InlineKeyboardButton(text="📋 Recent Decisions", callback_data="agent_decisions")],
-            [InlineKeyboardButton(text="💬 DM Summary", callback_data="agent_dms")],
-            [InlineKeyboardButton(text="💼 Deals", callback_data="agent_deals")],
+            [InlineKeyboardButton(text="🔄 Запустить цикл", callback_data="agent_trigger")],
+            [InlineKeyboardButton(text="📋 Последние решения", callback_data="agent_decisions")],
+            [InlineKeyboardButton(text="💬 Сводка ЛС", callback_data="agent_dms")],
+            [InlineKeyboardButton(text="💼 Сделки", callback_data="agent_deals")],
         ])
 
         await message.answer(text, reply_markup=kb)
     except Exception as e:
-        await message.answer(f"❌ Failed to get agent status: {e}")
+        await message.answer(f"Ошибка получения статуса агента: {e}")
 
 
 @router.callback_query(F.data == "agent_trigger")
 async def cb_agent_trigger(callback: CallbackQuery):
-    """Manually trigger agent cycle."""
-    await callback.answer("Triggering agent cycle...")
+    await callback.answer("Запускаю цикл агента...")
     try:
         result = await _api("POST", "/admin/api/agent/trigger", {"task_type": "manual"})
         actions = result.get("actions", 0)
-        await callback.message.answer(f"✅ Agent cycle completed: {actions} action(s)")
+        await callback.message.answer(f"✅ Цикл агента завершён: {actions} действий")
     except Exception as e:
-        await callback.message.answer(f"❌ Agent trigger failed: {e}")
+        await callback.message.answer(f"Ошибка запуска агента: {e}")
 
 
 @router.callback_query(F.data == "agent_decisions")
 async def cb_agent_decisions(callback: CallbackQuery):
-    """Show recent agent decisions."""
     await callback.answer()
     try:
         decisions = await _api("GET", "/admin/api/agent/decisions?limit=5")
 
         if not decisions:
-            await callback.message.answer("No agent decisions yet.")
+            await callback.message.answer("Решений агента ещё нет.")
             return
 
-        lines = ["📋 *Recent Agent Decisions*\n"]
+        lines = ["📋 *Последние решения агента*\n"]
         for d in decisions:
             status = "✅" if d["executed"] else "❌"
             lines.append(
-                f"{status} *{d['task_type']}* (conf: {d['confidence_score']:.2f})\n"
+                f"{status} *{d['task_type']}* (увер.: {d['confidence_score']:.2f})\n"
                 f"   {d.get('reasoning', '')[:100]}\n"
                 f"   _{d['created_at']}_\n"
             )
 
         await callback.message.answer("\n".join(lines))
     except Exception as e:
-        await callback.message.answer(f"❌ Failed to get decisions: {e}")
+        await callback.message.answer(f"Ошибка получения решений: {e}")
 
 
-# ─── DMs ──────────────────────────────────────────────────────────────────
+# ─── ЛС ─────────────────────────────────────────────────────────────────
 
 
 @router.callback_query(F.data == "agent_dms")
 async def cb_agent_dms(callback: CallbackQuery):
-    """Show DM summary."""
     await callback.answer()
     try:
         summary = await _api("GET", "/admin/api/dms/summary")
 
         text = (
-            f"💬 *DM Summary*\n\n"
-            f"Total conversations: {summary['total_conversations']}\n"
-            f"Unread: {summary['total_unread']}\n\n"
+            f"💬 *Сводка ЛС*\n\n"
+            f"Всего разговоров: {summary['total_conversations']}\n"
+            f"Непрочитанных: {summary['total_unread']}\n\n"
         )
 
+        cat_labels = {
+            "fan": "💛 Фанаты",
+            "brand_inquiry": "🏢 Бренды",
+            "spam": "🚫 Спам",
+            "question": "❓ Вопросы",
+            "uncategorized": "📨 Прочее",
+        }
+
         for cat, data in summary.get("by_category", {}).items():
-            emoji = {
-                "fan": "💛", "brand_inquiry": "🏢",
-                "spam": "🚫", "question": "❓",
-                "uncategorized": "📨",
-            }.get(cat, "📨")
-            text += f"{emoji} {cat}: {data['count']}\n"
+            label = cat_labels.get(cat, f"📨 {cat}")
+            text += f"{label}: {data['count']}\n"
 
         await callback.message.answer(text)
     except Exception as e:
-        await callback.message.answer(f"❌ Failed to get DMs: {e}")
+        await callback.message.answer(f"Ошибка получения ЛС: {e}")
 
 
 @router.message(Command("dms"))
 async def cmd_dms(message: Message):
-    """Show DM conversations list."""
     try:
         convs = await _api("GET", "/admin/api/dms/conversations?limit=10")
 
         if not convs:
-            await message.answer("No DM conversations yet.")
+            await message.answer("Разговоров в ЛС ещё нет.")
             return
 
-        lines = ["💬 *Recent DMs*\n"]
+        cat_labels = {
+            "fan": "💛 фанат",
+            "brand_inquiry": "🏢 бренд",
+            "spam": "🚫 спам",
+            "question": "❓ вопрос",
+        }
+
+        lines = ["💬 *Последние ЛС*\n"]
         for c in convs:
-            emoji = {
-                "fan": "💛", "brand_inquiry": "🏢",
-                "spam": "🚫", "question": "❓",
-            }.get(c["category"], "📨")
-            unread = f" ({c['unread_count']} new)" if c["unread_count"] > 0 else ""
-            lines.append(f"{emoji} @{c['username']}{unread} — {c['category']}")
+            label = cat_labels.get(c["category"], f"📨 {c['category']}")
+            unread = f" ({c['unread_count']} новых)" if c["unread_count"] > 0 else ""
+            lines.append(f"{label} @{c['username']}{unread}")
 
         await message.answer("\n".join(lines))
     except Exception as e:
-        await message.answer(f"❌ Failed to get DMs: {e}")
+        await message.answer(f"Ошибка получения ЛС: {e}")
 
 
-# ─── Deals ────────────────────────────────────────────────────────────────
+# ─── Сделки ──────────────────────────────────────────────────────────────
 
 
 @router.callback_query(F.data == "agent_deals")
 async def cb_agent_deals(callback: CallbackQuery):
-    """Show active ad deals."""
     await callback.answer()
     try:
         deals = await _api("GET", "/admin/api/deals/?limit=10")
 
         if not deals:
-            await callback.message.answer("No ad deals yet.")
+            await callback.message.answer("Рекламных сделок ещё нет.")
             return
 
-        lines = ["💼 *Ad Deals*\n"]
+        status_labels = {
+            "detected": "🔍 обнаружена",
+            "evaluating": "⏳ оценка",
+            "awaiting_approval": "⚠️ ждёт одобрения",
+            "proposal_sent": "📤 предложение отправлено",
+            "negotiating": "🤝 переговоры",
+            "completed": "✅ завершена",
+            "rejected": "❌ отклонена",
+        }
+
+        lines = ["💼 *Рекламные сделки*\n"]
         for d in deals:
-            status_emoji = {
-                "detected": "🔍", "evaluating": "⏳",
-                "awaiting_approval": "⚠️", "proposal_sent": "📤",
-                "negotiating": "🤝", "completed": "✅",
-                "rejected": "❌",
-            }.get(d["status"], "📋")
+            label = status_labels.get(d["status"], f"📋 {d['status']}")
 
             lines.append(
-                f"{status_emoji} *{d['brand_name']}* — {d['status']}\n"
-                f"   Fit: {'⭐' * int(d['brand_fit_score'] * 5)} | Rate: ${d['proposed_price_usd']:.0f}"
+                f"{label} *{d['brand_name']}*\n"
+                f"   Совпадение: {'⭐' * int(d['brand_fit_score'] * 5)} | Цена: ${d['proposed_price_usd']:.0f}"
             )
 
             if d["status"] == "awaiting_approval":
@@ -178,15 +184,14 @@ async def cb_agent_deals(callback: CallbackQuery):
 
         await callback.message.answer("\n".join(lines))
     except Exception as e:
-        await callback.message.answer(f"❌ Failed to get deals: {e}")
+        await callback.message.answer(f"Ошибка получения сделок: {e}")
 
 
 @router.message(Command("approve_deal"))
 async def cmd_approve_deal(message: Message):
-    """Approve an ad deal: /approve_deal <deal_id>"""
     parts = message.text.split()
     if len(parts) < 2:
-        await message.answer("Usage: /approve\\_deal <deal\\_id>")
+        await message.answer("Формат: /approve\\_deal <id\\_сделки>")
         return
 
     try:
@@ -196,17 +201,16 @@ async def cmd_approve_deal(message: Message):
         if result.get("error"):
             await message.answer(f"❌ {result['error']}")
         else:
-            await message.answer(f"✅ Deal {deal_id} approved! Proposal ready to send.")
+            await message.answer(f"✅ Сделка {deal_id} одобрена! Предложение готово к отправке.")
     except Exception as e:
-        await message.answer(f"❌ Failed to approve deal: {e}")
+        await message.answer(f"Ошибка одобрения сделки: {e}")
 
 
 @router.message(Command("reject_deal"))
 async def cmd_reject_deal(message: Message):
-    """Reject an ad deal: /reject_deal <deal_id> [reason]"""
     parts = message.text.split(maxsplit=2)
     if len(parts) < 2:
-        await message.answer("Usage: /reject\\_deal <deal\\_id> [reason]")
+        await message.answer("Формат: /reject\\_deal <id\\_сделки> [причина]")
         return
 
     try:
@@ -217,6 +221,6 @@ async def cmd_reject_deal(message: Message):
         if result.get("error"):
             await message.answer(f"❌ {result['error']}")
         else:
-            await message.answer(f"✅ Deal {deal_id} rejected.")
+            await message.answer(f"✅ Сделка {deal_id} отклонена.")
     except Exception as e:
-        await message.answer(f"❌ Failed to reject deal: {e}")
+        await message.answer(f"Ошибка отклонения сделки: {e}")
