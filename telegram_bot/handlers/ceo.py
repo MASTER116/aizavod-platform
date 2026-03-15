@@ -1,4 +1,4 @@
-"""Хендлеры раздела «Задача / Запрос» — CEO-агент (оркестратор)."""
+"""Хендлеры раздела «Задача / Запрос» — Генеральный директор (оркестратор)."""
 from __future__ import annotations
 
 import logging
@@ -44,7 +44,7 @@ async def cb_ask_start(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(CEOStates.waiting_question)
     await callback.message.answer(
-        "🧠 Задай вопрос CEO-агенту.\n\n"
+        "🧠 Задай вопрос Генеральному директору.\n\n"
         "Я проанализирую и дам рекомендацию с распределением по директорам.\n\n"
         "Примеры:\n"
         "• <i>Как заработать первые 10 000 руб. за неделю?</i>\n"
@@ -59,7 +59,7 @@ async def on_question(message: Message, state: FSMContext):
     await state.clear()
     question = message.text.strip()
 
-    await message.answer("🧠 CEO-агент анализирует вопрос...")
+    await message.answer("🧠 Генеральный директор анализирует вопрос...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()
@@ -67,7 +67,7 @@ async def on_question(message: Message, state: FSMContext):
 
     for part in _split(result):
         await message.answer(part)
-    await message.answer("⬆️ Ответ CEO-агента", reply_markup=task_menu_kb())
+    await message.answer("⬆️ Ответ Генеральный директора", reply_markup=task_menu_kb())
 
 
 @router.callback_query(F.data == "task_assign")
@@ -76,7 +76,7 @@ async def cb_task_start(callback: CallbackQuery, state: FSMContext):
     await state.set_state(CEOStates.waiting_task)
     await callback.message.answer(
         "📋 Поставь задачу.\n\n"
-        "CEO-агент разобьёт её на подзадачи и распределит между директорами.\n\n"
+        "Генеральный директор разобьёт её на подзадачи и распределит между директорами.\n\n"
         "Примеры:\n"
         "• <i>Найти 3 клиентов на Telegram-ботов</i>\n"
         "• <i>Подготовить заявку на Цифровой прорыв</i>\n"
@@ -90,7 +90,7 @@ async def on_task(message: Message, state: FSMContext):
     await state.clear()
     task = message.text.strip()
 
-    await message.answer("📋 CEO-агент составляет план и распределяет задачи...")
+    await message.answer("📋 Генеральный директор составляет план и распределяет задачи...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()
@@ -104,7 +104,7 @@ async def on_task(message: Message, state: FSMContext):
 @router.callback_query(F.data == "task_strategy")
 async def cb_strategy(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("🔄 CEO-агент составляет стратегический план на 2 недели...")
+    await callback.message.answer("🔄 Генеральный директор составляет стратегический план на 2 недели...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()

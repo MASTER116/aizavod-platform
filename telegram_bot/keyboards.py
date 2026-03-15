@@ -157,7 +157,7 @@ def status_menu_kb() -> InlineKeyboardMarkup:
 
 def task_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🧠 Задать вопрос CEO", callback_data="task_ask")],
+        [InlineKeyboardButton(text="🧠 Задать вопрос Гендиректору", callback_data="task_ask")],
         [InlineKeyboardButton(text="📋 Поставить задачу", callback_data="task_assign")],
         [InlineKeyboardButton(text="🔄 Стратегический план", callback_data="task_strategy")],
         [InlineKeyboardButton(text="◀️ Главное меню", callback_data="main_menu")],

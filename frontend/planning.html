@@ -578,19 +578,25 @@
                 <label class="form-label">Исполнитель</label>
                 <select class="form-select" id="f-assignee">
                     <option value="founder">Я (Основатель)</option>
-                    <option value="ceo_agent">CEO Агент</option>
+                    <option value="ceo_agent">Генеральный директор</option>
                     <option value="certifier">Сертификатор</option>
                     <option value="lawyer_agent">Юрист</option>
                     <option value="accountant_agent">Бухгалтер</option>
                     <option value="freelance_agent">Фрилансер</option>
-                    <option value="pricing_agent">Ценообразование</option>
-                    <option value="outreach_agent">Аутрич</option>
-                    <option value="content_factory">Контент-фабрика</option>
-                    <option value="opportunity_scanner">Сканер грантов</option>
+                    <option value="pricing_agent">Оценщик проектов</option>
+                    <option value="outreach_agent">Менеджер продаж</option>
+                    <option value="content_factory">Фабрика контента</option>
+                    <option value="opportunity_scanner">Сканер возможностей</option>
                     <option value="idea_generator">Генератор идей</option>
                     <option value="market_analyzer">Аналитик рынка</option>
-                    <option value="guardian_agent">Комплаенс</option>
-                    <option value="herald_agent">PR/Медиа</option>
+                    <option value="guardian_agent">Страж безопасности</option>
+                    <option value="herald_agent">Глашатай</option>
+                    <option value="darwin_agent">Эволюция</option>
+                    <option value="scholar_agent">Учёный</option>
+                    <option value="namer_agent">Нейминг</option>
+                    <option value="guardian_ip_agent">Страж ИС</option>
+                    <option value="voice_agent">Голосовой агент</option>
+                    <option value="treasurer_agent">Казначей</option>
                 </select>
             </div>
             <div class="form-group">
@@ -685,19 +691,30 @@ async function loadWorkload() {
 
 const AGENT_LABELS = {
     'founder': 'Я (Основатель)',
-    'ceo_agent': 'CEO Агент',
+    'ceo_agent': 'Генеральный директор',
     'certifier': 'Сертификатор',
     'lawyer_agent': 'Юрист',
     'accountant_agent': 'Бухгалтер',
     'freelance_agent': 'Фрилансер',
-    'pricing_agent': 'Ценообразование',
-    'outreach_agent': 'Аутрич',
-    'content_factory': 'Контент-фабрика',
-    'opportunity_scanner': 'Сканер грантов',
+    'pricing_agent': 'Оценщик проектов',
+    'outreach_agent': 'Менеджер продаж',
+    'content_factory': 'Фабрика контента',
+    'opportunity_scanner': 'Сканер возможностей',
     'idea_generator': 'Генератор идей',
     'market_analyzer': 'Аналитик рынка',
-    'guardian_agent': 'Комплаенс',
-    'herald_agent': 'PR/Медиа',
+    'guardian_agent': 'Страж безопасности',
+    'herald_agent': 'Глашатай',
+    'darwin_agent': 'Эволюция',
+    'scholar_agent': 'Учёный',
+    'namer_agent': 'Нейминг',
+    'guardian_ip_agent': 'Страж ИС',
+    'voice_agent': 'Голосовой агент',
+    'treasurer_agent': 'Казначей',
+    'cto': 'Технический директор',
+    'cdo': 'Директор по развитию',
+    'clo': 'Директор по юриспруденции',
+    'cmo': 'Директор по маркетингу',
+    'cpo': 'Директор по продукту',
 };
 
 const PRIORITY_BADGE = {
