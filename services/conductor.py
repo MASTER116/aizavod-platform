@@ -104,6 +104,28 @@ AGENTS: list[AgentInfo] = [
         keywords=["контент", "инстаграм", "instagram", "tiktok", "пост", "рилс", "reels", "сторис", "публикац"],
         handler="_route_content",
     ),
+    AgentInfo(
+        name="lawyer_agent",
+        department="Юридический",
+        description="Юридические консультации: договоры, регистрация ИП/ООО, трудовое право, налоговые споры",
+        keywords=[
+            "юрист", "юридическ", "договор", "контракт", "регистрац ип", "регистрац ооо",
+            "трудов", "увольнен", "закон", "право", "суд", "иск", "штраф",
+            "лицензи", "оквэд", "устав", "налогов спор", "открыть ип", "открыть ооо",
+        ],
+        handler="_route_lawyer",
+    ),
+    AgentInfo(
+        name="accountant_agent",
+        department="Бухгалтерия",
+        description="Бухгалтерия, налоги, отчетность, зарплата, выбор системы налогообложения для ИП/ООО",
+        keywords=[
+            "бухгалтер", "налог", "усн", "осн", "патент", "отчетност", "декларац налог",
+            "взнос", "ндфл", "зарплат", "страхов", "пфр", "фсс", "ндс",
+            "касс", "бухучет", "баланс", "календарь отчет",
+        ],
+        handler="_route_accountant",
+    ),
 ]
 
 
@@ -186,7 +208,7 @@ class Conductor:
             if best_score >= 1:
                 return RouteDecision(
                     agent=best,
-                    confidence=min(0.5 + best_score * 0.15, 0.95),
+                    confidence=min(0.85 + best_score * 0.05, 0.95),
                     reasoning=f"Ключевые слова совпали ({best_score} совпадений)",
                     reformulated_query=query,
                 )
@@ -423,6 +445,32 @@ async def _route_content(query: str) -> str:
         "Статус: Instagram логин заблокирован (ChallengeRequired).\n"
         "Генерация контента работает, публикация приостановлена."
     )
+
+
+async def _route_lawyer(query: str) -> str:
+    from services.lawyer_agent import get_lawyer_agent
+    agent = get_lawyer_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["договор", "контракт"]):
+        return await agent.check_contract(query)
+    elif any(kw in q for kw in ["регистрац", "открыть ип", "зарегистр"]):
+        return await agent.ip_registration(query)
+    elif any(kw in q for kw in ["трудов", "увольнен", "сотрудник", "работник"]):
+        return await agent.labor_law(query)
+    return await agent.consult(query)
+
+
+async def _route_accountant(query: str) -> str:
+    from services.accountant_agent import get_accountant_agent
+    agent = get_accountant_agent()
+    q = query.lower()
+    if any(kw in q for kw in ["усн", "осн", "патент", "систем налог", "какой налог"]):
+        return await agent.compare_tax_systems(query, "", "")
+    elif any(kw in q for kw in ["календар", "отчетност", "когда сдавать", "срок"]):
+        return await agent.reporting_calendar()
+    elif any(kw in q for kw in ["зарплат", "ндфл", "оклад", "выплат"]):
+        return await agent.payroll_calc(query)
+    return await agent.consult(query)
 
 
 # ─── Singleton ───────────────────────────────────────────────────────────────
