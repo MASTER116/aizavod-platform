@@ -24,12 +24,45 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 def money_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔍 Сканировать гранты и конкурсы", callback_data="money_scan")],
+        [InlineKeyboardButton(text="🔬 Глубокий анализ конкурса", callback_data="money_deep_analyze")],
         [InlineKeyboardButton(text="💡 Идеи для заработка", callback_data="money_ideas")],
         [InlineKeyboardButton(text="📝 Заявка на конкурс", callback_data="money_proposal")],
         [InlineKeyboardButton(text="📈 Анализ рынка", callback_data="money_market")],
         [InlineKeyboardButton(text="🏢 Анализ конкурентов", callback_data="money_competitors")],
         [InlineKeyboardButton(text="📋 Источники возможностей", callback_data="money_sources")],
+        [InlineKeyboardButton(text="💾 Мои идеи", callback_data="money_my_ideas")],
         [InlineKeyboardButton(text="◀️ Главное меню", callback_data="main_menu")],
+    ])
+
+
+def grant_actions_kb() -> InlineKeyboardMarkup:
+    """Действия после анализа конкурса."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💡 Идеи под этот конкурс", callback_data="grant_ideas")],
+        [InlineKeyboardButton(text="📊 Excel-калькуляция", callback_data="grant_excel")],
+        [InlineKeyboardButton(text="📄 Документы на подачу", callback_data="grant_docs")],
+        [InlineKeyboardButton(text="💾 Сохранить идею", callback_data="grant_save_idea")],
+        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
+    ])
+
+
+def idea_actions_kb() -> InlineKeyboardMarkup:
+    """Действия после генерации идей."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📊 Excel-калькуляция", callback_data="grant_excel")],
+        [InlineKeyboardButton(text="📄 Документы на подачу", callback_data="grant_docs")],
+        [InlineKeyboardButton(text="💾 Сохранить идею", callback_data="grant_save_idea")],
+        [InlineKeyboardButton(text="💡 Ещё идеи", callback_data="grant_ideas")],
+        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
+    ])
+
+
+def saved_ideas_kb() -> InlineKeyboardMarkup:
+    """Клавиатура для списка сохранённых идей."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔬 Глубокий анализ конкурса", callback_data="money_deep_analyze")],
+        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
+        [InlineKeyboardButton(text="🏠 Главное меню", callback_data="main_menu")],
     ])
 
 
