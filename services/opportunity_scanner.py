@@ -240,6 +240,8 @@ class OpportunityScanner:
         "tadviser", "habr", "vc.ru", "rbc.ru", "kommersant",
         "vedomosti", "forbes", "cnews", "comnews", "wiki",
         "spark-interfax", "youtube", "t.me", "vk.com",
+        "productradar", "product-radar", "rb.ru", "incrussia",
+        "banki.ru", "sravni.ru",
     ]
 
     async def _gather_official_docs(self, title: str, url: str) -> list[tuple[str, str]]:

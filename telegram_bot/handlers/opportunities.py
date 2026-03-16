@@ -104,16 +104,34 @@ async def cb_scan(callback: CallbackQuery, state: FSMContext):
         return
 
     # Сохраняем результаты в FSM для дальнейшей работы
+    # Фильтруем инструкции/гайды — оставляем только конкурсы
+    _guide_keywords = [
+        "как получить", "как спланировать", "как подать", "пошаговая инструкция",
+        "топ-", "топ ", "лучших инструментов", "обзор грантов", "рейтинг",
+        "calendar", "календарь грантовых",
+    ]
+    filtered = []
+    for r in results:
+        text_lower = f"{r.title} {r.description}".lower()
+        if any(kw in text_lower for kw in _guide_keywords):
+            continue
+        filtered.append(r)
+
     scan_data = []
-    lines = [f"Найдено: <b>{len(results)}</b>\n"]
-    for i, r in enumerate(results, 1):
+    num = 0
+    lines = [f"Найдено: <b>{len(filtered)}</b>\n"]
+    for r in filtered:
+        num += 1
         rel = "🟢" if r.relevance_score > 0.6 else "🟡" if r.relevance_score > 0.3 else "⚪"
-        # Фильтруем бесполезные описания (вопросы, слишком короткие)
         desc = r.description or ""
-        if desc and len(desc) > 30 and "?" not in desc[:50]:
-            lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>\n   {desc[:120]}\n")
-        else:
-            lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>\n")
+        # Убираем бесполезные описания
+        if not desc or len(desc) < 30 or "?" in desc[:50]:
+            desc = ""
+        line = f'{rel} <b>{num}. {r.title[:80]}</b>'
+        if desc:
+            line += f"\n   {desc[:120]}"
+        line += f'\n   <a href="{r.url}">Ссылка</a>\n'
+        lines.append(line)
         scan_data.append({
             "title": r.title,
             "url": r.url,
