@@ -69,7 +69,7 @@ def saved_ideas_kb() -> InlineKeyboardMarkup:
 def scan_results_kb(results: list[dict]) -> InlineKeyboardMarkup:
     """Динамическая клавиатура: кнопка на каждый найденный грант."""
     rows = []
-    for i, r in enumerate(results[:10]):
+    for i, r in enumerate(results):
         rel = r.get("relevance", 0)
         icon = "🟢" if rel > 0.6 else "🟡" if rel > 0.3 else "⚪"
         title = r.get("title", "")[:50]

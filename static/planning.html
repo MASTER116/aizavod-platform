@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ZAVOD — Планирование работ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #08080c;
+            --surface: rgba(255,255,255,0.03);
+            --surface-hover: rgba(255,255,255,0.06);
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.06);
+            --accent: #6C5CE7;
+            --accent-light: #A29BFE;
+            --accent-glow: rgba(108,92,231,0.3);
+            --text: #F1F1F3;
+            --text-secondary: #A0A0B0;
+            --text-muted: #606070;
+            --success: #00D68F;
+            --warning: #FFAA00;
+            --danger: #FF6B6B;
+            --info: #54A0FF;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #A29BFE, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-actions { display: flex; gap: 12px; }
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #7c6cf7; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-back {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-back:hover { color: var(--text); }
+
+        /* ─── Stats Row ─── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .stat-value.accent { color: var(--accent-light); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.danger { color: var(--danger); }
+
+        /* ─── Layout ─── */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        /* ─── Section ─── */
+        .section {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ─── Agent Workload Bars ─── */
+        .agent-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .agent-row:last-child { border-bottom: none; }
+        .agent-name {
+            width: 140px;
+            font-size: 13px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .agent-name.founder { color: var(--accent-light); }
+        .bar-wrap {
+            flex: 1;
+            height: 28px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            min-width: fit-content;
+        }
+        .bar-low { background: linear-gradient(90deg, #00D68F, #00B87A); }
+        .bar-mid { background: linear-gradient(90deg, #FFAA00, #FF8C00); }
+        .bar-high { background: linear-gradient(90deg, #FF6B6B, #ee5a5a); }
+        .bar-accent { background: linear-gradient(90deg, #6C5CE7, #a855f7); }
+        .agent-meta {
+            width: 100px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        /* ─── Kanban Board ─── */
+        .kanban {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 900px) {
+            .kanban { grid-template-columns: repeat(2, 1fr); }
+        }
+        .kanban-col {
+            background: rgba(255,255,255,0.02);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            min-height: 200px;
+        }
+        .kanban-col-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+        .col-backlog .kanban-col-title { border-color: var(--text-muted); color: var(--text-muted); }
+        .col-todo .kanban-col-title { border-color: var(--info); color: var(--info); }
+        .col-progress .kanban-col-title { border-color: var(--warning); color: var(--warning); }
+        .col-done .kanban-col-title { border-color: var(--success); color: var(--success); }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .task-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .task-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-critical { background: rgba(255,107,107,0.2); color: var(--danger); }
+        .badge-high { background: rgba(255,170,0,0.2); color: var(--warning); }
+        .badge-normal { background: rgba(108,92,231,0.2); color: var(--accent-light); }
+        .badge-low { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+        .badge-category {
+            background: rgba(108,92,231,0.1);
+            color: var(--accent-light);
+        }
+        .task-assignee {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .task-progress {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            margin-top: 8px;
+        }
+        .task-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* ─── Timeline ─── */
+        .timeline-day {
+            margin-bottom: 16px;
+        }
+        .timeline-date {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-light);
+            margin-bottom: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .timeline-date.today {
+            color: var(--success);
+        }
+        .timeline-date.overdue {
+            color: var(--danger);
+        }
+        .timeline-task {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        .timeline-task .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── My Day Panel ─── */
+        .my-day-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .my-day-item:hover { background: var(--surface-hover); }
+        .my-day-check {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .my-day-check:hover { border-color: var(--success); }
+        .my-day-check.done { background: var(--success); border-color: var(--success); }
+        .my-day-text { font-size: 13px; flex: 1; }
+        .my-day-hours { font-size: 12px; color: var(--text-muted); }
+
+        /* ─── Modal ─── */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: #12121a;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            width: 520px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .form-textarea { min-height: 80px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* ─── Empty State ─── */
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ─── Loading ─── */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid var(--accent);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Tabs ─── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.03);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <a href="/" class="btn-back">&larr; AI ZAVOD</a>
+        <h1>Планирование работ</h1>
+    </div>
+    <div class="header-actions">
+        <button class="btn" onclick="loadAll()">Обновить</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Новая задача</button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row" id="stats-row">
+    <div class="stat-card">
+        <div class="stat-label">Всего задач</div>
+        <div class="stat-value accent" id="stat-total">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Выполнено</div>
+        <div class="stat-value success" id="stat-done">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Просрочено</div>
+        <div class="stat-value danger" id="stat-overdue">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Прогресс</div>
+        <div class="stat-value accent" id="stat-rate">—%</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab active" data-tab="kanban">Kanban</button>
+    <button class="tab" data-tab="workload">Загрузка агентов</button>
+    <button class="tab" data-tab="timeline">Таймлайн</button>
+</div>
+
+<!-- Tab: Kanban -->
+<div class="tab-content active" id="tab-kanban">
+    <div class="kanban">
+        <div class="kanban-col col-backlog">
+            <div class="kanban-col-title">Backlog <span id="cnt-backlog"></span></div>
+            <div id="col-backlog"></div>
+        </div>
+        <div class="kanban-col col-todo">
+            <div class="kanban-col-title">To Do <span id="cnt-todo"></span></div>
+            <div id="col-todo"></div>
+        </div>
+        <div class="kanban-col col-progress">
+            <div class="kanban-col-title">В работе <span id="cnt-progress"></span></div>
+            <div id="col-in_progress"></div>
+        </div>
+        <div class="kanban-col col-done">
+            <div class="kanban-col-title">Готово <span id="cnt-done"></span></div>
+            <div id="col-done"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Workload -->
+<div class="tab-content" id="tab-workload">
+    <div class="layout">
+        <div class="section">
+            <div class="section-title">Загрузка по агентам</div>
+            <div id="agent-bars"><div class="loading">Загрузка</div></div>
+        </div>
+        <div>
+            <div class="section">
+                <div class="section-title">Мой день</div>
+                <div id="my-day"><div class="loading">Загрузка</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Timeline -->
+<div class="tab-content" id="tab-timeline">
+    <div class="section">
+        <div class="section-title">
+            <span>Таймлайн (14 дней)</span>
+        </div>
+        <div id="timeline-content"><div class="loading">Загрузка</div></div>
+    </div>
+</div>
+
+<!-- Modal: Create/Edit Task -->
+<div class="modal-backdrop" id="modal">
+    <div class="modal">
+        <h2 id="modal-title">Новая задача</h2>
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+            <label class="form-label">Название</label>
+            <input class="form-input" id="f-title" placeholder="Что нужно сделать?">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Описание</label>
+            <textarea class="form-textarea" id="f-desc" placeholder="Подробности..."></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Категория</label>
+                <select class="form-select" id="f-category">
+                    <option value="development">Разработка</option>
+                    <option value="business">Бизнес</option>
+                    <option value="marketing">Маркетинг</option>
+                    <option value="operations">Операции</option>
+                    <option value="finance">Финансы</option>
+                    <option value="legal">Юридическое</option>
+                    <option value="content">Контент</option>
+                    <option value="sales">Продажи</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Приоритет</label>
+                <select class="form-select" id="f-priority">
+                    <option value="normal">Обычный</option>
+                    <option value="low">Низкий</option>
+                    <option value="high">Высокий</option>
+                    <option value="critical">Критический</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Исполнитель</label>
+                <select class="form-select" id="f-assignee">
+                    <option value="founder">Я (Основатель)</option>
+                    <option value="ceo_agent">Генеральный директор</option>
+                    <option value="certifier">Сертификатор</option>
+                    <option value="lawyer_agent">Юрист</option>
+                    <option value="accountant_agent">Бухгалтер</option>
+                    <option value="freelance_agent">Фрилансер</option>
+                    <option value="pricing_agent">Оценщик проектов</option>
+                    <option value="outreach_agent">Менеджер продаж</option>
+                    <option value="content_factory">Фабрика контента</option>
+                    <option value="opportunity_scanner">Сканер возможностей</option>
+                    <option value="idea_generator">Генератор идей</option>
+                    <option value="market_analyzer">Аналитик рынка</option>
+                    <option value="guardian_agent">Страж безопасности</option>
+                    <option value="herald_agent">Глашатай</option>
+                    <option value="darwin_agent">Эволюция</option>
+                    <option value="scholar_agent">Учёный</option>
+                    <option value="namer_agent">Нейминг</option>
+                    <option value="guardian_ip_agent">Страж ИС</option>
+                    <option value="voice_agent">Голосовой агент</option>
+                    <option value="treasurer_agent">Казначей</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Оценка (часы)</label>
+                <input class="form-input" id="f-hours" type="number" step="0.5" min="0" value="0">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Дата</label>
+                <input class="form-input" id="f-date" type="date">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Дедлайн</label>
+                <input class="form-input" id="f-deadline" type="date">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Заметки</label>
+            <textarea class="form-textarea" id="f-notes" placeholder="Дополнительно..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="savePlan()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+// ─── Tabs ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// ─── API Helpers ─────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+    const res = await fetch(API + '/api/planning' + path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts,
+    });
+    return res.json();
+}
+
+// ─── Load All ────────────────────────────────────────────────────────────
+async function loadAll() {
+    await Promise.all([loadWorkload(), loadKanban(), loadTimeline(), loadMyDay()]);
+}
+
+// ─── Workload ────────────────────────────────────────────────────────────
+async function loadWorkload() {
+    const data = await api('/workload');
+    const s = data.summary;
+    document.getElementById('stat-total').textContent = s.total_plans;
+    document.getElementById('stat-done').textContent = s.done_plans;
+    document.getElementById('stat-overdue').textContent = s.overdue;
+    document.getElementById('stat-rate').textContent = s.completion_rate + '%';
+
+    const container = document.getElementById('agent-bars');
+    if (!data.agents.length) {
+        container.innerHTML = '<div class="empty">Нет активных задач</div>';
+        return;
+    }
+
+    const maxHours = Math.max(...data.agents.map(a => (a.estimated_hours || 0) + (a.conductor_est_hours || 0)), 8);
+
+    container.innerHTML = data.agents.map(a => {
+        const totalH = (a.estimated_hours || 0) + (a.conductor_est_hours || 0);
+        const pct = Math.min((totalH / maxHours) * 100, 100);
+        const totalTasks = (a.work_plans || 0) + (a.conductor_tasks || 0);
+        const barClass = pct > 75 ? 'bar-high' : pct > 40 ? 'bar-mid' : a.assignee === 'founder' ? 'bar-accent' : 'bar-low';
+        const nameClass = a.assignee === 'founder' ? 'agent-name founder' : 'agent-name';
+        const label = AGENT_LABELS[a.assignee] || a.assignee;
+        return `
+            <div class="agent-row">
+                <div class="${nameClass}">${label}</div>
+                <div class="bar-wrap">
+                    <div class="bar-fill ${barClass}" style="width:${Math.max(pct, 5)}%">
+                        ${totalH}ч
+                    </div>
+                </div>
+                <div class="agent-meta">${totalTasks} задач</div>
+            </div>`;
+    }).join('');
+}
+
+const AGENT_LABELS = {
+    'founder': 'Я (Основатель)',
+    'ceo_agent': 'Генеральный директор',
+    'certifier': 'Сертификатор',
+    'lawyer_agent': 'Юрист',
+    'accountant_agent': 'Бухгалтер',
+    'freelance_agent': 'Фрилансер',
+    'pricing_agent': 'Оценщик проектов',
+    'outreach_agent': 'Менеджер продаж',
+    'content_factory': 'Фабрика контента',
+    'opportunity_scanner': 'Сканер возможностей',
+    'idea_generator': 'Генератор идей',
+    'market_analyzer': 'Аналитик рынка',
+    'guardian_agent': 'Страж безопасности',
+    'herald_agent': 'Глашатай',
+    'darwin_agent': 'Эволюция',
+    'scholar_agent': 'Учёный',
+    'namer_agent': 'Нейминг',
+    'guardian_ip_agent': 'Страж ИС',
+    'voice_agent': 'Голосовой агент',
+    'treasurer_agent': 'Казначей',
+    'cto': 'Технический директор',
+    'cdo': 'Директор по развитию',
+    'clo': 'Директор по юриспруденции',
+    'cmo': 'Директор по маркетингу',
+    'cpo': 'Директор по продукту',
+};
+
+const PRIORITY_BADGE = {
+    critical: 'badge-critical',
+    high: 'badge-high',
+    normal: 'badge-normal',
+    low: 'badge-low',
+};
+
+const CATEGORY_LABELS = {
+    development: 'Разработка',
+    business: 'Бизнес',
+    marketing: 'Маркетинг',
+    operations: 'Операции',
+    finance: 'Финансы',
+    legal: 'Юридическое',
+    content: 'Контент',
+    sales: 'Продажи',
+    other: 'Другое',
+};
+
+// ─── Kanban ──────────────────────────────────────────────────────────────
+async function loadKanban() {
+    const plans = await api('/plans?limit=200');
+    const cols = { backlog: [], todo: [], in_progress: [], review: [], done: [] };
+
+    plans.forEach(p => {
+        const key = p.status === 'review' ? 'in_progress' : (cols[p.status] ? p.status : 'backlog');
+        cols[key].push(p);
+    });
+
+    ['backlog', 'todo', 'in_progress', 'done'].forEach(status => {
+        const colId = status === 'in_progress' ? 'col-in_progress' : 'col-' + status;
+        const el = document.getElementById(colId);
+        const items = status === 'in_progress' ? [...cols.in_progress, ...cols.review] : cols[status];
+        const cntEl = document.getElementById('cnt-' + (status === 'in_progress' ? 'progress' : status.replace('_', '')));
+        if (cntEl) cntEl.textContent = '(' + items.length + ')';
+
+        if (!items.length) {
+            el.innerHTML = '<div class="empty" style="padding:20px;font-size:12px">Пусто</div>';
+            return;
+        }
+        el.innerHTML = items.map(p => renderTaskCard(p)).join('');
+    });
+}
+
+function renderTaskCard(p) {
+    const label = AGENT_LABELS[p.assignee] || p.assignee;
+    const catLabel = CATEGORY_LABELS[p.category] || p.category;
+    return `
+        <div class="task-card" onclick="openEditModal(${p.id})">
+            <div class="task-title">${esc(p.title)}</div>
+            <div class="task-meta">
+                <span class="badge ${PRIORITY_BADGE[p.priority] || 'badge-normal'}">${p.priority}</span>
+                <span class="badge badge-category">${catLabel}</span>
+                ${p.estimated_hours ? '<span>' + p.estimated_hours + 'ч</span>' : ''}
+            </div>
+            <div class="task-assignee">${label}</div>
+            ${p.progress > 0 ? `<div class="task-progress"><div class="task-progress-fill" style="width:${p.progress}%"></div></div>` : ''}
+        </div>`;
+}
+
+// ─── Timeline ────────────────────────────────────────────────────────────
+async function loadTimeline() {
+    const data = await api('/timeline?days=14');
+    const container = document.getElementById('timeline-content');
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (!Object.keys(data.days).length) {
+        container.innerHTML = '<div class="empty">Нет запланированных задач на ближайшие 14 дней</div>';
+        return;
+    }
+
+    const sortedDays = Object.keys(data.days).sort();
+    container.innerHTML = sortedDays.map(day => {
+        const isToday = day === today;
+        const dayLabel = isToday ? 'Сегодня' : formatDate(day);
+        const tasks = data.days[day];
+        return `
+            <div class="timeline-day">
+                <div class="timeline-date ${isToday ? 'today' : ''}">${dayLabel} &mdash; ${tasks.length} задач</div>
+                ${tasks.map(t => {
+                    const dotColor = t.priority === 'critical' ? 'var(--danger)' :
+                                     t.priority === 'high' ? 'var(--warning)' : 'var(--accent)';
+                    const label = AGENT_LABELS[t.assignee] || t.assignee;
+                    return `<div class="timeline-task">
+                        <div class="dot" style="background:${dotColor}"></div>
+                        <span style="flex:1">${esc(t.title)}</span>
+                        <span style="color:var(--text-muted);font-size:11px">${label}</span>
+                        ${t.estimated_hours ? `<span style="color:var(--text-muted);font-size:11px">${t.estimated_hours}ч</span>` : ''}
+                    </div>`;
+                }).join('')}
+            </div>`;
+    }).join('');
+}
+
+// ─── My Day ──────────────────────────────────────────────────────────────
+async function loadMyDay() {
+    const data = await api('/my-day');
+    const container = document.getElementById('my-day');
+
+    const allTasks = [
+        ...data.overdue.map(t => ({ ...t, _section: 'overdue' })),
+        ...data.in_progress.map(t => ({ ...t, _section: 'progress' })),
+        ...data.today.map(t => ({ ...t, _section: 'today' })),
+    ];
+
+    if (!allTasks.length) {
+        container.innerHTML = `
+            <div class="empty" style="padding:20px">
+                Нет задач на сегодня
+                <br><br>
+                <button class="btn btn-sm btn-primary" onclick="openModal()">Добавить</button>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    if (data.workload.planned_hours > 0) {
+        html += `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+            Загрузка: ${data.workload.planned_hours}ч запланировано, ${data.workload.actual_hours}ч отработано
+        </div>`;
+    }
+    if (data.overdue.length) {
+        html += `<div style="font-size:11px;color:var(--danger);margin-bottom:8px;text-transform:uppercase">Просрочено</div>`;
+    }
+
+    html += allTasks.map(t => {
+        const isDone = t.status === 'done';
+        const isOverdue = t._section === 'overdue';
+        return `
+            <div class="my-day-item" style="${isOverdue ? 'border-left:3px solid var(--danger)' : ''}">
+                <div class="my-day-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleDone(${t.id},'${t.status}')"></div>
+                <div class="my-day-text" style="${isDone ? 'text-decoration:line-through;opacity:0.5' : ''}">${esc(t.title)}</div>
+                ${t.estimated_hours ? `<div class="my-day-hours">${t.estimated_hours}ч</div>` : ''}
+            </div>`;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+async function toggleDone(id, currentStatus) {
+    const newStatus = currentStatus === 'done' ? 'in_progress' : 'done';
+    await api('/plans/' + id, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+    });
+    loadAll();
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────
+function openModal() {
+    document.getElementById('modal-title').textContent = 'Новая задача';
+    document.getElementById('edit-id').value = '';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-category').value = 'development';
+    document.getElementById('f-priority').value = 'normal';
+    document.getElementById('f-assignee').value = 'founder';
+    document.getElementById('f-hours').value = '0';
+    document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('f-deadline').value = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('modal').classList.add('open');
+}
+
+async function openEditModal(id) {
+    const plan = await api('/plans/' + id);
+    if (plan.error) return;
+    document.getElementById('modal-title').textContent = 'Редактировать задачу';
+    document.getElementById('edit-id').value = plan.id;
+    document.getElementById('f-title').value = plan.title;
+    document.getElementById('f-desc').value = plan.description;
+    document.getElementById('f-category').value = plan.category;
+    document.getElementById('f-priority').value = plan.priority;
+    document.getElementById('f-assignee').value = plan.assignee;
+    document.getElementById('f-hours').value = plan.estimated_hours;
+    document.getElementById('f-date').value = plan.planned_date || '';
+    document.getElementById('f-deadline').value = plan.deadline || '';
+    document.getElementById('f-notes').value = plan.notes || '';
+    document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+}
+
+async function savePlan() {
+    const editId = document.getElementById('edit-id').value;
+    const body = {
+        title: document.getElementById('f-title').value,
+        description: document.getElementById('f-desc').value,
+        category: document.getElementById('f-category').value,
+        priority: document.getElementById('f-priority').value,
+        assignee: document.getElementById('f-assignee').value,
+        estimated_hours: parseFloat(document.getElementById('f-hours').value) || 0,
+        planned_date: document.getElementById('f-date').value || null,
+        deadline: document.getElementById('f-deadline').value || null,
+        notes: document.getElementById('f-notes').value || null,
+    };
+
+    if (!body.title) {
+        alert('Введи название задачи');
+        return;
+    }
+
+    if (editId) {
+        await api('/plans/' + editId, { method: 'PATCH', body: JSON.stringify(body) });
+    } else {
+        await api('/plans', { method: 'POST', body: JSON.stringify(body) });
+    }
+
+    closeModal();
+    loadAll();
+}
+
+// Close modal on backdrop click
+document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+});
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function formatDate(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>

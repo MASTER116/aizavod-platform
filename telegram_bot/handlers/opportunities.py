@@ -54,6 +54,16 @@ def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
     return parts
 
 
+async def _safe_send(message, text: str, limit: int = MAX_TG_MSG, **kwargs):
+    """Отправляет текст, при ошибке парсинга — повторяет без parse_mode."""
+    from aiogram.exceptions import TelegramBadRequest
+    for part in _split(text, limit):
+        try:
+            await message.answer(part, **kwargs)
+        except TelegramBadRequest:
+            await message.answer(part, parse_mode=None)
+
+
 def _parse_ideas(ideas_text: str) -> list[dict]:
     """Парсим текст идей в список словарей {title, text}."""
     ideas: list[dict] = []
@@ -83,7 +93,7 @@ def _parse_ideas(ideas_text: str) -> list[dict]:
 @router.callback_query(F.data == "money_scan")
 async def cb_scan(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer("🔍 Сканирую гранты, хакатоны, конкурсы...")
+    await callback.message.answer("🔍 Ищу гранты, хакатоны, конкурсы...")
 
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
@@ -96,7 +106,7 @@ async def cb_scan(callback: CallbackQuery, state: FSMContext):
     # Сохраняем результаты в FSM для дальнейшей работы
     scan_data = []
     lines = [f"Найдено: <b>{len(results)}</b> возможностей\n"]
-    for i, r in enumerate(results[:10], 1):
+    for i, r in enumerate(results, 1):
         rel = "🟢" if r.relevance_score > 0.6 else "🟡" if r.relevance_score > 0.3 else "⚪"
         lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>")
         if r.description:
@@ -112,16 +122,24 @@ async def cb_scan(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(scan_results=scan_data)
 
-    lines.append("\nНажми на конкурс для глубокого анализа + генерации идей:")
-    text = "\n".join(lines)[:MAX_TG_MSG]
+    # Разбиваем текст на части по лимиту Telegram
+    full_text = "\n".join(lines)
+    for part in _split(full_text):
+        try:
+            await callback.message.answer(
+                part, parse_mode="HTML", disable_web_page_preview=True,
+            )
+        except Exception:
+            await callback.message.answer(part, parse_mode=None)
 
     await callback.message.answer(
-        text, parse_mode="HTML", disable_web_page_preview=True,
+        "Нажми на конкурс для глубокого анализа:",
+        parse_mode="HTML",
         reply_markup=scan_results_kb(scan_data),
     )
 
 
-# ─── 2. Клик по гранту → авто анализ + авто идеи ────────────────────────
+# ─── 2. Клик по гранту → только анализ ────────────────────────────────
 
 @router.callback_query(F.data.startswith("scan_grant_"))
 async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
@@ -143,9 +161,8 @@ async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(grant_title=title, grant_url=url)
 
-    # Шаг 1: Глубокий анализ
     await callback.message.answer(
-        f"🔬 Глубокий анализ: <b>{title[:70]}</b>...", parse_mode="HTML"
+        f"🔬 Анализ: <b>{title[:70]}</b>...", parse_mode="HTML"
     )
 
     from services.opportunity_scanner import get_scanner
@@ -154,23 +171,43 @@ async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(grant_analysis=analysis)
 
-    for part in _split(analysis):
-        await callback.message.answer(part)
+    await _safe_send(callback.message, analysis)
 
-    # Шаг 2: Автоматическая генерация идей
+    from telegram_bot.keyboards import grant_actions_kb
     await callback.message.answer(
-        f"💡 Генерирую идеи для: <b>{title[:70]}</b>...", parse_mode="HTML"
+        "Что дальше?",
+        reply_markup=grant_actions_kb(),
     )
 
-    ideas_text = await scanner.generate_ideas_for_grant(title, analysis)
+
+# ─── 2.1. Генерация идей по кнопке ──────────────────────────────────────
+
+@router.callback_query(F.data == "grant_ideas")
+async def cb_grant_ideas(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    data = await state.get_data()
+    grant_title = data.get("grant_title", "")
+    grant_analysis = data.get("grant_analysis", "")
+
+    if not grant_title or not grant_analysis:
+        await callback.message.answer(
+            "Сначала выбери конкурс из списка.",
+            reply_markup=money_menu_kb(),
+        )
+        return
+
+    await callback.message.answer(
+        f"💡 Генерирую идеи для: <b>{grant_title[:70]}</b>...", parse_mode="HTML"
+    )
+
+    from services.opportunity_scanner import get_scanner
+    scanner = get_scanner()
+    ideas_text = await scanner.generate_ideas_for_grant(grant_title, grant_analysis)
     await state.update_data(grant_ideas_text=ideas_text)
 
-    # Парсим идеи в список
     parsed = _parse_ideas(ideas_text)
     if not parsed:
-        # Если парсинг не удался — показываем текст и кнопки назад
-        for part in _split(ideas_text):
-            await callback.message.answer(part)
+        await _safe_send(callback.message, ideas_text)
         await callback.message.answer(
             "Не удалось разбить идеи на список. Текст выше.",
             reply_markup=back_to_money_kb(),
@@ -181,11 +218,8 @@ async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
         {"title": idea["title"], "text": idea["text"]} for idea in parsed
     ])
 
-    # Показываем текст идей
-    for part in _split(ideas_text):
-        await callback.message.answer(part)
+    await _safe_send(callback.message, ideas_text)
 
-    # Кнопки выбора идей
     await callback.message.answer(
         "Выбери идею для Excel-калькуляции:",
         reply_markup=ideas_list_kb([{"title": p["title"]} for p in parsed]),
@@ -330,8 +364,7 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
         budget_json,
     )
 
-    for part in _split(docs):
-        await callback.message.answer(part)
+    await _safe_send(callback.message, docs)
 
     await callback.message.answer(
         "Пакет документов выше",
@@ -521,8 +554,7 @@ async def cb_ideas(callback: CallbackQuery):
     scanner = get_scanner()
     ideas = await scanner.generate_ideas()
 
-    for part in _split(ideas):
-        await callback.message.answer(part)
+    await _safe_send(callback.message, ideas)
     await callback.message.answer("Идеи выше", reply_markup=back_to_money_kb())
 
 
@@ -552,8 +584,7 @@ async def on_proposal_input(message: Message, state: FSMContext):
     analyzer = get_analyzer()
     result = await analyzer.generate_proposal(name, desc)
 
-    for part in _split(result):
-        await message.answer(part)
+    await _safe_send(message, result)
     await message.answer("Заявка выше", reply_markup=back_to_money_kb())
 
 
@@ -578,8 +609,7 @@ async def on_market_input(message: Message, state: FSMContext):
     analyzer = get_analyzer()
     result = await analyzer.quick_market_scan(topic)
 
-    for part in _split(result):
-        await message.answer(part)
+    await _safe_send(message, result)
     await message.answer("Анализ выше", reply_markup=back_to_money_kb())
 
 
@@ -604,8 +634,7 @@ async def on_competitors_input(message: Message, state: FSMContext):
     analyzer = get_analyzer()
     result = await analyzer.analyze_competitors(niche)
 
-    for part in _split(result):
-        await message.answer(part)
+    await _safe_send(message, result)
     await message.answer("Анализ выше", reply_markup=back_to_money_kb())
 
 
