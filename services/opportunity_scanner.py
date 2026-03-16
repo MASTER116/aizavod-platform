@@ -189,9 +189,13 @@ class OpportunityScanner:
         seen_urls: set[str] = set()
         unique: list[Opportunity] = []
         for opp in results:
-            if opp.url not in seen_urls:
-                seen_urls.add(opp.url)
-                unique.append(opp)
+            if opp.url in seen_urls:
+                continue
+            # Фильтруем новостные статьи — оставляем только официальные источники
+            if any(s in opp.url.lower() for s in self._ARTICLE_DOMAINS):
+                continue
+            seen_urls.add(opp.url)
+            unique.append(opp)
 
         for opp in unique:
             opp.relevance_score = self._calc_relevance(opp)
