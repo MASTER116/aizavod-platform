@@ -344,25 +344,27 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
 const API = '/api';
 
 const DEPT_COLORS = {
-  development:'#3b82f6', devops:'#8b5cf6', security:'#ef4444',
-  architecture:'#06b6d4', qa:'#f59e0b', data:'#10b981',
-  marketing:'#f97316', content:'#ec4899', seo:'#14b8a6',
-  analytics:'#6366f1', finance:'#22c55e', accounting:'#84cc16',
-  investment:'#eab308', grants:'#a3e635', operations:'#0ea5e9',
-  logistics:'#38bdf8', support:'#2dd4bf', product:'#a78bfa',
-  research:'#c084fc', ux:'#f472b6', design:'#fb923c',
-  ui:'#e879f9', brand:'#f43f5e', hr:'#34d399',
-  recruitment:'#4ade80', legal:'#fbbf24', compliance:'#facc15',
-  ip:'#fde047', strategy:'#d4a017', coordination:'#f0c040'
+  'Руководство':'#ef4444',
+  'Продукт':'#3b82f6',
+  'Финансы':'#22c55e',
+  'Продажи':'#f97316',
+  'Контент':'#a855f7',
+  'Юридический':'#06b6d4',
+  'Бухгалтерия':'#eab308',
+  'Самообучение':'#ec4899',
+  'Безопасность':'#ef4444',
+  'Наука':'#14b8a6',
+  'Продвижение':'#8b5cf6',
+  'Нейминг':'#f59e0b',
+  'Патенты':'#6366f1',
+  'Голос':'#10b981',
+  'Казначейство':'#f43f5e',
+  'Хакатоны':'#d4a017',
 };
 
 function getDeptColor(dept) {
   if (!dept) return '#71717a';
-  const key = dept.toLowerCase().replace(/[^a-z]/g, '');
-  for (const [k, v] of Object.entries(DEPT_COLORS)) {
-    if (key.includes(k) || k.includes(key)) return v;
-  }
-  return '#71717a';
+  return DEPT_COLORS[dept] || '#71717a';
 }
 
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
