@@ -116,6 +116,22 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
 
 .loading{color:#52525b;font-size:13px;padding:20px;text-align:center}
 
+/* Org tree */
+.org-node{padding-left:24px;border-left:2px solid rgba(255,255,255,0.06);margin-left:8px}
+.org-node:last-child{border-left-color:transparent}
+.org-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;transition:all .15s;margin:2px 0;position:relative}
+.org-item:hover{background:rgba(255,255,255,0.04)}
+.org-item::before{content:'';position:absolute;left:-24px;top:50%;width:20px;height:0;border-top:2px solid rgba(255,255,255,0.06)}
+.org-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.org-badge.maestro{background:rgba(212,160,23,0.15);color:#f0c040}
+.org-badge.director{background:rgba(59,130,246,0.15);color:#60a5fa}
+.org-badge.dept{background:rgba(34,197,94,0.15);color:#4ade80}
+.org-badge.spec{background:rgba(168,85,247,0.15);color:#c084fc}
+.org-toggle{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;background:rgba(255,255,255,0.06);color:#71717a;cursor:pointer;transition:all .15s;flex-shrink:0}
+.org-toggle:hover{background:rgba(255,255,255,0.1);color:#e4e4e7}
+.org-name{font-weight:600;color:#e4e4e7}
+.org-desc{font-size:11px;color:#52525b;margin-left:4px}
+
 /* Scrollbars global */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -147,9 +163,11 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
   </div>
   <nav class="nav-tabs">
     <button class="nav-btn active" data-tab="shtab">Штаб</button>
+    <button class="nav-btn" data-tab="tree">Дерево</button>
     <button class="nav-btn" data-tab="maestro">Маэстро</button>
     <button class="nav-btn" data-tab="chat">Чат</button>
     <button class="nav-btn" data-tab="agents">Агенты</button>
+    <button class="nav-btn" data-tab="n8n">n8n</button>
     <button class="nav-btn" data-tab="pricing">Тарифы</button>
   </nav>
   <div class="badge-secret">Секретно</div>
@@ -249,6 +267,17 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
     </div>
   </div>
 
+  <!-- ==================== Tab: Дерево ==================== -->
+  <div id="tab-tree" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Дерево управления компанией</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px">
+        3-уровневая иерархия: Маэстро &rarr; Директора &rarr; Отделы &rarr; Специалисты
+      </div>
+      <div id="org-tree" style="font-size:13px;line-height:1.6"></div>
+    </div>
+  </div>
+
   <!-- ==================== Tab: Маэстро ==================== -->
   <div id="tab-maestro" class="tab-panel">
     <div class="card">
@@ -280,6 +309,13 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
   <div id="tab-agents" class="tab-panel">
     <div class="agents-grid" id="agents-grid-full">
       <div class="loading">Загрузка агентов...</div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab: n8n ==================== -->
+  <div id="tab-n8n" class="tab-panel">
+    <div class="card" style="padding:0;overflow:hidden;height:calc(100vh - 140px)">
+      <iframe src="/n8n/" style="width:100%;height:100%;border:none;border-radius:14px" loading="lazy"></iframe>
     </div>
   </div>
 
@@ -553,9 +589,120 @@ async function sendChat() {
   box.scrollTop = box.scrollHeight;
 }
 
+// ====== ORG TREE ======
+const ORG_TREE = {
+  name: 'Маэстро', badge: 'maestro', desc: 'Мета-оркестратор',
+  children: [
+    { name: 'CEO', badge: 'director', desc: 'Стратегия, координация', children: [] },
+    { name: 'CTO', badge: 'director', desc: 'Технический директор', children: [
+      { name: 'Backend', badge: 'dept', desc: 'FastAPI, Python, БД', children: [
+        {name:'FastAPI-разработчик',badge:'spec'},{name:'Администратор БД',badge:'spec'},{name:'Архитектор API',badge:'spec'}
+      ]},
+      { name: 'Frontend', badge: 'dept', desc: 'React, UI', children: [
+        {name:'React-разработчик',badge:'spec'},{name:'Веб-разработчик',badge:'spec'},{name:'UI-компонентщик',badge:'spec'}
+      ]},
+      { name: 'DevOps', badge: 'dept', desc: 'Docker, CI/CD', children: [
+        {name:'Docker-инженер',badge:'spec'},{name:'CI/CD специалист',badge:'spec'},{name:'Инженер мониторинга',badge:'spec'}
+      ]},
+      { name: 'AI/ML', badge: 'dept', desc: 'LLM, RAG, промпты', children: [
+        {name:'Промпт-инженер',badge:'spec'},{name:'RAG-специалист',badge:'spec'},{name:'ML-инженер',badge:'spec'}
+      ]},
+      { name: 'Security', badge: 'dept', desc: 'OWASP, 152-ФЗ', children: [
+        {name:'Аналитик безопасности',badge:'spec'},{name:'Пентестер',badge:'spec'}
+      ]},
+      { name: 'QA', badge: 'dept', desc: 'Тестирование', children: [
+        {name:'QA-инженер',badge:'spec'},{name:'Автотестер',badge:'spec'}
+      ]},
+    ]},
+    { name: 'CFO', badge: 'director', desc: 'Финансовый директор', children: [
+      { name: 'Бухгалтерия', badge: 'dept', children: [{name:'Бухгалтер',badge:'spec'},{name:'Налоговый консультант',badge:'spec'}]},
+      { name: 'Гранты', badge: 'dept', children: [{name:'Составитель заявок',badge:'spec'},{name:'Специалист РНФ',badge:'spec'}]},
+      { name: 'Фриланс', badge: 'dept', children: [{name:'Поисковик заказов',badge:'spec'},{name:'Составитель откликов',badge:'spec'}]},
+      { name: 'Аналитика', badge: 'dept', children: [{name:'Финансовый аналитик',badge:'spec'},{name:'Юнит-экономист',badge:'spec'}]},
+    ]},
+    { name: 'CMO', badge: 'director', desc: 'Маркетинговый директор', children: [
+      { name: 'Контент', badge: 'dept', children: [{name:'Копирайтер',badge:'spec'},{name:'Instagram-мейкер',badge:'spec'},{name:'Видеомейкер',badge:'spec'}]},
+      { name: 'SEO/ASO', badge: 'dept', children: [{name:'SEO-специалист',badge:'spec'},{name:'ASO-специалист',badge:'spec'}]},
+      { name: 'DevRel', badge: 'dept', children: [{name:'Автор Хабр',badge:'spec'},{name:'GitHub-мейнтейнер',badge:'spec'}]},
+      { name: 'Outreach', badge: 'dept', children: [{name:'Лидогенератор',badge:'spec'},{name:'Email-маркетолог',badge:'spec'}]},
+    ]},
+    { name: 'COO', badge: 'director', desc: 'Операционный директор', children: [
+      { name: 'Процессы', badge: 'dept', children: [{name:'Инженер процессов',badge:'spec'},{name:'n8n-разработчик',badge:'spec'}]},
+      { name: 'Партнёры', badge: 'dept', children: [{name:'Менеджер партнёрств',badge:'spec'}]},
+      { name: 'Поддержка', badge: 'dept', children: [{name:'Агент поддержки',badge:'spec'},{name:'Онбординг',badge:'spec'}]},
+    ]},
+    { name: 'CPO', badge: 'director', desc: 'Продуктовый директор', children: [
+      { name: 'CERTIFIER', badge: 'dept', children: [{name:'Эксперт по сертификации',badge:'spec'}]},
+      { name: 'SaaS', badge: 'dept', children: [{name:'Продакт-менеджер',badge:'spec'},{name:'Дизайнер фич',badge:'spec'}]},
+      { name: 'Исследования', badge: 'dept', children: [{name:'UX-исследователь',badge:'spec'}]},
+    ]},
+    { name: 'CDO', badge: 'director', desc: 'Дизайн-директор', children: [
+      { name: 'UI/UX', badge: 'dept', children: [{name:'Веб-дизайнер',badge:'spec'},{name:'Дизайнер дашбордов',badge:'spec'}]},
+      { name: 'Бренд', badge: 'dept', children: [{name:'Бренд-дизайнер',badge:'spec'}]},
+      { name: 'Motion', badge: 'dept', children: [{name:'Аниматор',badge:'spec'},{name:'Видеомонтажёр',badge:'spec'}]},
+    ]},
+    { name: 'CHRO', badge: 'director', desc: 'HR-директор', children: [
+      { name: 'Найм', badge: 'dept', children: [{name:'Рекрутер',badge:'spec'},{name:'Технический интервьюер',badge:'spec'}]},
+      { name: 'Культура', badge: 'dept', children: [{name:'Менеджер обучения',badge:'spec'}]},
+    ]},
+    { name: 'CLO', badge: 'director', desc: 'Юридический директор', children: [
+      { name: 'IP/Патенты', badge: 'dept', children: [{name:'Аналитик товарных знаков',badge:'spec'},{name:'Патентный специалист',badge:'spec'}]},
+      { name: 'Договоры', badge: 'dept', children: [{name:'Юрист по договорам',badge:'spec'}]},
+      { name: 'Регистрация', badge: 'dept', children: [{name:'Специалист по регистрации',badge:'spec'}]},
+    ]},
+  ]
+};
+
+function renderOrgTree() {
+  const el = document.getElementById('org-tree');
+  if (!el) return;
+
+  function renderNode(node, depth) {
+    const hasChildren = node.children && node.children.length > 0;
+    const id = 'org_' + Math.random().toString(36).substr(2,6);
+    let html = '<div class="org-item">';
+    if (hasChildren) {
+      html += `<span class="org-toggle" onclick="toggleOrg('${id}')">+</span>`;
+    } else {
+      html += '<span style="width:18px;flex-shrink:0"></span>';
+    }
+    html += `<span class="org-badge ${node.badge}">${node.badge === 'maestro' ? 'Маэстро' : node.badge === 'director' ? 'Директор' : node.badge === 'dept' ? 'Отдел' : 'Спец'}</span>`;
+    html += `<span class="org-name">${node.name}</span>`;
+    if (node.desc) html += `<span class="org-desc">— ${node.desc}</span>`;
+    html += '</div>';
+
+    if (hasChildren) {
+      html += `<div class="org-node" id="${id}" style="display:none">`;
+      node.children.forEach(c => { html += renderNode(c, depth + 1); });
+      html += '</div>';
+    }
+    return html;
+  }
+
+  el.innerHTML = renderNode(ORG_TREE, 0);
+  // Автоматически раскрыть первый уровень
+  el.querySelectorAll('.org-node').forEach((n, i) => {
+    if (i === 0) { n.style.display = ''; n.previousElementSibling.querySelector('.org-toggle').textContent = '−'; }
+  });
+}
+
+function toggleOrg(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const toggle = el.previousElementSibling.querySelector('.org-toggle');
+  if (el.style.display === 'none') {
+    el.style.display = '';
+    toggle.textContent = '−';
+  } else {
+    el.style.display = 'none';
+    toggle.textContent = '+';
+  }
+}
+
 // ====== INIT ======
 loadAgents();
 loadDashboard();
+renderOrgTree();
 </script>
 </body>
 </html>
