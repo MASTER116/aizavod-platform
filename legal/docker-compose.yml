@@ -1,0 +1,7 @@
+services:
+  aizavod-legal:
+    build: .
+    container_name: aizavod-legal
+    ports:
+      - "8080:80"
+    restart: unless-stopped

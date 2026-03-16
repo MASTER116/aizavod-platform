@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ЗАВОД -- Авторизация TikTok</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a href="index.html" class="site-logo">AI ЗАВОД</a>
+    </header>
+
+    <h1>Авторизация TikTok</h1>
+    <div id="result"></div>
+
+    <script>
+        // TODO: заменить на production-домен при финализации инфраструктуры
+        var API_BASE = 'https://api.aizavod.ru';
+
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get('code');
+        var error = params.get('error');
+        var state = params.get('state') || '';
+        var el = document.getElementById('result');
+
+        if (code) {
+            el.innerHTML =
+                '<p class="callback-status status-success">Авторизация прошла успешно!</p>' +
+                '<p>Код авторизации:</p>' +
+                '<div class="callback-code">' + code + '</div>' +
+                '<p>Отправьте этот код боту или он будет обработан автоматически.</p>';
+
+            fetch(API_BASE + '/api/v1/tiktok/callback?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state))
+                .catch(function() {});
+        } else if (error) {
+            el.innerHTML =
+                '<p class="callback-status status-error">Ошибка авторизации: ' + error + '</p>' +
+                '<p><a href="index.html">Вернуться на главную</a></p>';
+        } else {
+            el.innerHTML =
+                '<p class="callback-status">Ожидание авторизации...</p>';
+        }
+    </script>
+
+    <footer class="site-footer">
+        <p>AI ЗАВОД &copy; 2026 | <a href="mailto:azatmaster@gmail.com">azatmaster@gmail.com</a></p>
+    </footer>
+</body>
+</html>
