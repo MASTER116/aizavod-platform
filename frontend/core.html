@@ -1,432 +1,557 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI ALTYN CORE — Штаб управления</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #09090b; --surface: rgba(255,255,255,0.03);
-            --surface-hover: rgba(255,255,255,0.06);
-            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.08);
-            --border: rgba(255,255,255,0.06); --border-hover: rgba(255,255,255,0.14);
-            --accent: #d4a017; --accent-light: #f0c040;
-            --accent-surface: rgba(212,160,23,0.08);
-            --text: #f4f4f5; --text-secondary: #a1a1aa; --text-muted: #52525b;
-            --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
-            --gradient-text: linear-gradient(135deg, #f0c040, #ffd700, #f0c040);
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family:'Inter',system-ui,sans-serif;
-            background:var(--bg); color:var(--text);
-            min-height:100vh; -webkit-font-smoothing:antialiased;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI ALTYN PRO — Штаб</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-        /* NAV */
-        .topbar {
-            position:sticky; top:0; z-index:100;
-            height:56px; padding:0 24px;
-            display:flex; align-items:center; justify-content:space-between;
-            background:rgba(9,9,11,0.9); backdrop-filter:blur(20px);
-            border-bottom:1px solid var(--border);
-        }
-        .topbar-logo { font-size:16px; font-weight:800; letter-spacing:2px; }
-        .topbar-logo .ai { color:var(--text); }
-        .topbar-logo .core {
-            background:var(--gradient-text);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-        }
-        .topbar-label {
-            font-size:11px; color:var(--text-muted); letter-spacing:1px;
-            text-transform:uppercase; padding:4px 12px;
-            border:1px solid rgba(239,68,68,0.3); border-radius:100px;
-            color:#ef4444;
-        }
-        .topbar-tabs { display:flex; gap:4px; }
-        .topbar-tabs button {
-            padding:6px 14px; border-radius:8px; border:none;
-            background:transparent; color:var(--text-muted);
-            font-size:13px; font-weight:500; cursor:pointer;
-            font-family:inherit; transition:all 0.2s;
-        }
-        .topbar-tabs button:hover { color:var(--text); background:var(--surface-hover); }
-        .topbar-tabs button.active { color:var(--accent-light); background:var(--accent-surface); }
+.gold-gradient{background:linear-gradient(135deg,#d4a017,#f0c040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-        /* LAYOUT */
-        .container { max-width:1200px; margin:0 auto; padding:24px; }
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(9,9,11,0.92);position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
+.logo{font-size:20px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:2px}
+.logo-white{color:#fff}
+.logo-pro{background:linear-gradient(135deg,#d4a017,#f0c040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:17px;margin-left:6px}
 
-        /* STATS ROW */
-        .stats-row {
-            display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
-            margin-bottom:24px;
-        }
-        .stat-card {
-            background:var(--glass); border:1px solid var(--glass-border);
-            border-radius:14px; padding:20px;
-        }
-        .stat-card .label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
-        .stat-card .value {
-            font-size:28px; font-weight:800; margin-top:6px; letter-spacing:-1px;
-        }
-        .stat-card .value.gold {
-            background:var(--gradient-text);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-        }
+.nav-tabs{display:flex;gap:4px}
+.nav-btn{padding:7px 16px;border-radius:8px;border:1px solid transparent;background:transparent;color:#71717a;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.nav-btn:hover{color:#e4e4e7;background:rgba(255,255,255,0.05)}
+.nav-btn.active{background:rgba(212,160,23,0.1);border-color:rgba(212,160,23,0.3);color:#f0c040}
 
-        /* PANELS */
-        .panels { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
-        .panel {
-            background:var(--glass); border:1px solid var(--glass-border);
-            border-radius:16px; padding:24px; min-height:300px;
-        }
-        .panel-title {
-            font-size:13px; font-weight:600; color:var(--text-muted);
-            text-transform:uppercase; letter-spacing:1.5px;
-            margin-bottom:16px; display:flex; align-items:center; gap:8px;
-        }
-        .panel-full { grid-column:1/-1; }
+.badge-secret{background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.3);color:#ef4444;font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;letter-spacing:1px;text-transform:uppercase}
 
-        /* ORCHESTRATE FORM */
-        .orch-form {
-            display:flex; gap:12px; margin-bottom:20px;
-        }
-        .orch-input {
-            flex:1; padding:12px 20px; background:var(--bg);
-            border:1px solid var(--glass-border); border-radius:12px;
-            color:var(--text); font-size:14px; font-family:inherit; outline:none;
-        }
-        .orch-input:focus { border-color:rgba(212,160,23,0.4); }
-        .orch-btn {
-            padding:12px 24px; background:var(--accent); color:#000;
-            border:none; border-radius:12px; font-size:14px;
-            font-weight:700; cursor:pointer; font-family:inherit;
-            transition:all 0.2s; white-space:nowrap;
-        }
-        .orch-btn:hover { background:var(--accent-light); }
-        .orch-btn:disabled { opacity:0.4; cursor:not-allowed; }
+/* Main */
+.main{max-width:1240px;margin:0 auto;padding:24px 28px 48px}
 
-        /* TREE */
-        .tree { font-size:13px; line-height:2; }
-        .tree-node { padding-left:20px; border-left:1px solid var(--border); }
-        .tree-label {
-            display:inline-flex; align-items:center; gap:6px;
-            padding:2px 8px; border-radius:6px; cursor:default;
-        }
-        .tree-label:hover { background:var(--surface-hover); }
-        .tree-level { font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; }
-        .tree-level.conductor { background:rgba(212,160,23,0.15); color:var(--accent-light); }
-        .tree-level.director { background:rgba(59,130,246,0.15); color:var(--info); }
-        .tree-level.department { background:rgba(34,197,94,0.15); color:var(--success); }
-        .tree-level.specialist { background:rgba(168,85,247,0.15); color:#a855f7; }
+/* Glass card */
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;transition:all .25s}
+.card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.14)}
+.card-title{font-size:13px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-        /* DIRECTORS GRID */
-        .directors-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-        .dir-card {
-            background:var(--surface); border:1px solid var(--border);
-            border-radius:12px; padding:14px 16px;
-            transition:all 0.2s;
-        }
-        .dir-card:hover { border-color:var(--border-hover); background:var(--surface-hover); }
-        .dir-title { font-size:13px; font-weight:700; margin-bottom:4px; }
-        .dir-scope { font-size:11px; color:var(--text-muted); line-height:1.4; }
-        .dir-depts { font-size:11px; color:var(--accent-light); margin-top:6px; }
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{text-align:center;padding:20px 16px}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-value{font-size:30px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#d4a017,#f0c040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:12px;color:#52525b;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
 
-        /* AGENTS LIST */
-        .agents-compact { display:flex; flex-direction:column; gap:6px; max-height:400px; overflow-y:auto; }
-        .agent-row-c {
-            display:flex; align-items:center; gap:10px;
-            padding:8px 12px; border-radius:8px;
-            background:var(--surface); border:1px solid var(--border);
-            font-size:13px; transition:all 0.2s;
-        }
-        .agent-row-c:hover { background:var(--surface-hover); }
-        .agent-row-c .a-name { font-weight:600; flex:1; }
-        .agent-row-c .a-dept { font-size:10px; color:var(--text-muted); }
+/* Two columns */
+.two-col{display:grid;grid-template-columns:1.2fr 0.8fr;gap:16px;margin-bottom:24px}
 
-        /* CHAT PANEL */
-        .chat-box {
-            height:280px; overflow-y:auto; margin-bottom:12px;
-            padding:12px; background:var(--bg); border-radius:12px;
-            border:1px solid var(--border);
-        }
-        .chat-msg { margin-bottom:12px; font-size:13px; line-height:1.5; }
-        .chat-msg.user { text-align:right; }
-        .chat-msg .bubble {
-            display:inline-block; max-width:80%; padding:8px 14px;
-            border-radius:12px; white-space:pre-wrap;
-        }
-        .chat-msg.user .bubble { background:var(--accent); color:#000; }
-        .chat-msg.assistant .bubble { background:var(--surface-hover); border:1px solid var(--border); }
-        .chat-msg .meta { font-size:10px; color:var(--text-muted); margin-top:4px; }
+/* Director grid */
+.dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dir-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;transition:all .2s;cursor:default}
+.dir-card:hover{border-color:rgba(212,160,23,0.3);background:rgba(212,160,23,0.04)}
+.dir-title{font-size:13px;font-weight:700;color:#e4e4e7}
+.dir-scope{font-size:11px;color:#52525b;margin-top:2px;line-height:1.4}
+.dir-depts{font-size:11px;font-weight:600;margin-top:6px;background:linear-gradient(135deg,#d4a017,#f0c040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-        /* RESULT BOX */
-        #orch-result {
-            background:var(--bg); border:1px solid var(--border);
-            border-radius:12px; padding:16px; font-size:13px;
-            line-height:1.8; max-height:500px; overflow-y:auto;
-            white-space:pre-wrap;
-        }
+/* Agent list compact */
+.agent-list{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.agent-list::-webkit-scrollbar{width:4px}
+.agent-list::-webkit-scrollbar-track{background:transparent}
+.agent-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+.agent-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);font-size:13px;transition:all .15s}
+.agent-row:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08)}
+.agent-row-name{font-weight:600;color:#e4e4e7}
+.agent-row-dept{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
 
-        /* RESPONSIVE */
-        @media(max-width:768px) {
-            .stats-row { grid-template-columns:1fr 1fr; }
-            .panels { grid-template-columns:1fr; }
-            .directors-grid { grid-template-columns:1fr; }
-            .topbar-tabs { display:none; }
-        }
-    </style>
+/* Tasks panel */
+.tasks-grid{display:flex;gap:12px;flex-wrap:wrap}
+.task-status{padding:14px 24px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);text-align:center;min-width:120px}
+.task-count{font-size:24px;font-weight:800;color:#f0c040}
+.task-name{font-size:11px;color:#52525b;margin-top:2px;text-transform:capitalize}
+
+/* Tab panels */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Input + button shared */
+.input-row{display:flex;gap:10px;margin-bottom:16px}
+.text-input{flex:1;padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e4e4e7;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.text-input:focus{border-color:rgba(212,160,23,0.4)}
+.btn-gold{padding:12px 24px;border-radius:10px;border:none;background:linear-gradient(135deg,#d4a017,#f0c040);color:#09090b;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;white-space:nowrap}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,160,23,0.3)}
+.btn-gold:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+/* Result box */
+.result-box{background:rgba(9,9,11,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;max-height:500px;overflow-y:auto;white-space:pre-wrap;font-size:13px;line-height:1.8;color:#a1a1aa}
+.result-box::-webkit-scrollbar{width:4px}
+.result-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+
+/* Chat */
+.chat-box{height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;margin-bottom:12px;background:rgba(9,9,11,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px}
+.chat-box::-webkit-scrollbar{width:4px}
+.chat-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;white-space:pre-wrap}
+.chat-user{align-self:flex-end;background:linear-gradient(135deg,#d4a017,#f0c040);color:#09090b;font-weight:500;border-bottom-right-radius:3px}
+.chat-assistant{align-self:flex-start;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#e4e4e7;border-bottom-left-radius:3px}
+.chat-meta{font-size:10px;color:#52525b;margin-top:4px}
+
+/* Agent grid (full page) */
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.agent-card{padding:18px}
+.agent-card .agent-title{font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:6px}
+.agent-card .agent-dept-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:8px}
+.agent-card .agent-desc{font-size:12px;color:#71717a;line-height:1.5}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.pricing-card{padding:28px 20px;text-align:center;position:relative}
+.pricing-card.featured{border-color:rgba(212,160,23,0.4);background:rgba(212,160,23,0.06)}
+.pricing-card.featured::before{content:'Популярный';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#d4a017,#f0c040);color:#09090b;font-size:10px;font-weight:700;padding:2px 12px;border-radius:4px}
+.pricing-name{font-size:18px;font-weight:800;margin-bottom:4px}
+.pricing-price{font-size:28px;font-weight:800;margin:12px 0}
+.pricing-price .period{font-size:12px;font-weight:500;color:#71717a}
+.pricing-features{list-style:none;text-align:left;margin:16px 0;font-size:12px;color:#a1a1aa;line-height:2.2}
+.pricing-features li::before{content:'\2713';color:#d4a017;margin-right:8px;font-weight:700}
+.pricing-btn{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e4e4e7;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.pricing-btn:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.16)}
+.pricing-card.featured .pricing-btn{background:linear-gradient(135deg,#d4a017,#f0c040);color:#09090b;border:none}
+
+.loading{color:#52525b;font-size:13px;padding:20px;text-align:center}
+
+/* Scrollbars global */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:4px}
+
+@media(max-width:900px){
+  .header{flex-wrap:wrap;gap:12px;padding:12px 16px}
+  .nav-tabs{flex-wrap:wrap;order:3;width:100%}
+  .main{padding:16px}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .dir-grid{grid-template-columns:repeat(2,1fr)}
+  .pricing-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .dir-grid{grid-template-columns:1fr 1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .agents-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-<div class="topbar">
-    <div class="topbar-logo">
-        <span class="ai">AI ALTYN</span>&nbsp;<span class="core">CORE</span>
-    </div>
-    <div class="topbar-tabs">
-        <button class="active" onclick="showTab('dashboard')">Штаб</button>
-        <button onclick="showTab('orchestrate')">Маэстро</button>
-        <button onclick="showTab('chat')">Чат</button>
-    </div>
-    <div class="topbar-label">Секретно</div>
-</div>
+<!-- Header -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-white">AI ALTYN</span>
+    <span class="logo-pro">PRO</span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-btn active" data-tab="shtab">Штаб</button>
+    <button class="nav-btn" data-tab="maestro">Маэстро</button>
+    <button class="nav-btn" data-tab="chat">Чат</button>
+    <button class="nav-btn" data-tab="agents">Агенты</button>
+    <button class="nav-btn" data-tab="pricing">Тарифы</button>
+  </nav>
+  <div class="badge-secret">Секретно</div>
+</header>
 
-<div class="container">
+<main class="main">
 
-    <!-- STATS -->
+  <!-- ==================== Tab: Штаб ==================== -->
+  <div id="tab-shtab" class="tab-panel active">
     <div class="stats-row">
-        <div class="stat-card">
-            <div class="label">Агентов</div>
-            <div class="value gold" id="s-agents">19</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Директоров</div>
-            <div class="value gold">9</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Отделов</div>
-            <div class="value gold">28</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Специалистов</div>
-            <div class="value gold">70+</div>
-        </div>
+      <div class="card stat-card">
+        <div class="stat-value" id="stat-agents">--</div>
+        <div class="stat-label">Агентов</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-value">9</div>
+        <div class="stat-label">Директоров</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-value">28</div>
+        <div class="stat-label">Отделов</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-value">70+</div>
+        <div class="stat-label">Специалистов</div>
+      </div>
     </div>
 
-    <!-- TAB: DASHBOARD -->
-    <div id="tab-dashboard">
-        <div class="panels">
-
-            <!-- DIRECTORS -->
-            <div class="panel">
-                <div class="panel-title">Директора (C-level)</div>
-                <div class="directors-grid" id="directors-grid"></div>
-            </div>
-
-            <!-- AGENTS -->
-            <div class="panel">
-                <div class="panel-title">Агенты <span id="agents-count" style="color:var(--accent-light)"></span></div>
-                <div class="agents-compact" id="agents-list"></div>
-            </div>
-
-            <!-- TASK STATS -->
-            <div class="panel panel-full">
-                <div class="panel-title">Задачи (из БД)</div>
-                <div class="stats-row" id="task-stats" style="margin-bottom:0"></div>
-            </div>
-
+    <div class="two-col">
+      <!-- Directors -->
+      <div class="card">
+        <div class="card-title">Директора (C-level)</div>
+        <div class="dir-grid">
+          <div class="dir-card">
+            <div class="dir-title">CEO</div>
+            <div class="dir-scope">Стратегия, координация</div>
+            <div class="dir-depts">Все отделы</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CTO</div>
+            <div class="dir-scope">Архитектура, код, DevOps</div>
+            <div class="dir-depts">6 отделов</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CFO</div>
+            <div class="dir-scope">Финансы, гранты</div>
+            <div class="dir-depts">4 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CMO</div>
+            <div class="dir-scope">Маркетинг, контент</div>
+            <div class="dir-depts">4 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">COO</div>
+            <div class="dir-scope">Операции, процессы</div>
+            <div class="dir-depts">3 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CPO</div>
+            <div class="dir-scope">Продукт, roadmap</div>
+            <div class="dir-depts">3 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CDO</div>
+            <div class="dir-scope">Дизайн, UI/UX</div>
+            <div class="dir-depts">3 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CHRO</div>
+            <div class="dir-scope">Кадры, найм</div>
+            <div class="dir-depts">2 отдела</div>
+          </div>
+          <div class="dir-card">
+            <div class="dir-title">CLO</div>
+            <div class="dir-scope">Юридическое, IP</div>
+            <div class="dir-depts">3 отдела</div>
+          </div>
         </div>
+      </div>
+
+      <!-- Agents compact list -->
+      <div class="card">
+        <div class="card-title">Агенты <span id="agents-count" style="color:#f0c040"></span></div>
+        <div class="agent-list" id="agent-list-compact">
+          <div class="loading">Загрузка агентов...</div>
+        </div>
+      </div>
     </div>
 
-    <!-- TAB: ORCHESTRATE -->
-    <div id="tab-orchestrate" style="display:none">
-        <div class="panel panel-full">
-            <div class="panel-title">Маэстро — 3-уровневая оркестрация</div>
-            <div class="orch-form">
-                <input class="orch-input" id="orch-input" placeholder="Опиши задачу для компании..." />
-                <button class="orch-btn" id="orch-btn" onclick="runOrchestrate()">Запустить</button>
-            </div>
-            <div id="orch-result">Результат декомпозиции появится здесь...
+    <!-- Tasks -->
+    <div class="card">
+      <div class="card-title">Задачи (из БД)</div>
+      <div class="tasks-grid" id="tasks-grid">
+        <div class="loading">Загрузка задач...</div>
+      </div>
+    </div>
+  </div>
 
-Директора &#8594; Отделы &#8594; Специалисты
+  <!-- ==================== Tab: Маэстро ==================== -->
+  <div id="tab-maestro" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Маэстро — 3-уровневая оркестрация</div>
+      <div class="input-row">
+        <input class="text-input" id="maestro-input" placeholder="Опиши задачу для компании..." onkeydown="if(event.key==='Enter')runOrchestrate()">
+        <button class="btn-gold" id="maestro-btn" onclick="runOrchestrate()">Запустить</button>
+      </div>
+      <div class="result-box" id="maestro-result">Результат декомпозиции появится здесь...
+
+Директора → Отделы → Специалисты
 Все 3 уровня иерархии.</div>
-        </div>
     </div>
+  </div>
 
-    <!-- TAB: CHAT -->
-    <div id="tab-chat" style="display:none">
-        <div class="panel panel-full">
-            <div class="panel-title">Прямой чат с Маэстро</div>
-            <div class="chat-box" id="chat-box"></div>
-            <div class="orch-form">
-                <input class="orch-input" id="chat-input" placeholder="Спроси что угодно..." onkeydown="if(event.key==='Enter')sendChat()" />
-                <button class="orch-btn" onclick="sendChat()">Отправить</button>
-            </div>
-        </div>
+  <!-- ==================== Tab: Чат ==================== -->
+  <div id="tab-chat" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Прямой чат с Маэстро</div>
+      <div class="chat-box" id="chat-box"></div>
+      <div class="input-row">
+        <input class="text-input" id="chat-input" placeholder="Спроси что угодно..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn-gold" onclick="sendChat()">Отправить</button>
+      </div>
     </div>
+  </div>
 
-</div>
+  <!-- ==================== Tab: Агенты ==================== -->
+  <div id="tab-agents" class="tab-panel">
+    <div class="agents-grid" id="agents-grid-full">
+      <div class="loading">Загрузка агентов...</div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab: Тарифы ==================== -->
+  <div id="tab-pricing" class="tab-panel">
+    <div class="pricing-grid">
+      <div class="card pricing-card">
+        <div class="pricing-name">FREE</div>
+        <div class="pricing-price">$0<span class="period">/мес</span></div>
+        <ul class="pricing-features">
+          <li>3 агента</li>
+          <li>100 запросов/мес</li>
+          <li>Базовая аналитика</li>
+          <li>Telegram-бот</li>
+        </ul>
+        <button class="pricing-btn">Начать</button>
+      </div>
+      <div class="card pricing-card">
+        <div class="pricing-name">STARTER</div>
+        <div class="pricing-price">$29<span class="period">/мес</span></div>
+        <ul class="pricing-features">
+          <li>10 агентов</li>
+          <li>1 000 запросов/мес</li>
+          <li>Продвинутая аналитика</li>
+          <li>API доступ</li>
+          <li>Приоритет поддержки</li>
+        </ul>
+        <button class="pricing-btn">Выбрать</button>
+      </div>
+      <div class="card pricing-card featured">
+        <div class="pricing-name gold-gradient">PRO</div>
+        <div class="pricing-price gold-gradient">$99<span class="period" style="background:none;-webkit-text-fill-color:#71717a">/мес</span></div>
+        <ul class="pricing-features">
+          <li>Все агенты</li>
+          <li>Безлимит запросов</li>
+          <li>3-уровневая оркестрация</li>
+          <li>Маэстро-доступ</li>
+          <li>Персональный менеджер</li>
+          <li>Кастомные агенты</li>
+        </ul>
+        <button class="pricing-btn">Выбрать PRO</button>
+      </div>
+      <div class="card pricing-card">
+        <div class="pricing-name">ENTERPRISE</div>
+        <div class="pricing-price">Custom</div>
+        <ul class="pricing-features">
+          <li>Все из PRO</li>
+          <li>On-premise развертывание</li>
+          <li>SLA 99.9%</li>
+          <li>Выделенная инфраструктура</li>
+          <li>Кастомные интеграции</li>
+          <li>Обучение команды</li>
+        </ul>
+        <button class="pricing-btn">Связаться</button>
+      </div>
+    </div>
+  </div>
+
+</main>
 
 <script>
 const API = '/api';
 
-const DIRECTORS = [
-    { code:'ceo', title:'CEO', scope:'Стратегия, координация', depts:'-' },
-    { code:'cto', title:'CTO', scope:'Архитектура, код, DevOps', depts:'6 отделов' },
-    { code:'cfo', title:'CFO', scope:'Финансы, гранты, фриланс', depts:'4 отдела' },
-    { code:'cmo', title:'CMO', scope:'Маркетинг, контент, PR', depts:'4 отдела' },
-    { code:'coo', title:'COO', scope:'Операции, процессы', depts:'3 отдела' },
-    { code:'cpo', title:'CPO', scope:'Продукт, roadmap, UX', depts:'3 отдела' },
-    { code:'cdo', title:'CDO', scope:'Дизайн, UI/UX, бренд', depts:'3 отдела' },
-    { code:'chro', title:'CHRO', scope:'Кадры, найм, культура', depts:'2 отдела' },
-    { code:'clo', title:'CLO', scope:'Юридическое, IP, договоры', depts:'3 отдела' },
-];
+const DEPT_COLORS = {
+  development:'#3b82f6', devops:'#8b5cf6', security:'#ef4444',
+  architecture:'#06b6d4', qa:'#f59e0b', data:'#10b981',
+  marketing:'#f97316', content:'#ec4899', seo:'#14b8a6',
+  analytics:'#6366f1', finance:'#22c55e', accounting:'#84cc16',
+  investment:'#eab308', grants:'#a3e635', operations:'#0ea5e9',
+  logistics:'#38bdf8', support:'#2dd4bf', product:'#a78bfa',
+  research:'#c084fc', ux:'#f472b6', design:'#fb923c',
+  ui:'#e879f9', brand:'#f43f5e', hr:'#34d399',
+  recruitment:'#4ade80', legal:'#fbbf24', compliance:'#facc15',
+  ip:'#fde047', strategy:'#d4a017', coordination:'#f0c040'
+};
 
-// TABS
-function showTab(name) {
-    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
-    document.getElementById('tab-' + name).style.display = '';
-    document.querySelectorAll('.topbar-tabs button').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-// DIRECTORS
-function renderDirectors() {
-    const grid = document.getElementById('directors-grid');
-    grid.innerHTML = DIRECTORS.map(d => `
-        <div class="dir-card">
-            <div class="dir-title">${d.title}</div>
-            <div class="dir-scope">${d.scope}</div>
-            <div class="dir-depts">${d.depts}</div>
-        </div>`).join('');
-}
-
-// AGENTS
-async function loadAgents() {
-    try {
-        const res = await fetch(API + '/conductor/agents');
-        const agents = await res.json();
-        document.getElementById('s-agents').textContent = agents.length;
-        document.getElementById('agents-count').textContent = agents.length;
-        const list = document.getElementById('agents-list');
-        list.innerHTML = agents.map(a => `
-            <div class="agent-row-c">
-                <span class="a-name">${esc(a.title)}</span>
-                <span class="a-dept">${esc(a.department)}</span>
-            </div>`).join('');
-    } catch(e) {}
-}
-
-// TASK STATS
-async function loadDashboard() {
-    try {
-        const res = await fetch(API + '/conductor/dashboard');
-        const data = await res.json();
-        const el = document.getElementById('task-stats');
-        const statuses = data.by_status || {};
-        el.innerHTML = Object.entries(statuses).map(([k,v]) => `
-            <div class="stat-card">
-                <div class="label">${k}</div>
-                <div class="value">${v}</div>
-            </div>`).join('');
-    } catch(e) {}
-}
-
-// ORCHESTRATE
-async function runOrchestrate() {
-    const input = document.getElementById('orch-input');
-    const task = input.value.trim();
-    if (!task) return;
-
-    const btn = document.getElementById('orch-btn');
-    const result = document.getElementById('orch-result');
-    btn.disabled = true;
-    result.textContent = 'Маэстро анализирует задачу...\nCEO \u2192 Директора \u2192 Отделы \u2192 Специалисты\n\nЭто займёт 15-30 секунд...';
-
-    try {
-        const res = await fetch(API + '/conductor/orchestrate', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ task, priority: 'normal', depth: 3 }),
-        });
-        const tree = await res.json();
-
-        if (tree.status === 'error') {
-            result.textContent = '\u274c ' + (tree.message || 'Ошибка');
-            btn.disabled = false;
-            return;
-        }
-
-        let out = `\u2705 Задача: ${task}\n`;
-        out += `\ud83d\udcca Анализ: ${tree.analysis || ''}\n`;
-        out += `\u23f1 ${Math.round(tree.duration_ms || 0)}ms\n`;
-        out += `ID: ${tree.task_id || '?'} | Специалистов: ${tree.total_specialists || 0}\n`;
-        out += '\u2500'.repeat(50) + '\n\n';
-
-        (tree.directors || []).forEach(d => {
-            out += `\ud83d\udc54 ${d.title || d.role} [${d.priority || 'normal'}]\n`;
-            out += `   ${d.task}\n`;
-            (d.departments || []).forEach(dept => {
-                out += `   \ud83d\udcc1 ${dept.department}: ${dept.task}\n`;
-                (dept.specialists || []).forEach(s => {
-                    out += `      \ud83d\udc64 ${s.specialist}: ${s.task}\n`;
-                });
-            });
-            out += '\n';
-        });
-
-        const r = tree.report || {};
-        if (r.summary) {
-            out += '\u2500'.repeat(50) + '\n';
-            out += `\ud83d\udcca Итог: ${r.summary}\n`;
-            (r.highlights || []).forEach(h => out += `  \u2705 ${h}\n`);
-            (r.next_steps || []).forEach(n => out += `  \u27a1\ufe0f ${n}\n`);
-        }
-
-        result.textContent = out;
-    } catch(e) {
-        result.textContent = '\u274c Ошибка: ' + e.message;
-    }
-    btn.disabled = false;
-}
-
-// CHAT
-async function sendChat() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (!msg) return;
-    input.value = '';
-    addChat('user', msg);
-
-    try {
-        const res = await fetch(API + '/conductor/route', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ query: msg }),
-        });
-        const data = await res.json();
-        addChat('assistant', data.response, `${data.agent} | ${data.department} | ${Math.round(data.confidence*100)}%`);
-    } catch(e) {
-        addChat('assistant', 'Ошибка: ' + e.message, 'system');
-    }
-}
-
-function addChat(role, text, meta) {
-    const box = document.getElementById('chat-box');
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + role;
-    div.innerHTML = `<div class="bubble">${esc(text)}</div>` +
-        (meta ? `<div class="meta">${esc(meta)}</div>` : '');
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
+function getDeptColor(dept) {
+  if (!dept) return '#71717a';
+  const key = dept.toLowerCase().replace(/[^a-z]/g, '');
+  for (const [k, v] of Object.entries(DEPT_COLORS)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  return '#71717a';
 }
 
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-document.getElementById('orch-input').addEventListener('keydown', e => { if(e.key==='Enter') runOrchestrate(); });
+// ====== TAB SWITCHING ======
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
 
-renderDirectors();
+// ====== LOAD AGENTS ======
+let agentsData = [];
+async function loadAgents() {
+  try {
+    const res = await fetch(API + '/conductor/agents');
+    const data = await res.json();
+    agentsData = data.agents || data || [];
+    document.getElementById('stat-agents').textContent = agentsData.length;
+    document.getElementById('agents-count').textContent = agentsData.length;
+    renderCompactAgents();
+    renderFullAgents();
+  } catch (e) {
+    document.getElementById('agent-list-compact').innerHTML = '<div class="loading">Ошибка загрузки</div>';
+    document.getElementById('agents-grid-full').innerHTML = '<div class="loading">Ошибка загрузки</div>';
+  }
+}
+
+function renderCompactAgents() {
+  const el = document.getElementById('agent-list-compact');
+  if (!agentsData.length) { el.innerHTML = '<div class="loading">Нет агентов</div>'; return; }
+  el.innerHTML = agentsData.map(a => {
+    const color = getDeptColor(a.department);
+    return `<div class="agent-row">
+      <span class="agent-row-name">${esc(a.title || a.name || a.id)}</span>
+      <span class="agent-row-dept" style="background:${color}22;color:${color}">${esc(a.department || '-')}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderFullAgents() {
+  const el = document.getElementById('agents-grid-full');
+  if (!agentsData.length) { el.innerHTML = '<div class="loading">Нет агентов</div>'; return; }
+  el.innerHTML = agentsData.map(a => {
+    const color = getDeptColor(a.department);
+    return `<div class="card agent-card">
+      <div class="agent-title">${esc(a.title || a.name || a.id)}</div>
+      <span class="agent-dept-badge" style="background:${color}22;color:${color}">${esc(a.department || '-')}</span>
+      <div class="agent-desc">${esc(a.description || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ====== LOAD DASHBOARD TASKS ======
+async function loadDashboard() {
+  try {
+    const res = await fetch(API + '/conductor/dashboard');
+    const data = await res.json();
+    const byStatus = data.by_status || data.stats?.by_status || {};
+    const el = document.getElementById('tasks-grid');
+    const entries = Object.entries(byStatus);
+    if (!entries.length) {
+      el.innerHTML = '<div class="loading">Нет данных по задачам</div>';
+      return;
+    }
+    el.innerHTML = entries.map(([status, count]) =>
+      `<div class="task-status">
+        <div class="task-count">${count}</div>
+        <div class="task-name">${esc(status)}</div>
+      </div>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('tasks-grid').innerHTML = '<div class="loading">Ошибка загрузки</div>';
+  }
+}
+
+// ====== MAESTRO ORCHESTRATE ======
+async function runOrchestrate() {
+  const input = document.getElementById('maestro-input');
+  const btn = document.getElementById('maestro-btn');
+  const result = document.getElementById('maestro-result');
+  const task = input.value.trim();
+  if (!task) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Обработка...';
+  result.textContent = 'Маэстро анализирует задачу...\nCEO \u2192 Директора \u2192 Отделы \u2192 Специалисты\n\nЭто займёт 15-30 секунд...';
+
+  try {
+    const res = await fetch(API + '/conductor/orchestrate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task, priority: 'normal', depth: 3 })
+    });
+    const data = await res.json();
+
+    if (data.status === 'error') {
+      result.textContent = '\u274c ' + (data.message || 'Ошибка');
+      return;
+    }
+
+    result.textContent = formatOrchestration(data, task);
+  } catch (e) {
+    result.textContent = '\u274c Ошибка: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Запустить';
+  }
+}
+
+function formatOrchestration(data, task) {
+  let out = '';
+  out += `\u2705 Задача: ${task}\n`;
+  if (data.analysis) out += `\ud83d\udcca Анализ: ${data.analysis}\n`;
+  if (data.duration_ms) out += `\u23f1 ${Math.round(data.duration_ms)}ms\n`;
+  if (data.duration) out += `\u23f1 ${data.duration}\n`;
+  if (data.task_id) out += `ID: ${data.task_id}`;
+  if (data.total_specialists) out += ` | Специалистов: ${data.total_specialists}`;
+  out += '\n' + '\u2500'.repeat(50) + '\n\n';
+
+  // Tree: directors -> departments -> specialists
+  const directors = data.directors || data.decomposition || data.tree || data.result;
+  if (Array.isArray(directors)) {
+    directors.forEach(d => {
+      out += `\ud83d\udc54 ${d.title || d.director || d.role || d.name} [${d.priority || 'normal'}]\n`;
+      if (d.task) out += `   ${d.task}\n`;
+      const depts = d.departments || d.children || [];
+      depts.forEach(dept => {
+        out += `   \ud83d\udcc1 ${dept.department || dept.name}: ${dept.task || ''}\n`;
+        const specs = dept.specialists || dept.children || [];
+        specs.forEach(s => {
+          out += `      \ud83d\udc64 ${s.specialist || s.name || s}: ${s.task || ''}\n`;
+        });
+      });
+      out += '\n';
+    });
+  } else if (typeof directors === 'string') {
+    out += directors + '\n';
+  } else if (directors && typeof directors === 'object') {
+    out += JSON.stringify(directors, null, 2) + '\n';
+  }
+
+  // Report
+  const r = data.report || {};
+  if (r.summary || data.highlights || data.next_steps) {
+    out += '\u2500'.repeat(50) + '\n';
+    if (r.summary) out += `\ud83d\udcca Итог: ${r.summary}\n`;
+    (r.highlights || data.highlights || []).forEach(h => out += `  \u2705 ${h}\n`);
+    (r.next_steps || data.next_steps || []).forEach(n => out += `  \u27a1\ufe0f ${n}\n`);
+  }
+
+  return out || JSON.stringify(data, null, 2);
+}
+
+// ====== CHAT ======
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const box = document.getElementById('chat-box');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  box.innerHTML += `<div class="chat-bubble chat-user">${esc(msg)}</div>`;
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const res = await fetch(API + '/conductor/route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: msg })
+    });
+    const data = await res.json();
+    const response = data.response || data.answer || data.message || JSON.stringify(data);
+    let meta = '';
+    if (data.agent) meta += data.agent;
+    if (data.department) meta += ' | ' + data.department;
+    if (data.confidence) meta += ' | ' + Math.round(data.confidence * 100) + '%';
+
+    box.innerHTML += `<div class="chat-bubble chat-assistant">${esc(response)}${meta ? '<div class="chat-meta">' + esc(meta) + '</div>' : ''}</div>`;
+  } catch (e) {
+    box.innerHTML += `<div class="chat-bubble chat-assistant">Ошибка: ${esc(e.message)}</div>`;
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+// ====== INIT ======
 loadAgents();
 loadDashboard();
 </script>
