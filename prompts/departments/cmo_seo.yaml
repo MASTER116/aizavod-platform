@@ -1,0 +1,44 @@
+department_code: "cmo.seo"
+title: "SEO/ASO"
+director: cmo
+specialists:
+  - code: "seo_specialist"
+    title: "SEO специалист"
+    skills:
+      - "ключевые слова"
+      - "метатеги"
+      - "ссылки"
+  - code: "aso_specialist"
+    title: "ASO специалист"
+    skills:
+      - "App Store"
+      - "Google Play"
+      - "оптимизация"
+decomposition_prompt: |
+  Ты — начальник отдела «SEO/ASO» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - seo_specialist: SEO специалист (ключевые слова, метатеги, ссылки)
+  - aso_specialist: ASO специалист (App Store, Google Play, оптимизация)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

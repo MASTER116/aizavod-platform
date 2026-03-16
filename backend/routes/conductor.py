@@ -56,6 +56,7 @@ async def route_query(req: ConductorRequest):
 class OrchestrateRequest(BaseModel):
     task: str
     priority: str = "normal"
+    depth: int = 3  # 2 = до отделов, 3 = до специалистов
 
 
 @router.post("/orchestrate")
@@ -64,12 +65,12 @@ async def orchestrate_task(req: OrchestrateRequest, db: Session = Depends(get_db
     from services.conductor import get_conductor
 
     conductor = get_conductor()
-    tree = await conductor.orchestrate(req.task)
+    tree = await conductor.orchestrate(req.task, depth=req.depth)
 
     if tree.get("status") == "error":
         return tree
 
-    # Сохранить в БД: parent task + director tasks + department tasks
+    # Сохранить в БД: parent task + director tasks + department tasks + specialist tasks
     parent = ConductorTask(
         title=req.task,
         description=tree.get("analysis", ""),
@@ -81,6 +82,8 @@ async def orchestrate_task(req: OrchestrateRequest, db: Session = Depends(get_db
     )
     db.add(parent)
     db.flush()
+
+    total_specialists = 0
 
     for d in tree.get("directors", []):
         dir_task = ConductorTask(
@@ -100,6 +103,7 @@ async def orchestrate_task(req: OrchestrateRequest, db: Session = Depends(get_db
         db.flush()
 
         for dept in d.get("departments", []):
+            has_specialists = bool(dept.get("specialists"))
             dept_task = ConductorTask(
                 parent_id=dir_task.id,
                 title=dept.get("task", ""),
@@ -110,20 +114,88 @@ async def orchestrate_task(req: OrchestrateRequest, db: Session = Depends(get_db
                 estimated_hours=dept.get("estimated_hours", 0),
                 deliverables=json.dumps(dept.get("deliverables", []), ensure_ascii=False),
                 dependencies=json.dumps(dept.get("depends_on", []), ensure_ascii=False),
+                status=TaskStatus.DECOMPOSED if has_specialists else TaskStatus.PENDING,
                 created_by="conductor",
             )
             db.add(dept_task)
+            db.flush()
+
+            # 3-й уровень: специалисты
+            for spec in dept.get("specialists", []):
+                spec_task = ConductorTask(
+                    parent_id=dept_task.id,
+                    title=spec.get("task", ""),
+                    level="specialist",
+                    assigned_to=f"{d['role']}.{dept.get('department', '')}.{spec.get('specialist', '')}",
+                    agent_role=d["role"],
+                    priority=TaskPriority(d.get("priority", "normal")),
+                    estimated_hours=spec.get("estimated_hours", 0),
+                    deliverables=json.dumps(spec.get("deliverables", []), ensure_ascii=False),
+                    dependencies=json.dumps(spec.get("depends_on", []), ensure_ascii=False),
+                    created_by="conductor",
+                )
+                db.add(spec_task)
+                total_specialists += 1
 
     db.add(ConductorLog(
         task_id=parent.id,
         action="orchestrated",
-        message=f"Декомпозиция: {len(tree.get('directors', []))} директоров",
+        message=f"Декомпозиция: {len(tree.get('directors', []))} директоров, {total_specialists} специалистов",
     ))
     db.commit()
     db.refresh(parent)
 
     tree["task_id"] = parent.id
+    tree["total_specialists"] = total_specialists
     return tree
+
+
+@router.post("/tasks/{task_id}/collect")
+async def collect_results(task_id: int, db: Session = Depends(get_db)):
+    """Собрать результаты по дереву задач."""
+    task = db.get(ConductorTask, task_id)
+    if not task:
+        return {"error": "not found"}
+
+    def collect_tree(t):
+        children = db.execute(
+            select(ConductorTask).where(ConductorTask.parent_id == t.id)
+        ).scalars().all()
+        node = {
+            "id": t.id,
+            "title": t.title,
+            "level": t.level,
+            "assigned_to": t.assigned_to,
+            "status": t.status.value,
+            "result": t.result,
+        }
+        if children:
+            node["children"] = [collect_tree(c) for c in children]
+        return node
+
+    tree = collect_tree(task)
+
+    # Посчитать статистику
+    def count_statuses(node):
+        counts = {"total": 0, "completed": 0, "pending": 0, "failed": 0, "in_progress": 0}
+        if not node.get("children"):
+            counts["total"] = 1
+            s = node.get("status", "pending")
+            counts[s] = counts.get(s, 0) + 1
+            return counts
+        for child in node.get("children", []):
+            child_counts = count_statuses(child)
+            for k, v in child_counts.items():
+                counts[k] = counts.get(k, 0) + v
+        return counts
+
+    stats = count_statuses(tree)
+
+    return {
+        "task_id": task_id,
+        "tree": tree,
+        "stats": stats,
+    }
 
 
 @router.get("/tree/{task_id}")

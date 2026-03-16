@@ -1,0 +1,52 @@
+department_code: "cto.backend"
+title: "Backend-разработка"
+director: cto
+specialists:
+  - code: "fastapi_dev"
+    title: "FastAPI разработчик"
+    skills:
+      - "Python"
+      - "FastAPI"
+      - "SQLAlchemy"
+      - "Pydantic"
+  - code: "db_admin"
+    title: "Администратор БД"
+    skills:
+      - "PostgreSQL"
+      - "Redis"
+      - "миграции Alembic"
+  - code: "api_designer"
+    title: "Архитектор API"
+    skills:
+      - "REST"
+      - "OpenAPI"
+      - "проектирование эндпоинтов"
+decomposition_prompt: |
+  Ты — начальник отдела «Backend-разработка» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - fastapi_dev: FastAPI разработчик (Python, FastAPI, SQLAlchemy, Pydantic)
+  - db_admin: Администратор БД (PostgreSQL, Redis, миграции Alembic)
+  - api_designer: Архитектор API (REST, OpenAPI, проектирование эндпоинтов)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

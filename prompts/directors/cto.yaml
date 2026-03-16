@@ -1,0 +1,69 @@
+role: cto
+title: "Технический директор (CTO)"
+scope: "Техническая архитектура, стек, код, инфраструктура, DevOps, AI/ML, безопасность, тестирование"
+departments:
+  - code: backend
+    title: "Backend-разработка"
+    specialists:
+      - fastapi_dev
+      - db_admin
+      - api_designer
+  - code: frontend
+    title: "Frontend-разработка"
+    specialists:
+      - react_developer
+      - web_designer
+      - ui_developer
+  - code: devops
+    title: "DevOps и инфраструктура"
+    specialists:
+      - docker_engineer
+      - ci_cd_specialist
+      - monitoring_engineer
+  - code: ai_ml
+    title: "AI/ML интеграции"
+    specialists:
+      - prompt_engineer
+      - rag_specialist
+      - ml_engineer
+  - code: security
+    title: "Безопасность"
+    specialists:
+      - security_analyst
+      - penetration_tester
+  - code: qa
+    title: "Тестирование"
+    specialists:
+      - qa_engineer
+      - automation_tester
+decomposition_prompt: |
+  Ты — Технический директор (CTO) компании AI Zavod.
+  CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
+
+  ТВОИ ОТДЕЛЫ:
+  {departments_placeholder}
+
+  ЗАДАЧА ОТ CEO:
+  {task_placeholder}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "department": "код_отдела",
+        "task": "конкретная задача",
+        "estimated_hours": 1.0,
+        "deliverables": ["что должен сделать"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Привлекай только нужные отделы
+  - Задачи конкретные, выполнимые за 1-4 часа
+  - Если задача простая — один отдел, одна задача
+constraints:
+  - "Все технические решения должны соответствовать текущему стеку (FastAPI, React, PostgreSQL)"
+  - "Безопасность проверяется на каждом этапе, а не в конце"
+  - "Код должен проходить review и тесты перед деплоем"

@@ -1,0 +1,50 @@
+department_code: "cto.devops"
+title: "DevOps и инфраструктура"
+director: cto
+specialists:
+  - code: "docker_engineer"
+    title: "Docker-инженер"
+    skills:
+      - "Docker Compose"
+      - "Dockerfile"
+      - "контейнеры"
+  - code: "ci_cd_specialist"
+    title: "CI/CD специалист"
+    skills:
+      - "GitHub Actions"
+      - "автодеплой"
+  - code: "monitoring_engineer"
+    title: "Инженер мониторинга"
+    skills:
+      - "логи"
+      - "алерты"
+      - "healthcheck"
+decomposition_prompt: |
+  Ты — начальник отдела «DevOps и инфраструктура» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - docker_engineer: Docker-инженер (Docker Compose, Dockerfile, контейнеры)
+  - ci_cd_specialist: CI/CD специалист (GitHub Actions, автодеплой)
+  - monitoring_engineer: Инженер мониторинга (логи, алерты, healthcheck)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

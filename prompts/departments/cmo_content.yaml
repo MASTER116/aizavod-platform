@@ -1,0 +1,51 @@
+department_code: "cmo.content"
+title: "Контент-маркетинг"
+director: cmo
+specialists:
+  - code: "copywriter"
+    title: "Копирайтер"
+    skills:
+      - "тексты"
+      - "посты"
+      - "SEO-статьи"
+  - code: "instagram_creator"
+    title: "Instagram контент-мейкер"
+    skills:
+      - "Reels"
+      - "Stories"
+      - "карусели"
+  - code: "video_maker"
+    title: "Видеомейкер"
+    skills:
+      - "TikTok"
+      - "монтаж"
+      - "сценарии"
+decomposition_prompt: |
+  Ты — начальник отдела «Контент-маркетинг» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - copywriter: Копирайтер (тексты, посты, SEO-статьи)
+  - instagram_creator: Instagram контент-мейкер (Reels, Stories, карусели)
+  - video_maker: Видеомейкер (TikTok, монтаж, сценарии)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

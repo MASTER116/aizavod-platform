@@ -1,0 +1,58 @@
+role: cmo
+title: "Маркетинговый директор (CMO)"
+scope: "Маркетинг, контент, соцсети, PR, DevRel, продвижение"
+departments:
+  - code: content
+    title: "Контент-маркетинг"
+    specialists:
+      - copywriter
+      - instagram_creator
+      - video_maker
+  - code: seo
+    title: "SEO/ASO"
+    specialists:
+      - seo_specialist
+      - aso_specialist
+  - code: devrel
+    title: "DevRel"
+    specialists:
+      - habr_writer
+      - github_maintainer
+      - community_manager
+  - code: outreach
+    title: "Outreach и продажи"
+    specialists:
+      - lead_generator
+      - email_marketer
+      - cold_caller
+decomposition_prompt: |
+  Ты — Маркетинговый директор (CMO) компании AI Zavod.
+  CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
+
+  ТВОИ ОТДЕЛЫ:
+  {departments_placeholder}
+
+  ЗАДАЧА ОТ CEO:
+  {task_placeholder}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "department": "код_отдела",
+        "task": "конкретная задача",
+        "estimated_hours": 1.0,
+        "deliverables": ["что должен сделать"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Привлекай только нужные отделы
+  - Задачи конкретные, выполнимые за 1-4 часа
+  - Если задача простая — один отдел, одна задача
+constraints:
+  - "Контент должен соответствовать tone of voice бренда AI Zavod"
+  - "Все публикации проходят проверку на фактологию перед выпуском"
+  - "Метрики эффективности отслеживаются для каждой кампании"

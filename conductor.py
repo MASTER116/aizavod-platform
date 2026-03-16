@@ -362,6 +362,153 @@ def cmd_dashboard(args):
         print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
+def cmd_orchestrate(args):
+    """Запустить полную оркестрацию задачи (CEO → директора → отделы → специалисты)."""
+    import asyncio
+
+    async def run():
+        # Загрузить .env
+        env_file = os.path.join(os.path.dirname(__file__), ".env")
+        if os.path.exists(env_file):
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if "=" in line and not line.startswith("#"):
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+        from services.conductor import get_conductor
+        conductor = get_conductor()
+        depth = args.depth if hasattr(args, "depth") and args.depth else 3
+        tree = await conductor.orchestrate(args.task, depth=depth)
+
+        if tree.get("status") == "error":
+            print(json.dumps(tree, ensure_ascii=False, indent=2))
+            return
+
+        # Сохранить в БД
+        with get_session() as db:
+            parent = ConductorTask(
+                title=args.task,
+                description=tree.get("analysis", ""),
+                level="conductor",
+                assigned_to="conductor",
+                priority=TaskPriority(args.priority) if args.priority else TaskPriority.NORMAL,
+                status=TaskStatus.DECOMPOSED,
+                created_by="founder",
+            )
+            db.add(parent)
+            db.flush()
+
+            total_tasks = 0
+            for d in tree.get("directors", []):
+                dir_task = ConductorTask(
+                    parent_id=parent.id,
+                    title=d["task"],
+                    level="director",
+                    assigned_to=d["role"],
+                    agent_role=d["role"],
+                    priority=TaskPriority(d.get("priority", "normal")),
+                    estimated_hours=d.get("estimated_hours", 0),
+                    deliverables=json.dumps(d.get("deliverables", []), ensure_ascii=False),
+                    dependencies=json.dumps(d.get("depends_on", []), ensure_ascii=False),
+                    status=TaskStatus.DECOMPOSED,
+                    created_by="conductor",
+                )
+                db.add(dir_task)
+                db.flush()
+
+                for dept in d.get("departments", []):
+                    has_specs = bool(dept.get("specialists"))
+                    dept_task = ConductorTask(
+                        parent_id=dir_task.id,
+                        title=dept.get("task", ""),
+                        level="department",
+                        assigned_to=f"{d['role']}.{dept.get('department', '')}",
+                        agent_role=d["role"],
+                        priority=TaskPriority(d.get("priority", "normal")),
+                        estimated_hours=dept.get("estimated_hours", 0),
+                        deliverables=json.dumps(dept.get("deliverables", []), ensure_ascii=False),
+                        dependencies=json.dumps(dept.get("depends_on", []), ensure_ascii=False),
+                        status=TaskStatus.DECOMPOSED if has_specs else TaskStatus.PENDING,
+                        created_by="conductor",
+                    )
+                    db.add(dept_task)
+                    db.flush()
+
+                    for spec in dept.get("specialists", []):
+                        spec_task = ConductorTask(
+                            parent_id=dept_task.id,
+                            title=spec.get("task", ""),
+                            level="specialist",
+                            assigned_to=f"{d['role']}.{dept.get('department', '')}.{spec.get('specialist', '')}",
+                            agent_role=d["role"],
+                            estimated_hours=spec.get("estimated_hours", 0),
+                            deliverables=json.dumps(spec.get("deliverables", []), ensure_ascii=False),
+                            created_by="conductor",
+                        )
+                        db.add(spec_task)
+                        total_tasks += 1
+
+            db.add(ConductorLog(
+                task_id=parent.id,
+                action="orchestrated",
+                message=f"Полная декомпозиция: {len(tree.get('directors', []))} директоров, {total_tasks} специалистов",
+            ))
+            db.commit()
+            db.refresh(parent)
+
+        tree["task_id"] = parent.id
+        tree["total_specialists"] = total_tasks
+        print(json.dumps(tree, ensure_ascii=False, indent=2))
+
+    asyncio.run(run())
+
+
+def cmd_tree(args):
+    """Показать дерево задач в виде иерархии."""
+    with get_session() as db:
+        task = db.get(ConductorTask, args.task_id)
+        if not task:
+            print(json.dumps({"error": f"Задача {args.task_id} не найдена"}, ensure_ascii=False))
+            return
+
+        def print_tree(t, indent=0):
+            prefix = "  " * indent
+            status_icon = {
+                "pending": "⏳",
+                "in_progress": "🔄",
+                "completed": "✅",
+                "failed": "❌",
+                "decomposed": "📋",
+                "blocked": "🚫",
+                "cancelled": "⛔",
+            }.get(t.status.value, "?")
+
+            level_tag = {
+                "conductor": "CONDUCTOR",
+                "director": "ДИРЕКТОР",
+                "department": "ОТДЕЛ",
+                "specialist": "СПЕЦ",
+            }.get(t.level, t.level)
+
+            line = f"{prefix}{status_icon} [{level_tag}] {t.title[:70]}"
+            if t.assigned_to:
+                line += f" ({t.assigned_to})"
+            print(line)
+
+            children = db.execute(
+                select(ConductorTask)
+                .where(ConductorTask.parent_id == t.id)
+                .order_by(ConductorTask.created_at)
+            ).scalars().all()
+
+            for child in children:
+                print_tree(child, indent + 1)
+
+        print_tree(task)
+
+
 # ─── CLI ────────────────────────────────────────────────────────────────────
 
 
@@ -413,6 +560,16 @@ def main():
     # dashboard
     sub.add_parser("dashboard", help="Общая статистика")
 
+    # orchestrate
+    p_orchestrate = sub.add_parser("orchestrate", help="Полная оркестрация задачи")
+    p_orchestrate.add_argument("task", help="Задача для декомпозиции")
+    p_orchestrate.add_argument("--priority", "-p", choices=["critical", "high", "normal", "low"])
+    p_orchestrate.add_argument("--depth", type=int, default=3, help="Глубина: 2=отделы, 3=специалисты")
+
+    # tree
+    p_tree = sub.add_parser("tree", help="Дерево задач")
+    p_tree.add_argument("task_id", type=int)
+
     args = parser.parse_args()
 
     if not args.command:
@@ -429,6 +586,8 @@ def main():
         "log": cmd_log,
         "status": cmd_status,
         "dashboard": cmd_dashboard,
+        "orchestrate": cmd_orchestrate,
+        "tree": cmd_tree,
     }
     commands[args.command](args)
 

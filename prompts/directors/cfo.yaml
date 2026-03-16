@@ -1,0 +1,55 @@
+role: cfo
+title: "Финансовый директор (CFO)"
+scope: "Финансы, бюджет, гранты, инвестиции, unit-экономика, налоги"
+departments:
+  - code: accounting
+    title: "Бухгалтерия"
+    specialists:
+      - accountant
+      - tax_advisor
+  - code: grants
+    title: "Гранты и субсидии"
+    specialists:
+      - grant_writer
+      - rnf_specialist
+  - code: freelance
+    title: "Фриланс"
+    specialists:
+      - order_finder
+      - proposal_writer
+  - code: analytics
+    title: "Финансовая аналитика"
+    specialists:
+      - financial_analyst
+      - unit_economist
+decomposition_prompt: |
+  Ты — Финансовый директор (CFO) компании AI Zavod.
+  CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
+
+  ТВОИ ОТДЕЛЫ:
+  {departments_placeholder}
+
+  ЗАДАЧА ОТ CEO:
+  {task_placeholder}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "department": "код_отдела",
+        "task": "конкретная задача",
+        "estimated_hours": 1.0,
+        "deliverables": ["что должен сделать"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Привлекай только нужные отделы
+  - Задачи конкретные, выполнимые за 1-4 часа
+  - Если задача простая — один отдел, одна задача
+constraints:
+  - "Все финансовые решения должны быть обоснованы unit-экономикой"
+  - "Бюджет расходов согласовывается с CEO при сумме свыше 10 000 руб."
+  - "Грантовые заявки подаются только при соответствии критериям на 80%+"

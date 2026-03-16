@@ -1,0 +1,51 @@
+department_code: "cto.ai"
+title: "AI/ML интеграции"
+director: cto
+specialists:
+  - code: "prompt_engineer"
+    title: "Промпт-инженер"
+    skills:
+      - "Claude API"
+      - "системные промпты"
+      - "few-shot"
+  - code: "rag_specialist"
+    title: "RAG специалист"
+    skills:
+      - "BM25"
+      - "embeddings"
+      - "поиск"
+  - code: "ml_engineer"
+    title: "ML-инженер"
+    skills:
+      - "fine-tuning"
+      - "пайплайны"
+      - "оценка моделей"
+decomposition_prompt: |
+  Ты — начальник отдела «AI/ML интеграции» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - prompt_engineer: Промпт-инженер (Claude API, системные промпты, few-shot)
+  - rag_specialist: RAG специалист (BM25, embeddings, поиск)
+  - ml_engineer: ML-инженер (fine-tuning, пайплайны, оценка моделей)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

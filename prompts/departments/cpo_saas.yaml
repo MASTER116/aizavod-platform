@@ -1,0 +1,44 @@
+department_code: "cpo.saas"
+title: "AI Zavod SaaS платформа"
+director: cpo
+specialists:
+  - code: "product_manager"
+    title: "Продакт-менеджер"
+    skills:
+      - "roadmap"
+      - "бэклог"
+      - "приоритизация"
+  - code: "feature_designer"
+    title: "Дизайнер фич"
+    skills:
+      - "спецификации"
+      - "user stories"
+      - "acceptance criteria"
+decomposition_prompt: |
+  Ты — начальник отдела «AI Zavod SaaS платформа» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - product_manager: Продакт-менеджер (roadmap, бэклог, приоритизация)
+  - feature_designer: Дизайнер фич (спецификации, user stories, acceptance criteria)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

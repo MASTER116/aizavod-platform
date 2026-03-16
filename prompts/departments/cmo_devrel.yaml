@@ -1,0 +1,49 @@
+department_code: "cmo.devrel"
+title: "DevRel"
+director: cmo
+specialists:
+  - code: "habr_writer"
+    title: "Автор Хабр"
+    skills:
+      - "технические статьи"
+      - "туториалы"
+  - code: "github_maintainer"
+    title: "GitHub мейнтейнер"
+    skills:
+      - "README"
+      - "issues"
+      - "releases"
+  - code: "community_manager"
+    title: "Комьюнити менеджер"
+    skills:
+      - "Telegram-канал"
+      - "Discord"
+decomposition_prompt: |
+  Ты — начальник отдела «DevRel» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - habr_writer: Автор Хабр (технические статьи, туториалы)
+  - github_maintainer: GitHub мейнтейнер (README, issues, releases)
+  - community_manager: Комьюнити менеджер (Telegram-канал, Discord)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов

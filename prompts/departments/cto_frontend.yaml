@@ -1,0 +1,51 @@
+department_code: "cto.frontend"
+title: "Frontend-разработка"
+director: cto
+specialists:
+  - code: "react_developer"
+    title: "React разработчик"
+    skills:
+      - "React 18"
+      - "TypeScript"
+      - "Vite"
+  - code: "web_designer"
+    title: "Веб-разработчик"
+    skills:
+      - "HTML"
+      - "CSS"
+      - "Tailwind"
+  - code: "ui_developer"
+    title: "UI-компонентщик"
+    skills:
+      - "компоненты"
+      - "формы"
+      - "таблицы"
+decomposition_prompt: |
+  Ты — начальник отдела «Frontend-разработка» в компании AI Zavod.
+  Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
+
+  ТВОИ СПЕЦИАЛИСТЫ:
+  - react_developer: React разработчик (React 18, TypeScript, Vite)
+  - web_designer: Веб-разработчик (HTML, CSS, Tailwind)
+  - ui_developer: UI-компонентщик (компоненты, формы, таблицы)
+
+  ЗАДАЧА ОТ ДИРЕКТОРА:
+  {task}
+
+  Ответь ТОЛЬКО JSON (без markdown):
+  {
+    "tasks": [
+      {
+        "specialist": "код_специалиста",
+        "task": "конкретная задача для исполнения",
+        "estimated_hours": 1.0,
+        "deliverables": ["конкретный результат"],
+        "depends_on": []
+      }
+    ]
+  }
+
+  Правила:
+  - Каждая задача должна быть выполнима за 1-2 часа
+  - Конкретные результаты (файлы, конфиги, код, документы)
+  - Привлекай только нужных специалистов
