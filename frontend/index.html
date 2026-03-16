@@ -735,14 +735,14 @@
         <div class="wizard" id="wizard"></div>
     </section>
 
-    <!-- ===== AGENTS GRID ===== -->
+    <!-- ===== SPECIALISTS PREVIEW ===== -->
     <section class="section animate-on-scroll" id="agents">
         <div class="section-header">
-            <h2>Наши <span class="gr">AI-агенты</span></h2>
-            <p>19 специалистов в 9 департаментах, готовых решать задачи вашего бизнеса</p>
+            <h2>AI-<span class="gr">специалисты</span> для вашего бизнеса</h2>
+            <p>Для каждой отрасли — свой набор профессионалов. Бухгалтер, юрист, врач, инженер — все работают 24/7</p>
         </div>
         <div class="agents-grid" id="agents-grid">
-            <div style="text-align:center;padding:40px;color:var(--text-muted)">Загрузка агентов...</div>
+            <div style="text-align:center;padding:40px;color:var(--text-muted);grid-column:1/-1">Выберите отрасль через <a href="#select" style="color:var(--accent-light)">подбор выше</a>, чтобы увидеть специалистов</div>
         </div>
     </section>
 
@@ -917,25 +917,26 @@ const AGENT_ICONS = {
 let state = { step: 1, country: null, city: null, category: null, industry: null };
 let catalogData = null;
 let agentsData = null;
+let specialistsData = null;
 
 const STEPS = [
     { num: 1, label: 'Страна' },
     { num: 2, label: 'Город' },
     { num: 3, label: 'Отрасль' },
     { num: 4, label: 'Направление' },
-    { num: 5, label: 'Агенты' },
+    { num: 5, label: 'Специалисты' },
 ];
 
 // ─── INIT ───────────────────────────────────────────────────────────────────
 
 async function init() {
     try {
-        const [catRes, agRes] = await Promise.all([
+        const [catRes, specRes] = await Promise.all([
             fetch('/data/industries/industries.json').then(r => r.ok ? r.json() : null),
-            fetch('/api/conductor/agents').then(r => r.ok ? r.json() : null),
+            fetch('/data/industries/specialists.json').then(r => r.ok ? r.json() : null),
         ]);
         catalogData = catRes;
-        agentsData = agRes;
+        specialistsData = specRes;
     } catch(e) {
         console.warn('Data load error:', e);
     }
@@ -948,7 +949,7 @@ async function init() {
     }
 
     render();
-    renderAgentsGrid();
+    renderSpecialistsPreview();
     initScrollAnimations();
 }
 
@@ -968,21 +969,31 @@ function initScrollAnimations() {
 
 // ─── AGENTS GRID (Section) ─────────────────────────────────────────────────
 
-function renderAgentsGrid() {
+function renderSpecialistsPreview() {
     const grid = document.getElementById('agents-grid');
-    const agents = agentsData || [];
-
-    if (!agents.length) {
-        grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);grid-column:1/-1">Агенты загружаются с сервера...</div>';
+    if (!specialistsData) {
+        grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);grid-column:1/-1">Выберите отрасль через <a href="#select" style="color:var(--accent-light)">подбор выше</a>, чтобы увидеть специалистов</div>';
         return;
     }
 
-    grid.innerHTML = agents.map(a => {
-        const color = DEPT_COLORS[a.department] || '#6b7280';
+    // Показать общих специалистов + несколько примеров из разных категорий
+    const common = specialistsData.common || [];
+    const cats = Object.keys(specialistsData.categories || {});
+    const samples = [];
+    cats.slice(0, 6).forEach(cat => {
+        const specs = specialistsData.categories[cat];
+        if (specs && specs.length) samples.push({...specs[0], category: cat});
+    });
+
+    const all = [...common.map(s => ({...s, category: 'Универсальный'})), ...samples];
+
+    grid.innerHTML = all.map(s => {
+        const catColors = {'Универсальный':'#d4a017','Медицина':'#ef4444','Образование':'#3b82f6','IT / Digital':'#8b5cf6','Торговля':'#f97316','HoReCa':'#22c55e','Финансы':'#06b6d4'};
+        const color = catColors[s.category] || '#6b7280';
         return `<div class="agent-card">
-            <div class="agent-card-name">${a.title}</div>
-            <span class="agent-card-dept" style="background:${color}18;color:${color};border:1px solid ${color}30">${a.department}</span>
-            <div class="agent-card-desc">${a.description}</div>
+            <div class="agent-card-name">${s.icon || '\u{1F464}'} ${s.role}</div>
+            <span class="agent-card-dept" style="background:${color}18;color:${color};border:1px solid ${color}30">${s.category}</span>
+            <div class="agent-card-desc">${s.desc}</div>
         </div>`;
     }).join('');
 }
@@ -1130,31 +1141,59 @@ function renderIndustries(el) {
 }
 
 function renderAgentsResult(el) {
-    const agents = agentsData || [];
     const ind = catalogData?.industries?.find(i => i.industry === state.industry);
+
+    // Собрать специалистов: отраслевые + общие
+    let categorySpecs = [];
+    let commonSpecs = [];
+    if (specialistsData) {
+        categorySpecs = specialistsData.categories?.[state.category] || [];
+        commonSpecs = specialistsData.common || [];
+    }
+
+    const totalCount = categorySpecs.length + commonSpecs.length;
 
     el.innerHTML = `
         <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
         <div class="agents-result fade-up">
             <div class="result-header">
-                <h2>AI-агенты для &laquo;${state.industry}&raquo;</h2>
+                <h2>AI-специалисты для &laquo;${state.industry}&raquo;</h2>
                 <p>${state.country.flag} ${state.country.name}, ${state.city} &bull; ${state.category}</p>
                 ${ind ? `<div class="result-tag">ОКВЭД ${ind.okved} &mdash; ${ind.okved_description}</div>` : ''}
+                <div style="margin-top:12px;font-size:13px;color:var(--text-secondary)">
+                    ${totalCount} специалистов готовы работать на ваш бизнес 24/7
+                </div>
+            </div>
+
+            ${categorySpecs.length ? `
+            <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px">
+                Отраслевые специалисты — ${state.category}
+            </div>
+            <div class="agents-list" style="margin-bottom:24px">
+                ${categorySpecs.map(s => `<div class="agent-row">
+                    <div class="a-icon">${s.icon || '\u{1F464}'}</div>
+                    <div class="a-info">
+                        <div class="a-name">${s.role}</div>
+                        <div class="a-desc">${s.desc}</div>
+                    </div>
+                    <span class="a-dept" style="background:rgba(212,160,23,0.12);color:var(--accent-light);border:1px solid rgba(212,160,23,0.2)">${state.category}</span>
+                </div>`).join('')}
+            </div>` : ''}
+
+            ${commonSpecs.length ? `
+            <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px">
+                Универсальные специалисты
             </div>
             <div class="agents-list">
-                ${agents.map(a => {
-                    const color = DEPT_COLORS[a.department] || '#6b7280';
-                    const icon = AGENT_ICONS[a.name] || '\u{1F916}';
-                    return `<div class="agent-row">
-                        <div class="a-icon">${icon}</div>
-                        <div class="a-info">
-                            <div class="a-name">${a.title}</div>
-                            <div class="a-desc">${a.description}</div>
-                        </div>
-                        <span class="a-dept" style="background:${color}18;color:${color};border:1px solid ${color}30">${a.department}</span>
-                    </div>`;
-                }).join('')}
-            </div>
+                ${commonSpecs.map(s => `<div class="agent-row">
+                    <div class="a-icon">${s.icon || '\u{1F464}'}</div>
+                    <div class="a-info">
+                        <div class="a-name">${s.role}</div>
+                        <div class="a-desc">${s.desc}</div>
+                    </div>
+                    <span class="a-dept" style="background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.2)">Универсальный</span>
+                </div>`).join('')}
+            </div>` : ''}
         </div>`;
 }
 
