@@ -1,8 +1,10 @@
-"""CONDUCTOR handler — свободный ввод текста маршрутизируется к нужному агенту."""
+"""Обработчик свободного текста — прямой вызов Claude API."""
 from __future__ import annotations
 
 import logging
+import os
 
+import anthropic
 from aiogram import Router
 from aiogram.types import Message
 
@@ -14,24 +16,40 @@ router = Router()
 
 MAX_TG_MSG = 4000
 
-DEPT_EMOJI = {
-    "Руководство": "🧠",
-    "Финансы": "💰",
-    "Продажи": "🛒",
-    "Контент": "📱",
-    "Продукт": "📋",
-    "Юридический": "⚖️",
-    "Бухгалтерия": "🧮",
-    "Самообучение": "🧬",
-    "Безопасность": "🛡",
-    "Наука": "🎓",
-    "Продвижение": "📢",
-    "Нейминг": "✏️",
-    "Патенты": "🔒",
-    "Голос": "🎙",
-    "Казначейство": "💵",
-    "Хакатоны": "🏆",
-}
+SYSTEM_PROMPT = """Ты — AI-консультант платформы AI Zavod. Платформа предоставляет AI-агентов для автоматизации бизнеса.
+
+Доступные AI-агенты (148 штук в 37 категориях):
+- Юрист (договоры, регистрация ИП/ООО, трудовое право)
+- Бухгалтер (налоги, отчётность, зарплата)
+- Маркетолог (контент, SMM, email-рассылки)
+- Менеджер продаж (холодные звонки, лиды, CRM)
+- Сертификатор (ТР ТС, ЕАЭС, таможня)
+- HR-агент (найм, онбординг, обучение)
+- Аналитик рынка (конкуренты, ниши, тренды)
+- Копирайтер (тексты, посты, сценарии)
+- Голосовой агент (колл-центр, TTS, скрипты звонков)
+- Финансист (бюджет, cash flow, инвестиции)
+- Разработчик (боты, сайты, автоматизация)
+- Дизайнер (UI/UX, брендинг, логотипы)
+- И другие специализированные агенты
+
+ПРАВИЛА ОТВЕТА:
+1. Отвечай КРАТКО — максимум 5-7 строк
+2. Формат ответа:
+   👥 Нужные агенты: [перечисли 2-4 агента]
+   💰 Подключение: [цена в рублях]
+   📉 Экономия: [сколько сэкономит в год]
+   🔗 Собрать команду: https://aizavod.ru/build
+3. Цены подключения:
+   - 1 агент: 5 000 ₽/мес
+   - Пакет 3 агента: 12 000 ₽/мес
+   - Пакет 5 агентов: 18 000 ₽/мес
+   - Безлимит (все агенты): 45 000 ₽/мес
+4. Экономию считай как замену штатного сотрудника (ЗП 60-150К + налоги 30%)
+5. НЕ пиши длинные описания, технические детали, сложности проекта
+6. НЕ оценивай сложность — просто скажи какие агенты нужны и сколько стоит
+7. Отвечай на русском языке
+"""
 
 
 def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
@@ -53,7 +71,7 @@ def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
 
 @router.message()
 async def on_free_text(message: Message):
-    """Любое текстовое сообщение без команды — маршрутизируем через CONDUCTOR."""
+    """Любое текстовое сообщение — прямой вызов Claude API."""
     if not message.text:
         return
 
@@ -61,107 +79,29 @@ async def on_free_text(message: Message):
     if not query or query.startswith("/"):
         return
 
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        await message.answer("❌ API ключ не настроен")
+        return
 
-    from services.conductor import get_conductor
-    conductor = get_conductor()
-
-    # Определить режим: оркестрация или роутер
-    mode = conductor._detect_mode(query)
-
-    if mode == "orchestrator":
-        await _handle_orchestrate(message, query, conductor)
-    else:
-        await _handle_route(message, query, conductor)
-
-
-async def _handle_route(message: Message, query: str, conductor):
-    """Режим роутера — направить к одному агенту."""
-    await message.answer("🔄 CONDUCTOR анализирует запрос...")
-
-    result = await conductor.process(query)
-
-    dept_emoji = DEPT_EMOJI.get(result.department, "🤖")
-
-    header = (
-        f"{dept_emoji} <b>{result.department}</b> → {result.agent_name}\n"
-        f"Уверенность: {result.route.confidence:.0%} | {result.route.reasoning}\n"
-        f"⏱ {result.duration_ms:.0f}ms\n"
-        f"{'─' * 30}\n\n"
-    )
-
-    full_text = header + result.response
-
-    for part in _split(full_text):
-        await message.answer(part, parse_mode="HTML")
-
-    # Вторичные ответы
-    if result.secondary_responses:
-        for agent_name, resp in result.secondary_responses.items():
-            sec_header = f"\n📎 <b>Дополнительно ({agent_name})</b>\n{'─' * 20}\n\n"
-            for part in _split(sec_header + resp):
-                await message.answer(part, parse_mode="HTML")
-
-    await message.answer("⬆️ Ответ CONDUCTOR", reply_markup=main_menu_kb())
-
-
-async def _handle_orchestrate(message: Message, task: str, conductor):
-    """Режим оркестратора — полная 3-уровневая декомпозиция."""
-    await message.answer(
-        "🏗 <b>CONDUCTOR — Оркестрация</b>\n\n"
-        "Запускаю полную декомпозицию задачи:\n"
-        f"<i>{task[:200]}</i>\n\n"
-        "CEO → Директора → Отделы → Специалисты\n"
-        "Это займёт 15-30 секунд...",
-        parse_mode="HTML",
-    )
+    await message.answer("🔄 Анализирую запрос...")
 
     try:
-        tree = await conductor.orchestrate(task, depth=3)
+        client = anthropic.AsyncAnthropic(api_key=api_key)
+        resp = await client.messages.create(
+            model=os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001"),
+            max_tokens=500,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": query}],
+            temperature=0.3,
+        )
+        answer = resp.content[0].text.strip()
     except Exception as e:
-        logger.error("Ошибка оркестрации: %s", e)
+        logger.error("Claude API error: %s", e)
         await message.answer(f"❌ Ошибка: {e}")
         return
 
-    if tree.get("status") == "error":
-        await message.answer(f"❌ {tree.get('message', 'Ошибка декомпозиции')}")
-        return
+    for part in _split(answer):
+        await message.answer(part)
 
-    # Форматируем дерево для Telegram
-    lines = [
-        f"📋 <b>Задача:</b> {task[:150]}",
-        f"📊 <b>Анализ:</b> {tree.get('analysis', '')[:200]}",
-        f"⏱ {tree.get('duration_ms', 0):.0f}ms",
-        "",
-    ]
-
-    for d in tree.get("directors", []):
-        role = d.get("role", "?")
-        lines.append(f"👔 <b>{d.get('title', role)}</b>")
-        lines.append(f"   {d.get('task', '')[:100]}")
-
-        for dept in d.get("departments", []):
-            dept_name = dept.get("department", "?")
-            lines.append(f"   📁 {dept_name}: {dept.get('task', '')[:80]}")
-
-            for spec in dept.get("specialists", []):
-                spec_name = spec.get("specialist", "?")
-                lines.append(f"      👤 {spec_name}: {spec.get('task', '')[:60]}")
-
-        lines.append("")
-
-    # Отчёт
-    report = tree.get("report", {})
-    if report:
-        lines.append("─" * 30)
-        lines.append(f"📊 <b>Итог:</b> {report.get('summary', '')[:200]}")
-        for h in report.get("highlights", [])[:3]:
-            lines.append(f"  ✅ {h[:80]}")
-        for ns in report.get("next_steps", [])[:3]:
-            lines.append(f"  ➡️ {ns[:80]}")
-
-    full_text = "\n".join(lines)
-
-    for part in _split(full_text):
-        await message.answer(part, parse_mode="HTML")
-
-    await message.answer("⬆️ Оркестрация завершена", reply_markup=main_menu_kb())
+    await message.answer("⬆️ Ответ AI Zavod", reply_markup=main_menu_kb())
