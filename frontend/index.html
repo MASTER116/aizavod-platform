@@ -976,13 +976,16 @@ function renderSpecialistsPreview() {
         return;
     }
 
-    // Показать общих специалистов + несколько примеров из разных категорий
+    // Показать общих специалистов + несколько примеров из разных бизнесов
     const common = specialistsData.common || [];
-    const cats = Object.keys(specialistsData.categories || {});
+    const source = specialistsData.industries || specialistsData.categories || {};
+    const keys = Object.keys(source);
     const samples = [];
-    cats.slice(0, 6).forEach(cat => {
-        const specs = specialistsData.categories[cat];
-        if (specs && specs.length) samples.push({...specs[0], category: cat});
+    // Взять по одному специалисту из 6 случайных бизнесов
+    const sampleKeys = keys.sort(() => 0.5 - Math.random()).slice(0, 6);
+    sampleKeys.forEach(key => {
+        const specs = source[key];
+        if (specs && specs.length) samples.push({...specs[0], category: key});
     });
 
     const all = [...common.map(s => ({...s, category: 'Универсальный'})), ...samples];
@@ -1143,15 +1146,18 @@ function renderIndustries(el) {
 function renderAgentsResult(el) {
     const ind = catalogData?.industries?.find(i => i.industry === state.industry);
 
-    // Собрать специалистов: отраслевые + общие
-    let categorySpecs = [];
+    // Собрать специалистов: по конкретному бизнесу + общие
+    let industrySpecs = [];
     let commonSpecs = [];
     if (specialistsData) {
-        categorySpecs = specialistsData.categories?.[state.category] || [];
+        // V2: ищем по конкретному бизнесу, фоллбэк на категорию
+        industrySpecs = specialistsData.industries?.[state.industry]
+            || specialistsData.categories?.[state.category]
+            || [];
         commonSpecs = specialistsData.common || [];
     }
 
-    const totalCount = categorySpecs.length + commonSpecs.length;
+    const totalCount = industrySpecs.length + commonSpecs.length;
 
     el.innerHTML = `
         <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
@@ -1165,18 +1171,18 @@ function renderAgentsResult(el) {
                 </div>
             </div>
 
-            ${categorySpecs.length ? `
+            ${industrySpecs.length ? `
             <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px">
-                Отраслевые специалисты — ${state.category}
+                Специалисты для &laquo;${state.industry}&raquo;
             </div>
             <div class="agents-list" style="margin-bottom:24px">
-                ${categorySpecs.map(s => `<div class="agent-row">
+                ${industrySpecs.map(s => `<div class="agent-row">
                     <div class="a-icon">${s.icon || '\u{1F464}'}</div>
                     <div class="a-info">
                         <div class="a-name">${s.role}</div>
                         <div class="a-desc">${s.desc}</div>
                     </div>
-                    <span class="a-dept" style="background:rgba(212,160,23,0.12);color:var(--accent-light);border:1px solid rgba(212,160,23,0.2)">${state.category}</span>
+                    <span class="a-dept" style="background:rgba(212,160,23,0.12);color:var(--accent-light);border:1px solid rgba(212,160,23,0.2)">${state.industry}</span>
                 </div>`).join('')}
             </div>` : ''}
 
