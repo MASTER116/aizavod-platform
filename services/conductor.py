@@ -714,7 +714,7 @@ class Conductor:
         # По умолчанию — роутер (безопаснее)
         return "router"
 
-    async def _call_claude(self, prompt: str, max_tokens: int = 2000) -> str:
+    async def _call_claude(self, prompt: str, max_tokens: int = 500) -> str:
         """Вызвать Claude API."""
         if not self._api_key:
             return "{}"

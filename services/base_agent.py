@@ -18,8 +18,19 @@ class BaseAgent:
     default_model: str = "claude-haiku-4-5-20251001"
     model_env_var: str = ""
     default_temperature: float = 0.5
-    default_max_tokens: int = 2000
+    default_max_tokens: int = 500
     system_prompt: str = ""
+    # Правило краткости — добавляется ко всем промптам
+    BREVITY_RULE: str = (
+        "\n\nПРАВИЛО: Отвечай КРАТКО, максимум 5-7 строк. "
+        "Формат: "
+        "1) Какие агенты/специалисты нужны (2-4 штуки). "
+        "2) Цена подключения. "
+        "3) Экономия в год. "
+        "4) Ссылка: https://aizavod.ru/build. "
+        "НЕ пиши длинные описания, технические детали, оценки сложности. "
+        "Только суть."
+    )
 
     def __init__(self) -> None:
         self._api_key = os.getenv("ANTHROPIC_API_KEY", "")
@@ -48,8 +59,11 @@ class BaseAgent:
         }
 
         sys_prompt = system or self.system_prompt
+        # Добавляем правило краткости ко всем промптам
         if sys_prompt:
-            kwargs["system"] = sys_prompt
+            kwargs["system"] = sys_prompt + self.BREVITY_RULE
+        else:
+            kwargs["system"] = self.BREVITY_RULE.strip()
 
         try:
             client = anthropic.AsyncAnthropic(api_key=self._api_key)
