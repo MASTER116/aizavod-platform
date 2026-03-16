@@ -59,7 +59,7 @@ async def on_question(message: Message, state: FSMContext):
     await state.clear()
     question = message.text.strip()
 
-    await message.answer("🧠 Генеральный директор анализирует вопрос...")
+    await message.answer("🧠 Анализирую...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()
@@ -90,7 +90,7 @@ async def on_task(message: Message, state: FSMContext):
     await state.clear()
     task = message.text.strip()
 
-    await message.answer("📋 Генеральный директор составляет план и распределяет задачи...")
+    await message.answer("📋 Составляю план...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()
@@ -104,7 +104,7 @@ async def on_task(message: Message, state: FSMContext):
 @router.callback_query(F.data == "task_strategy")
 async def cb_strategy(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("🔄 Генеральный директор составляет стратегический план на 2 недели...")
+    await callback.message.answer("🔄 Составляю стратегию...")
 
     from services.ceo_agent import get_ceo_agent
     ceo = get_ceo_agent()

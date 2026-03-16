@@ -111,7 +111,7 @@ async def cb_ip_reg(callback: CallbackQuery, state: FSMContext):
 @router.message(LegalStates.waiting_ip_reg)
 async def on_ip_reg(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("📝 Готовлю инструкцию по регистрации ИП...")
+    await message.answer("📝 Готовлю инструкцию...")
     from services.lawyer_agent import get_lawyer_agent
     agent = get_lawyer_agent()
     result = await agent.ip_registration(message.text.strip())
@@ -136,7 +136,7 @@ async def cb_labor(callback: CallbackQuery, state: FSMContext):
 @router.message(LegalStates.waiting_labor)
 async def on_labor(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("👷 Анализирую вопрос по ТК РФ...")
+    await message.answer("👷 Анализирую...")
     from services.lawyer_agent import get_lawyer_agent
     agent = get_lawyer_agent()
     result = await agent.labor_law(message.text.strip())
@@ -194,7 +194,7 @@ async def on_tax_compare(message: Message, state: FSMContext):
     revenue = parts[1].strip() if len(parts) > 1 else "не указана"
     expenses = parts[2].strip() if len(parts) > 2 else "не указаны"
 
-    await message.answer("📊 Сравниваю системы налогообложения...")
+    await message.answer("📊 Сравниваю...")
     from services.accountant_agent import get_accountant_agent
     agent = get_accountant_agent()
     result = await agent.compare_tax_systems(revenue, expenses, activity)
@@ -206,7 +206,7 @@ async def on_tax_compare(message: Message, state: FSMContext):
 @router.callback_query(F.data == "acc_calendar")
 async def cb_calendar(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("📅 Составляю календарь отчетности для ИП УСН 6%...")
+    await callback.message.answer("📅 Составляю календарь...")
     from services.accountant_agent import get_accountant_agent
     agent = get_accountant_agent()
     result = await agent.reporting_calendar("ИП УСН 6%")
@@ -229,7 +229,7 @@ async def cb_payroll(callback: CallbackQuery, state: FSMContext):
 @router.message(LegalStates.waiting_payroll)
 async def on_payroll(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("💰 Рассчитываю зарплатные налоги...")
+    await message.answer("💰 Рассчитываю...")
     from services.accountant_agent import get_accountant_agent
     agent = get_accountant_agent()
     result = await agent.payroll_calc(message.text.strip())

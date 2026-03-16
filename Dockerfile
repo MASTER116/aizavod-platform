@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     gcc \
     libpq-dev \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies

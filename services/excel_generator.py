@@ -18,10 +18,18 @@ def generate_budget_excel(budget_json: str, output_dir: str = "/tmp") -> str:
         logger.error("openpyxl не установлен")
         return ""
 
+    # Очистка markdown-обёртки ```json ... ```
+    cleaned = budget_json.strip()
+    if cleaned.startswith("```"):
+        # Убираем первую строку (```json) и последнюю (```)
+        lines = cleaned.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        cleaned = "\n".join(lines)
+
     try:
-        data = json.loads(budget_json)
+        data = json.loads(cleaned)
     except (json.JSONDecodeError, TypeError):
-        logger.error("Невалидный JSON бюджета")
+        logger.error("Невалидный JSON бюджета: %s", cleaned[:200])
         return ""
 
     wb = openpyxl.Workbook()

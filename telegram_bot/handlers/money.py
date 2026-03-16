@@ -48,7 +48,7 @@ def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
 @router.callback_query(F.data == "sales_freelance")
 async def cb_freelance(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("🔎 Ищу заказы на фрилансе...")
+    await callback.message.answer("🔎 Ищу заказы...")
 
     from services.freelance_agent import get_freelance_agent
     agent = get_freelance_agent()
@@ -102,7 +102,7 @@ async def on_response_input(message: Message, state: FSMContext):
 @router.callback_query(F.data == "sales_kwork")
 async def cb_kwork(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("🏷 Генерирую описания 5 услуг для Kwork...")
+    await callback.message.answer("🏷 Генерирую описания...")
 
     from services.freelance_agent import get_freelance_agent
     agent = get_freelance_agent()
@@ -219,7 +219,7 @@ async def on_coldmsg_input(message: Message, state: FSMContext):
     segment = parts[0].strip()
     channel = parts[1].strip() if len(parts) > 1 else "email"
 
-    await message.answer(f"📨 Генерирую сообщение для: {segment}...")
+    await message.answer("📨 Генерирую сообщение...")
 
     from services.outreach_agent import get_outreach_agent
     agent = get_outreach_agent()
@@ -245,7 +245,7 @@ async def cb_leads_start(callback: CallbackQuery, state: FSMContext):
 async def on_leads_input(message: Message, state: FSMContext):
     await state.clear()
     segment = message.text.strip()
-    await message.answer(f"📍 Ищу каналы привлечения для: {segment}...")
+    await message.answer("📍 Ищу каналы...")
 
     from services.outreach_agent import get_outreach_agent
     agent = get_outreach_agent()

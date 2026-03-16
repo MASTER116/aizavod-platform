@@ -55,7 +55,7 @@ async def on_prompt_entered(message: Message, state: FSMContext):
     category = data["category"]
     prompt = message.text.strip()
 
-    await message.answer("⏳ Генерирую пост... Это может занять 30-60 секунд.")
+    await message.answer("⏳ Генерирую пост...")
 
     try:
         characters = await _api("GET", "/admin/api/characters")

@@ -246,21 +246,27 @@ class OpportunityScanner:
             if len(text) > 200:
                 pages.append((url, text))
 
-        # 2. Несколько поисковых запросов для нахождения официальных страниц
+        # 2. Извлекаем короткое название для поиска
+        short_title = title[:80]
+
+        # 3. Много поисковых запросов — ищем до 5 страниц
         search_queries = [
-            f"{title} site:fasie.ru OR site:rscf.ru OR site:sk.ru OR site:рфрит.рф",
-            f"{title} официальный конкурс положение подача заявки 2026",
-            f"{title} требования участники дедлайн грант",
+            f"{short_title} официальный сайт подача заявки",
+            f"{short_title} положение условия участия",
+            f"{short_title} site:fasie.ru OR site:rscf.ru OR site:sk.ru",
+            f"{short_title} site:grants.gov.ru OR site:рфрит.рф OR site:гранты.рф",
+            f"{short_title} грант конкурс требования дедлайн",
+            f"{short_title} приём заявок 2026",
         ]
 
         seen_urls = {url}
         async with httpx.AsyncClient(timeout=15.0) as client:
             for q in search_queries:
-                if len(pages) >= 3:
+                if len(pages) >= 5:
                     break
                 try:
                     results = await self._search_query(client, q)
-                    for r in results[:5]:
+                    for r in results[:8]:
                         if r.url in seen_urls:
                             continue
                         seen_urls.add(r.url)
@@ -269,7 +275,7 @@ class OpportunityScanner:
                         text = await self._fetch_page_text(r.url)
                         if len(text) > 300:
                             pages.append((r.url, text))
-                            if len(pages) >= 3:
+                            if len(pages) >= 5:
                                 break
                 except Exception as exc:
                     logger.warning("Official docs search failed for %r: %s", q, exc)
@@ -278,19 +284,17 @@ class OpportunityScanner:
 
     async def deep_analyze(self, title: str, url: str, description: str = "") -> str:
         """Полный анализ конкурса: правила, требования, отчётность, сроки."""
-        # Шаг 1: Собрать документацию с официальных сайтов
         pages = await self._gather_official_docs(title, url)
 
-        docs_context = ""
-        if pages:
-            parts = []
-            for page_url, page_text in pages:
-                parts.append(f"--- ИСТОЧНИК: {page_url} ---\n{page_text[:4000]}")
-            docs_context = "\n\n".join(parts)
-        else:
-            docs_context = "(Официальные страницы конкурса не найдены)"
+        if not pages:
+            return "Не удалось загрузить страницу конкурса. Попробуй другой."
 
-        prompt = f"""Проанализируй конкурс/грант СТРОГО на основе документации ниже.
+        parts = []
+        for page_url, page_text in pages:
+            parts.append(f"--- {page_url} ---\n{page_text[:3000]}")
+        docs_context = "\n\n".join(parts)
+
+        prompt = f"""Проанализируй конкурс/грант на основе документации.
 
 КОНКУРС: {title}
 ОПИСАНИЕ: {description}
@@ -301,9 +305,10 @@ class OpportunityScanner:
 {PARTICIPANT_CONTEXT}
 
 ПРАВИЛА:
-- Отвечай ТОЛЬКО на основе фактов из документации. НЕ додумывай.
-- Если конкретный параметр есть в документации — укажи точное значение.
-- Если параметра нет — пропусти, не пиши «неизвестно».
+- Анализируй на основе фактов из документации.
+- НЕ пиши что данных нет, не пиши что документация неполная.
+- Если параметр не найден — просто пропусти его.
+- Давай только конкретику: цифры, даты, требования.
 
 Формат КРАТКО:
 

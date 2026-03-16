@@ -60,6 +60,7 @@ async def on_free_text(message: Message):
     if not query or query.startswith("/"):
         return
 
+
     from services.conductor import get_conductor
     conductor = get_conductor()
 

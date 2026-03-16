@@ -105,13 +105,15 @@ async def cb_scan(callback: CallbackQuery, state: FSMContext):
 
     # Сохраняем результаты в FSM для дальнейшей работы
     scan_data = []
-    lines = [f"Найдено: <b>{len(results)}</b> возможностей\n"]
+    lines = [f"Найдено: <b>{len(results)}</b>\n"]
     for i, r in enumerate(results, 1):
         rel = "🟢" if r.relevance_score > 0.6 else "🟡" if r.relevance_score > 0.3 else "⚪"
-        lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>")
-        if r.description:
-            lines.append(f"   {r.description[:120]}")
-        lines.append(f"   <a href=\"{r.url}\">Ссылка</a> | {r.type}\n")
+        # Фильтруем бесполезные описания (вопросы, слишком короткие)
+        desc = r.description or ""
+        if desc and len(desc) > 30 and "?" not in desc[:50]:
+            lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>\n   {desc[:120]}\n")
+        else:
+            lines.append(f"{rel} <b>{i}. {r.title[:80]}</b>\n")
         scan_data.append({
             "title": r.title,
             "url": r.url,
@@ -197,7 +199,7 @@ async def cb_grant_ideas(callback: CallbackQuery, state: FSMContext):
         return
 
     await callback.message.answer(
-        f"💡 Генерирую идеи для: <b>{grant_title[:70]}</b>...", parse_mode="HTML"
+        "💡 Генерирую идеи..."
     )
 
     from services.opportunity_scanner import get_scanner
@@ -252,8 +254,7 @@ async def cb_idea_click(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.answer(
-        f"📊 Генерирую Excel-калькуляцию для:\n<b>{idea_title[:70]}</b>...",
-        parse_mode="HTML",
+        "📊 Генерирую смету...",
     )
 
     # Извлекаем сумму из текста идеи или анализа гранта
@@ -276,17 +277,13 @@ async def cb_idea_click(callback: CallbackQuery, state: FSMContext):
 
     if excel_path and os.path.exists(excel_path):
         doc = FSInputFile(excel_path)
-        await callback.message.answer_document(
-            doc,
-            caption=f"📊 Смета: {idea_title[:60]}\nКонкурс: {grant_title[:60]}",
-        )
+        await callback.message.answer_document(doc, caption=f"📊 Смета: {idea_title[:60]}")
         await state.update_data(excel_path=excel_path)
     else:
-        for part in _split(budget_json):
-            await callback.message.answer(f"<pre>{part[:4000]}</pre>", parse_mode="HTML")
+        await callback.message.answer("Не удалось сгенерировать Excel. Попробуй ещё раз.")
 
     await callback.message.answer(
-        "Файл можно открыть в Excel и редактировать.\nЧто дальше?",
+        "Что дальше?",
         reply_markup=idea_selected_kb(idx),
     )
 
@@ -351,8 +348,7 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
 
     description = idea_title or grant_ideas_text[:1000]
     await callback.message.answer(
-        f"📄 Генерирую документы для подачи на: <b>{grant_title[:70]}</b>...",
-        parse_mode="HTML",
+        "📄 Генерирую документы...",
     )
 
     from services.opportunity_scanner import get_scanner
@@ -364,10 +360,20 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
         budget_json,
     )
 
-    await _safe_send(callback.message, docs)
+    # Генерируем PDF
+    from services.pdf_generator import generate_submission_pdf
+    pdf_title = f"Заявка: {idea_title or grant_title}"[:80]
+    pdf_path = generate_submission_pdf(docs, title=pdf_title)
+
+    if pdf_path and os.path.exists(pdf_path):
+        pdf_doc = FSInputFile(pdf_path)
+        await callback.message.answer_document(pdf_doc, caption=f"📄 {pdf_title[:60]}")
+    else:
+        # Fallback — текстом
+        await _safe_send(callback.message, docs)
 
     await callback.message.answer(
-        "Пакет документов выше",
+        "Что дальше?",
         reply_markup=idea_selected_kb(data.get("selected_idea_idx", 0)),
     )
 
@@ -548,7 +554,7 @@ async def cb_my_ideas(callback: CallbackQuery):
 @router.callback_query(F.data == "money_ideas")
 async def cb_ideas(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("💡 Генерирую идеи для заработка...")
+    await callback.message.answer("💡 Генерирую идеи...")
 
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
@@ -578,7 +584,7 @@ async def on_proposal_input(message: Message, state: FSMContext):
     name = parts[0].strip()
     desc = parts[1].strip() if len(parts) > 1 else ""
 
-    await message.answer(f"📝 Готовлю заявку на: {name}...")
+    await message.answer("📝 Готовлю заявку...")
 
     from services.market_analyzer import get_analyzer
     analyzer = get_analyzer()
@@ -603,7 +609,7 @@ async def cb_market_start(callback: CallbackQuery, state: FSMContext):
 async def on_market_input(message: Message, state: FSMContext):
     await state.clear()
     topic = message.text.strip()
-    await message.answer(f"📈 Анализирую рынок: {topic}...")
+    await message.answer("📈 Анализирую рынок...")
 
     from services.market_analyzer import get_analyzer
     analyzer = get_analyzer()
@@ -628,7 +634,7 @@ async def cb_competitors_start(callback: CallbackQuery, state: FSMContext):
 async def on_competitors_input(message: Message, state: FSMContext):
     await state.clear()
     niche = message.text.strip()
-    await message.answer(f"🏢 Анализирую конкурентов: {niche}...")
+    await message.answer("🏢 Анализирую конкурентов...")
 
     from services.market_analyzer import get_analyzer
     analyzer = get_analyzer()
