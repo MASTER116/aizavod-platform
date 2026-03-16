@@ -1071,11 +1071,13 @@ function renderCities(el) {
 
 function renderCategories(el) {
     let categories = [];
+    let catOkveds = {};
     if (catalogData && catalogData.industries) {
         const cats = {};
         catalogData.industries.forEach(i => {
-            if (!cats[i.category]) cats[i.category] = 0;
+            if (!cats[i.category]) { cats[i.category] = 0; catOkveds[i.category] = []; }
             cats[i.category]++;
+            if (i.okved) catOkveds[i.category].push(i.okved);
         });
         categories = Object.entries(cats).sort((a,b) => a[0].localeCompare(b[0],'ru'));
     }
@@ -1084,18 +1086,21 @@ function renderCategories(el) {
         <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
         <div class="wizard-title">Выберите отрасль <span class="count">${categories.length}</span></div>
         <div class="search-wrap">
-            <input class="search-input" placeholder="Поиск отрасли..." oninput="filterCards(this.value)" />
+            <input class="search-input" placeholder="Поиск по названию или ОКВЭД (например: 86.21)..." oninput="filterCards(this.value)" />
         </div>
         <div class="sel-grid large fade-up" id="cards-grid">
-            ${categories.map(([cat, count]) => `
-                <div class="sel-card" data-name="${cat.toLowerCase()}" onclick="selectCategory('${esc(cat)}')">
+            ${categories.map(([cat, count]) => {
+                const okveds = (catOkveds[cat] || []).join(' ');
+                return `
+                <div class="sel-card" data-name="${cat.toLowerCase()}" data-okved="${okveds}" onclick="selectCategory('${esc(cat)}')">
                     <div class="icon">${CATEGORY_ICONS[cat] || '\u{1F4C1}'}</div>
                     <div class="info">
                         <div class="name">${cat}</div>
                         <div class="sub">${count} ${declN(count, ['направление','направления','направлений'])}</div>
                     </div>
                     <div class="arrow">\u203A</div>
-                </div>`).join('')}
+                </div>`;
+            }).join('')}
         </div>`;
 }
 
@@ -1108,9 +1113,12 @@ function renderIndustries(el) {
     el.innerHTML = `
         <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
         <div class="wizard-title">${state.category} <span class="count">${industries.length}</span></div>
+        <div class="search-wrap">
+            <input class="search-input" placeholder="Поиск по названию или ОКВЭД (например: 86.21)..." oninput="filterCards(this.value)" />
+        </div>
         <div class="sel-grid large fade-up" id="cards-grid">
             ${industries.map(ind => `
-                <div class="sel-card" data-name="${ind.industry.toLowerCase()}" onclick="selectIndustry('${esc(ind.industry)}')">
+                <div class="sel-card" data-name="${ind.industry.toLowerCase()}" data-okved="${ind.okved || ''}" onclick="selectIndustry('${esc(ind.industry)}')">
                     <div class="icon">${CATEGORY_ICONS[state.category] || '\u{1F4C1}'}</div>
                     <div class="info">
                         <div class="name">${ind.industry}</div>
@@ -1197,10 +1205,12 @@ function goBack() {
 function filterCards(q) {
     const grid = document.getElementById('cards-grid');
     if (!grid) return;
-    const lower = q.toLowerCase();
+    const lower = q.toLowerCase().trim();
     grid.querySelectorAll('.sel-card').forEach(card => {
         const name = card.getAttribute('data-name') || '';
-        card.style.display = name.includes(lower) ? '' : 'none';
+        const okved = card.getAttribute('data-okved') || '';
+        const match = name.includes(lower) || okved.includes(lower);
+        card.style.display = match ? '' : 'none';
     });
 }
 
