@@ -93,7 +93,7 @@ def _parse_ideas(ideas_text: str) -> list[dict]:
 @router.callback_query(F.data == "money_scan")
 async def cb_scan(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer("🔍 Ищу гранты, хакатоны, конкурсы...")
+    await callback.message.answer("🔍 Ищу...")
 
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
@@ -162,7 +162,7 @@ async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
     await state.update_data(grant_title=title, grant_url=url)
 
     await callback.message.answer(
-        f"🔬 Анализ: <b>{title[:70]}</b>...", parse_mode="HTML"
+        "🔬 Анализ..."
     )
 
     from services.opportunity_scanner import get_scanner

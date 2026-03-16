@@ -191,8 +191,11 @@ class OpportunityScanner:
         for opp in results:
             if opp.url in seen_urls:
                 continue
-            # Фильтруем новостные статьи — оставляем только официальные источники
+            # Фильтруем новостные статьи
             if any(s in opp.url.lower() for s in self._ARTICLE_DOMAINS):
+                continue
+            # Фильтруем по прошедшим датам (дедлайн < сегодня)
+            if self._is_expired(opp):
                 continue
             seen_urls.add(opp.url)
             unique.append(opp)
@@ -578,6 +581,42 @@ class OpportunityScanner:
                 type=opp_type, description=snippet,
             ))
         return results
+
+    @staticmethod
+    def _is_expired(opp: Opportunity) -> bool:
+        """Проверяет, истёк ли дедлайн (ищет даты в заголовке и описании)."""
+        from datetime import timedelta
+        today = datetime.utcnow().date()
+        min_date = today + timedelta(days=1)  # минимум 1 день до дедлайна
+        text = f"{opp.title} {opp.description}"
+
+        # Ищем даты вида DD.MM.YYYY или DD/MM/YYYY
+        date_patterns = re.findall(r"(\d{1,2})[./](\d{1,2})[./](20\d{2})", text)
+        for day, month, year in date_patterns:
+            try:
+                d = datetime(int(year), int(month), int(day)).date()
+                # Если найденная дата похожа на дедлайн и она в прошлом
+                if d < min_date:
+                    return True
+            except ValueError:
+                continue
+
+        # Ищем даты вида "до 15 октября 2025"
+        months_ru = {
+            "января": 1, "февраля": 2, "марта": 3, "апреля": 4,
+            "мая": 5, "июня": 6, "июля": 7, "августа": 8,
+            "сентября": 9, "октября": 10, "ноября": 11, "декабря": 12,
+        }
+        ru_dates = re.findall(r"(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)\s+(20\d{2})", text.lower())
+        for day, month_name, year in ru_dates:
+            try:
+                d = datetime(int(year), months_ru[month_name], int(day)).date()
+                if d < min_date:
+                    return True
+            except (ValueError, KeyError):
+                continue
+
+        return False
 
     def _calc_relevance(self, opp: Opportunity) -> float:
         text = f"{opp.title} {opp.description}".lower()
