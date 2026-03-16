@@ -22,7 +22,7 @@ logger = logging.getLogger("aizavod.opportunity_scanner")
 SOURCES: list[dict[str, str]] = [
     # Гранты РФ
     {"name": "ФАСИ (Фонд содействия инновациям)", "url": "https://fasie.ru", "type": "grant",
-     "programs": "Старт-ИИ, Студенческий стартап, Развитие-ИИ, Коммерциализация, Бизнес-Старт"},
+     "programs": "Старт-ИИ, Развитие-ИИ, Коммерциализация, Бизнес-Старт"},
     {"name": "РНФ (Российский научный фонд)", "url": "https://rscf.ru", "type": "grant",
      "programs": "Малые группы (дедлайн 16.06.2026), Отдельные проекты"},
     {"name": "Фонд Сколково", "url": "https://sk.ru", "type": "grant",
@@ -39,8 +39,8 @@ SOURCES: list[dict[str, str]] = [
      "programs": "Научные гранты: фундаментальные и прикладные исследования, молодые учёные"},
     {"name": "Гранты Президента РФ", "url": "https://grants.gov.ru", "type": "grant",
      "programs": "Президентские гранты для НКО, молодых учёных, социальных проектов"},
-    {"name": "Фонд президентских грантов", "url": "https://президентскиегранты.рф", "type": "grant",
-     "programs": "Гранты для НКО, социальные и образовательные проекты, до 10 млн руб."},
+    {"name": "Фонд Бортника — Старт-ИИ", "url": "https://fasie.ru/programs/", "type": "grant",
+     "programs": "Гранты до 8 млн на проекты в сфере ИИ, для малых предприятий"},
     {"name": "Минобрнауки — конкурсы", "url": "https://minobrnauki.gov.ru", "type": "grant",
      "programs": "Научные гранты, мегагранты, программа Приоритет 2030, НИОКР"},
     {"name": "Платформа гранты.рф", "url": "https://гранты.рф", "type": "grant",
@@ -79,8 +79,8 @@ SOURCES: list[dict[str, str]] = [
      "programs": "Акселератор стартапов, AI/ML трек"},
     {"name": "GenerationS", "url": "https://generations.vc", "type": "accelerator",
      "programs": "Корпоративный акселератор РВК"},
-    {"name": "Умник (ФАСИ)", "url": "https://umnik.fasie.ru", "type": "grant",
-     "programs": "Грант 500K для молодых исследователей (18-30 лет), научно-технические проекты"},
+    {"name": "Старт (ФАСИ)", "url": "https://fasie.ru/programs/programma-start/", "type": "grant",
+     "programs": "Грант до 4 млн на коммерциализацию результатов НИОКР, для малых предприятий"},
 
     # Международные
     {"name": "Anthropic Hackathons", "url": "https://anthropic.com", "type": "hackathon",
@@ -166,7 +166,7 @@ class OpportunityScanner:
             "тендер разработка ИИ автоматизация 2026",
             # Научные гранты и конкурсы
             "научный грант Россия 2026 приём заявок",
-            "грант молодой учёный IT исследование 2026",
+            "грант IT исследование НИОКР 2026",
             "РНФ РФФИ конкурс грант 2026 открыт",
             "президентский грант НКО технологии 2026",
             "субсидия безвозмездная разработка ПО Россия 2026",
@@ -196,6 +196,9 @@ class OpportunityScanner:
                 continue
             # Фильтруем по прошедшим датам (дедлайн < сегодня)
             if self._is_expired(opp):
+                continue
+            # Фильтруем конкурсы, на которые участник не может подать
+            if self._is_ineligible(opp):
                 continue
             seen_urls.add(opp.url)
             unique.append(opp)
@@ -619,6 +622,24 @@ class OpportunityScanner:
             except (ValueError, KeyError):
                 continue
 
+        return False
+
+    # Ключевые слова, указывающие что конкурс не для участника
+    _INELIGIBLE_KEYWORDS = [
+        "студенческий стартап", "только для студентов", "для студентов",
+        "студенческий конкурс", "школьник", "для школьников",
+        "для нко", "только нко", "некоммерческ",
+        "для аспирантов", "только аспирант",
+        "scholarship", "student only",
+    ]
+
+    @staticmethod
+    def _is_ineligible(opp: Opportunity) -> bool:
+        """Проверяет, подходит ли конкурс участнику (32 года, не студент, не НКО)."""
+        text = f"{opp.title} {opp.description}".lower()
+        for kw in OpportunityScanner._INELIGIBLE_KEYWORDS:
+            if kw in text:
+                return True
         return False
 
     def _calc_relevance(self, opp: Opportunity) -> float:
