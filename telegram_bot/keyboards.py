@@ -24,6 +24,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 def money_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔍 Сканировать гранты и конкурсы", callback_data="money_scan")],
+        [InlineKeyboardButton(text="🏆 Хакатоны — полный цикл", callback_data="hackathon_pipeline")],
         [InlineKeyboardButton(text="🔬 Глубокий анализ конкурса", callback_data="money_deep_analyze")],
         [InlineKeyboardButton(text="💡 Идеи для заработка", callback_data="money_ideas")],
         [InlineKeyboardButton(text="📝 Заявка на конкурс", callback_data="money_proposal")],
@@ -38,6 +39,7 @@ def money_menu_kb() -> InlineKeyboardMarkup:
 def grant_actions_kb() -> InlineKeyboardMarkup:
     """Действия после анализа конкурса."""
     return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔗 Добавить ссылку для анализа", callback_data="grant_add_url")],
         [InlineKeyboardButton(text="💡 Идеи под этот конкурс", callback_data="grant_ideas")],
         [InlineKeyboardButton(text="📊 Excel-калькуляция", callback_data="grant_excel")],
         [InlineKeyboardButton(text="📄 Документы на подачу", callback_data="grant_docs")],

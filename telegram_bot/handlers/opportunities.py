@@ -35,6 +35,7 @@ class MoneyStates(StatesGroup):
     waiting_proposal_input = State()
     waiting_market_input = State()
     waiting_competitors_input = State()
+    waiting_grant_url = State()
 
 
 def _split(text: str, limit: int = MAX_TG_MSG) -> list[str]:
@@ -198,6 +199,52 @@ async def cb_scan_grant_click(callback: CallbackQuery, state: FSMContext):
         "Что дальше?",
         reply_markup=grant_actions_kb(),
     )
+
+
+# ─── 2.0.1. Добавить ссылку для анализа ──────────────────────────────────
+
+@router.callback_query(F.data == "grant_add_url")
+async def cb_grant_add_url(callback: CallbackQuery, state: FSMContext):
+    """Пользователь хочет дать свою ссылку для анализа конкурса."""
+    await callback.answer()
+    await state.set_state(MoneyStates.waiting_grant_url)
+    await callback.message.answer(
+        "🔗 Отправь ссылку на страницу конкурса (или несколько через пробел):"
+    )
+
+
+@router.message(MoneyStates.waiting_grant_url)
+async def on_grant_url_input(message: Message, state: FSMContext):
+    """Получили URL(ы) от пользователя — анализируем конкурс по ним."""
+    data = await state.get_data()
+    grant_title = data.get("grant_title", "")
+    grant_url = data.get("grant_url", "")
+
+    if not grant_title:
+        await state.clear()
+        await message.answer("Сначала выбери конкурс.", reply_markup=money_menu_kb())
+        return
+
+    # Извлекаем URL из текста
+    urls = re.findall(r"https?://\S+", message.text or "")
+    if not urls:
+        await message.answer("Не нашёл ссылок. Отправь URL, начинающийся с http:// или https://")
+        return
+
+    await state.set_state(None)
+    await message.answer("🔬 Анализ...")
+
+    from services.opportunity_scanner import get_scanner
+    scanner = get_scanner()
+    analysis = await scanner.deep_analyze(
+        grant_title, grant_url, custom_urls=urls,
+    )
+
+    await state.update_data(grant_analysis=analysis)
+    await _safe_send(message, analysis)
+
+    from telegram_bot.keyboards import grant_actions_kb
+    await message.answer("Что дальше?", reply_markup=grant_actions_kb())
 
 
 # ─── 2.1. Генерация идей по кнопке ──────────────────────────────────────
@@ -565,6 +612,44 @@ async def cb_my_ideas(callback: CallbackQuery):
     except Exception as e:
         logger.error("Ошибка загрузки идей: %s", e)
         await callback.message.answer(f"Ошибка: {e}", reply_markup=money_menu_kb())
+
+
+# ─── 8. Hackathon Pipeline ──────────────────────────────────────────────
+
+@router.callback_query(F.data == "hackathon_pipeline")
+async def cb_hackathon_pipeline(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.answer("🏆 Запускаю конвейер хакатонов...")
+
+    from services.hackathon_pipeline import launch_hackathon_pipeline
+    result = await launch_hackathon_pipeline()
+
+    await _safe_send(callback.message, result)
+    await callback.message.answer(
+        "Что дальше?",
+        reply_markup=_hackathon_kb(),
+    )
+
+
+@router.callback_query(F.data == "hackathon_status")
+async def cb_hackathon_status(callback: CallbackQuery):
+    await callback.answer()
+    from services.hackathon_pipeline import get_pipeline_status
+    status = await get_pipeline_status()
+    await _safe_send(callback.message, status)
+    await callback.message.answer(
+        "Что дальше?",
+        reply_markup=_hackathon_kb(),
+    )
+
+
+def _hackathon_kb():
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📊 Статус конвейера", callback_data="hackathon_status")],
+        [InlineKeyboardButton(text="🔄 Запустить заново", callback_data="hackathon_pipeline")],
+        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
+    ])
 
 
 # ─── Старые хендлеры (без изменений) ────────────────────────────────────

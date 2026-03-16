@@ -61,8 +61,19 @@ AGENTS: list[AgentInfo] = [
         title="Сканер возможностей",
         department="Финансы",
         description="Поиск грантов, хакатонов, конкурсов, источники финансирования",
-        keywords=["грант", "хакатон", "конкурс", "субсид", "фонд", "инвестиц", "финансир", "рнф", "фаси", "сколков"],
+        keywords=["грант", "конкурс", "субсид", "фонд", "инвестиц", "финансир", "рнф", "фаси", "сколков"],
         handler="_route_opportunities",
+    ),
+    AgentInfo(
+        name="hackathon_manager",
+        title="Менеджер хакатонов",
+        department="Хакатоны",
+        description="Полный цикл участия в хакатонах: поиск на DevPost, анализ, генерация идей, план, документы, разработка MVP, подача проекта",
+        keywords=[
+            "хакатон", "hackathon", "devpost", "подать заявк хакатон",
+            "участвовать в хакатон", "хакатон подач", "hackathon pipeline",
+        ],
+        handler="_route_hackathon",
     ),
     AgentInfo(
         name="idea_generator",
@@ -1227,6 +1238,18 @@ async def _route_treasurer(query: str) -> str:
     elif any(kw in q for kw in ["цен", "тариф", "ценообразован"]):
         return await agent.pricing_strategy(query)
     return await agent.find_income_sources(query, "")
+
+
+async def _route_hackathon(query: str) -> str:
+    from services.hackathon_pipeline import launch_hackathon_pipeline, get_pipeline_status
+    q = query.lower()
+
+    # Проверка статуса
+    if any(kw in q for kw in ["статус", "status", "прогресс", "как дела"]):
+        return await get_pipeline_status()
+
+    # Запуск конвейера
+    return await launch_hackathon_pipeline(query)
 
 
 # ─── Singleton ───────────────────────────────────────────────────────────────

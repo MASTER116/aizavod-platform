@@ -51,11 +51,20 @@ async def auto_execute_cycle():
         ))
         db.commit()
 
-        # Выполнить через роутер CONDUCTOR
+        # Выполнить: hackathon_manager задачи — через pipeline, остальные — через роутер
         conductor = get_conductor()
         try:
-            result = await conductor.process(task.title)
-            response_text = result.response[:4000]
+            agent_name = task.agent_role
+            if task.agent_role == "hackathon_manager":
+                from services.hackathon_pipeline import execute_pipeline_stage
+                response_text = await execute_pipeline_stage(
+                    task.title, task.context or "{}", task.instructions or ""
+                )
+                response_text = response_text[:4000]
+            else:
+                result = await conductor.process(task.title)
+                response_text = result.response[:4000]
+                agent_name = result.agent_name
 
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.utcnow()
@@ -67,9 +76,9 @@ async def auto_execute_cycle():
             ))
 
             # DARWIN: оценить качество ответа
-            await _darwin_evaluate(task.title, result.agent_name, response_text, db, task.id)
+            await _darwin_evaluate(task.title, agent_name, response_text, db, task.id)
 
-            logger.info("AUTO-EXECUTE: задача #%d завершена (%s)", task.id, result.agent_name)
+            logger.info("AUTO-EXECUTE: задача #%d завершена (%s)", task.id, agent_name)
 
         except Exception as e:
             task.status = TaskStatus.FAILED

@@ -161,12 +161,60 @@ class OpportunityScanner:
 
     # ─── 1. Поиск ───────────────────────────────────────────────────────────
 
+    async def _fetch_devpost_hackathons(self) -> list[Opportunity]:
+        """Загрузка открытых хакатонов с DevPost через публичный API."""
+        results: list[Opportunity] = []
+        api_url = "https://devpost.com/api/hackathons"
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # Загружаем первые 3 страницы (до 27 хакатонов)
+                for page in range(1, 4):
+                    resp = await client.get(api_url, params={
+                        "status": "open",
+                        "order_by": "deadline",
+                        "page": page,
+                    }, headers={"User-Agent": "Mozilla/5.0"})
+                    if resp.status_code != 200:
+                        break
+                    data = resp.json()
+                    hackathons = data.get("hackathons", [])
+                    if not hackathons:
+                        break
+                    for h in hackathons:
+                        # Убираем HTML из призовой суммы
+                        prize_raw = h.get("prize_amount", "") or ""
+                        prize = re.sub(r"<[^>]+>", "", prize_raw)
+                        title = h.get("title", "").strip()
+                        time_left = h.get("time_left_to_submission", "")
+                        dates = h.get("submission_period_dates", "")
+                        themes = ", ".join(t["name"] for t in h.get("themes", []))
+                        desc_parts = []
+                        if prize and prize != "$0":
+                            desc_parts.append(f"Приз: {prize}")
+                        if time_left:
+                            desc_parts.append(time_left)
+                        if themes:
+                            desc_parts.append(themes)
+                        if dates:
+                            desc_parts.append(dates)
+
+                        results.append(Opportunity(
+                            title=title,
+                            source="DevPost",
+                            url=h.get("url", ""),
+                            type="hackathon",
+                            prize=prize,
+                            deadline=time_left,
+                            description=" | ".join(desc_parts),
+                        ))
+        except Exception as exc:
+            logger.warning("DevPost API failed: %s", exc)
+        return results
+
     async def scan_web(self, query: str | None = None) -> list[Opportunity]:
-        """Поиск конкурсов и грантов в интернете."""
+        """Поиск конкурсов и грантов в интернете (без хакатонов — они в отдельной кнопке)."""
         queries = [
             query or "гранты ИИ стартап Россия 2026",
-            "хакатон искусственный интеллект Россия 2026 призы",
-            "AI hackathon 2026 prizes open",
             "конкурс IT стартап грант ФАСИ Сколково 2026",
             "тендер разработка ИИ автоматизация 2026",
             # Научные гранты и конкурсы
@@ -183,6 +231,7 @@ class OpportunityScanner:
         ]
 
         results: list[Opportunity] = []
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             for q in queries:
                 try:
@@ -289,9 +338,22 @@ class OpportunityScanner:
 
         return pages
 
-    async def deep_analyze(self, title: str, url: str, description: str = "") -> str:
-        """Полный анализ конкурса: правила, требования, отчётность, сроки."""
-        pages = await self._gather_official_docs(title, url)
+    async def deep_analyze(self, title: str, url: str, description: str = "",
+                           custom_urls: list[str] | None = None) -> str:
+        """Полный анализ конкурса: правила, требования, отчётность, сроки.
+        custom_urls — список URL, предоставленных пользователем для анализа."""
+        pages: list[tuple[str, str]] = []
+
+        # Если пользователь дал свои ссылки — используем их
+        if custom_urls:
+            for cu in custom_urls:
+                text = await self._fetch_page_text(cu)
+                if len(text) > 100:
+                    pages.append((cu, text))
+
+        # Если ссылок нет или они не загрузились — ищем автоматически
+        if not pages:
+            pages = await self._gather_official_docs(title, url)
 
         if not pages:
             return "Не удалось загрузить страницу конкурса. Попробуй другой."
