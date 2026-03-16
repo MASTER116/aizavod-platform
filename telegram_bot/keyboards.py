@@ -72,7 +72,7 @@ def scan_results_kb(results: list[dict]) -> InlineKeyboardMarkup:
     for i, r in enumerate(results):
         rel = r.get("relevance", 0)
         icon = "🟢" if rel > 0.6 else "🟡" if rel > 0.3 else "⚪"
-        title = r.get("title", "")[:50]
+        title = r.get("title", "")
         rows.append([InlineKeyboardButton(
             text=f"{icon} {i+1}. {title}",
             callback_data=f"scan_grant_{i}",

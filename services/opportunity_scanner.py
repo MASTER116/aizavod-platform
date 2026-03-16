@@ -178,7 +178,7 @@ class OpportunityScanner:
         ]
 
         results: list[Opportunity] = []
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             for q in queries:
                 try:
                     found = await self._search_query(client, q)
@@ -212,7 +212,7 @@ class OpportunityScanner:
     async def _fetch_page_text(self, url: str) -> str:
         """Загрузить текст страницы по URL (для анализа документации конкурса)."""
         try:
-            async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
                 resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
                 if resp.status_code != 200:
                     return ""
@@ -249,24 +249,21 @@ class OpportunityScanner:
         # 2. Извлекаем короткое название для поиска
         short_title = title[:80]
 
-        # 3. Много поисковых запросов — ищем до 5 страниц
+        # 3. Поиск официальных страниц — до 3 страниц (для скорости)
         search_queries = [
             f"{short_title} официальный сайт подача заявки",
-            f"{short_title} положение условия участия",
-            f"{short_title} site:fasie.ru OR site:rscf.ru OR site:sk.ru",
-            f"{short_title} site:grants.gov.ru OR site:рфрит.рф OR site:гранты.рф",
-            f"{short_title} грант конкурс требования дедлайн",
-            f"{short_title} приём заявок 2026",
+            f"{short_title} положение условия участия требования",
+            f"{short_title} site:fasie.ru OR site:rscf.ru OR site:sk.ru OR site:рфрит.рф",
         ]
 
         seen_urls = {url}
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=8.0) as client:
             for q in search_queries:
-                if len(pages) >= 5:
+                if len(pages) >= 3:
                     break
                 try:
                     results = await self._search_query(client, q)
-                    for r in results[:8]:
+                    for r in results[:5]:
                         if r.url in seen_urls:
                             continue
                         seen_urls.add(r.url)
@@ -275,7 +272,7 @@ class OpportunityScanner:
                         text = await self._fetch_page_text(r.url)
                         if len(text) > 300:
                             pages.append((r.url, text))
-                            if len(pages) >= 5:
+                            if len(pages) >= 3:
                                 break
                 except Exception as exc:
                     logger.warning("Official docs search failed for %r: %s", q, exc)
@@ -562,10 +559,11 @@ class OpportunityScanner:
         snippets = snippet_pattern.findall(html)
 
         for i, (url, title) in enumerate(links[:10]):
-            title = re.sub(r"<[^>]+>", "", title).strip()
+            from html import unescape
+            title = unescape(re.sub(r"<[^>]+>", "", title)).strip()
             snippet = ""
             if i < len(snippets):
-                snippet = re.sub(r"<[^>]+>", "", snippets[i]).strip()
+                snippet = unescape(re.sub(r"<[^>]+>", "", snippets[i])).strip()
 
             if "uddg=" in url:
                 match = re.search(r"uddg=([^&]+)", url)
