@@ -318,9 +318,10 @@ body{font-family:'Inter',sans-serif;background:#09090b;color:#e4e4e7;min-height:
       <div style="font-size:48px;margin-bottom:16px">&#9881;</div>
       <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">n8n Workflow Automation</h2>
       <p style="font-size:14px;color:#71717a;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">Визуальный конструктор автоматизаций. Создавайте workflow для агентов, вебхуков и интеграций.</p>
-      <a href="/n8n/" target="_blank" class="btn-gold" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:14px 32px;font-size:15px">
+      <a id="n8n-link" href="#" target="_blank" class="btn-gold" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:14px 32px;font-size:15px">
         Открыть n8n &#8599;
       </a>
+      <script>document.getElementById('n8n-link').href = location.protocol + '//' + location.hostname + ':5678';</script>
       <div style="margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
         <div class="card" style="padding:16px 20px;text-align:left;min-width:200px">
           <div style="font-size:13px;font-weight:600;margin-bottom:4px">&#128279; Порт</div>
