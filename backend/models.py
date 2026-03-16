@@ -908,15 +908,15 @@ class WorkPlan(Base):
     title: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[WorkPlanCategory] = mapped_column(
-        Enum(WorkPlanCategory, values_callable=lambda e: [m.value for m in e], create_type=False),
+        String(50),
         default=WorkPlanCategory.DEVELOPMENT, index=True,
     )
     status: Mapped[WorkPlanStatus] = mapped_column(
-        Enum(WorkPlanStatus, values_callable=lambda e: [m.value for m in e], create_type=False),
+        String(50),
         default=WorkPlanStatus.BACKLOG, index=True,
     )
     priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority, values_callable=lambda e: [m.value for m in e], create_type=False),
+        String(20),
         default=TaskPriority.NORMAL, index=True,
     )
 

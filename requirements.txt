@@ -61,3 +61,7 @@ fpdf2>=2.7.0
 # AI - Certifier Agent (Groq + BM25)
 groq>=0.12.0
 rank-bm25>=0.2.2
+
+# Hackathon Pipeline
+playwright==1.58.0
+PyGithub==2.8.1

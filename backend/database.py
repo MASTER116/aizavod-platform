@@ -12,7 +12,7 @@ DB_PATH = BASE_DIR / "aizavod.db"
 
 
 class Base(DeclarativeBase):
-    """Base declarative class for SQLAlchemy models."""
+    pass
 
 
 def get_database_url() -> str:
@@ -41,12 +41,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db() -> None:
-    """Create tables. For SQLite dev mode uses create_all;
-    for PostgreSQL rely on Alembic migrations."""
     from . import models  # noqa: F401
-
-    if _is_sqlite():
-        Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
 
 
 def get_db():

@@ -619,10 +619,24 @@ async def cb_my_ideas(callback: CallbackQuery):
 @router.callback_query(F.data == "hackathon_pipeline")
 async def cb_hackathon_pipeline(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.answer("🏆 Запускаю конвейер хакатонов...")
+    msg = await callback.message.answer("🏆 Запускаю конвейер хакатонов v2... Это займет 5-15 минут.")
+
+    async def notify(text: str):
+        try:
+            await callback.message.answer(text, parse_mode="Markdown")
+        except Exception:
+            try:
+                await callback.message.answer(text)
+            except Exception:
+                pass
 
     from services.hackathon_pipeline import launch_hackathon_pipeline
-    result = await launch_hackathon_pipeline()
+    result = await launch_hackathon_pipeline(
+        max_hackathons=10,
+        min_prize=1,
+        min_hours=12,
+        notify_callback=notify,
+    )
 
     await _safe_send(callback.message, result)
     await callback.message.answer(

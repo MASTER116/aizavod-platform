@@ -1,407 +1,1321 @@
 <!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AI Zavod -- CONDUCTOR</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#030712">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        zavod: { 50:'#f0f4ff', 100:'#dbe4ff', 200:'#bac8ff', 400:'#748ffc', 500:'#4c6ef5', 600:'#3b5bdb', 700:'#364fc7', 900:'#1b2559' }
-      }
-    }
-  }
-}
-</script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-body { font-family: 'Inter', sans-serif; padding-bottom: 72px; }
-.fade-in { animation: fadeIn .25s ease; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg) } }
-.tree-line { border-left: 2px solid #364fc7; margin-left: 10px; padding-left: 12px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ALTYN — Мультиагентная AI-платформа для бизнеса</title>
+    <meta name="description" content="AI Altyn — 19 интеллектуальных AI-агентов для автоматизации бизнеса. 37 категорий, 262 отрасли, работают 24/7.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: rgba(255,255,255,0.03);
+            --surface-hover: rgba(255,255,255,0.06);
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.14);
+            --accent: #d4a017;
+            --accent-light: #f0c040;
+            --accent-surface: rgba(212,160,23,0.08);
+            --text: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --success: #22c55e;
+            --gradient-gold: linear-gradient(135deg, #f0c040, #ffd700, #f0c040);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* === AMBIENT === */
+        .ambient {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 0;
+        }
+        .ambient::before {
+            content: ''; position: absolute; top: -20%; left: -5%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(212,160,23,0.06) 0%, transparent 70%);
+            animation: float1 20s ease-in-out infinite;
+        }
+        .ambient::after {
+            content: ''; position: absolute; bottom: -15%; right: -5%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(240,192,64,0.04) 0%, transparent 70%);
+            animation: float2 25s ease-in-out infinite;
+        }
+        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,60px)} }
+        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-40px)} }
+
+        .page { position: relative; z-index: 2; }
+
+        .gr {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* === HEADER === */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            padding: 0 32px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(9,9,11,0.85);
+            backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+        }
+        .header-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; }
+        .logo-ai { color: var(--text); }
+        .logo-altyn {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .nav { display: flex; gap: 24px; }
+        .nav a {
+            font-size: 13px; font-weight: 500; color: var(--text-secondary);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .nav a:hover { color: var(--text); }
+        .version-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 100px;
+            font-size: 12px; font-weight: 600; color: var(--text-muted);
+            background: var(--surface); border: 1px solid var(--glass-border);
+        }
+        .pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+        }
+
+        /* === HERO === */
+        .hero {
+            max-width: 900px; margin: 0 auto;
+            padding: 80px 32px 60px; text-align: center;
+        }
+        .hero-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 18px; border-radius: 100px;
+            font-size: 13px; font-weight: 500;
+            background: var(--accent-surface); color: var(--accent-light);
+            border: 1px solid rgba(212,160,23,0.15);
+            margin-bottom: 24px;
+            animation: fadeIn 0.6s ease forwards;
+        }
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 52px);
+            font-weight: 800; line-height: 1.15; letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.6s ease 0.1s forwards; opacity: 0;
+        }
+        .hero .subtitle {
+            font-size: 17px; color: var(--text-secondary);
+            max-width: 580px; margin: 0 auto 32px; line-height: 1.7;
+            animation: fadeIn 0.6s ease 0.2s forwards; opacity: 0;
+        }
+        .hero-buttons {
+            display: flex; gap: 14px; justify-content: center; margin-bottom: 48px;
+            animation: fadeIn 0.6s ease 0.3s forwards; opacity: 0;
+        }
+        .btn-primary {
+            padding: 14px 32px; border-radius: 12px;
+            font-size: 15px; font-weight: 600;
+            background: var(--gradient-gold); color: #09090b;
+            border: none; cursor: pointer;
+            transition: all 0.25s; text-decoration: none;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,160,23,0.3); }
+        .btn-outline {
+            padding: 14px 32px; border-radius: 12px;
+            font-size: 15px; font-weight: 600;
+            background: transparent; color: var(--text);
+            border: 1px solid var(--glass-border); cursor: pointer;
+            transition: all 0.25s; text-decoration: none;
+        }
+        .btn-outline:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+        .hero-stats {
+            display: flex; gap: 40px; justify-content: center;
+            animation: fadeIn 0.6s ease 0.4s forwards; opacity: 0;
+        }
+        .hero-stat .num {
+            font-size: 28px; font-weight: 800;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-stat .label {
+            font-size: 13px; color: var(--text-muted); margin-top: 4px;
+        }
+
+        /* === SECTION COMMON === */
+        .section {
+            max-width: 1100px; margin: 0 auto;
+            padding: 80px 32px;
+        }
+        .section-header {
+            text-align: center; margin-bottom: 48px;
+        }
+        .section-header h2 {
+            font-size: clamp(24px, 3vw, 36px);
+            font-weight: 800; letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+        .section-header p {
+            font-size: 16px; color: var(--text-secondary);
+            max-width: 520px; margin: 0 auto; line-height: 1.6;
+        }
+
+        /* === FEATURES === */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .feature-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .feature-icon {
+            font-size: 28px; margin-bottom: 16px;
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--accent-surface);
+            border: 1px solid rgba(212,160,23,0.1);
+            border-radius: 12px;
+        }
+        .feature-card h3 {
+            font-size: 16px; font-weight: 700; margin-bottom: 8px;
+        }
+        .feature-card p {
+            font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+        }
+
+        /* === SELECTOR WIZARD === */
+        .steps-bar {
+            max-width: 900px; margin: 0 auto;
+            padding: 0 32px 32px;
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .step-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 100px;
+            font-size: 13px; font-weight: 500;
+            background: var(--surface); border: 1px solid var(--glass-border);
+            color: var(--text-muted); cursor: pointer;
+            transition: all 0.2s;
+        }
+        .step-chip.active {
+            background: var(--accent-surface);
+            border-color: rgba(212,160,23,0.25);
+            color: var(--accent-light);
+        }
+        .step-chip.done {
+            background: rgba(34,197,94,0.08);
+            border-color: rgba(34,197,94,0.2);
+            color: var(--success);
+        }
+        .step-chip.done:hover { background: rgba(34,197,94,0.12); }
+        .step-chip .num {
+            width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            background: var(--glass-border); color: var(--text-muted);
+        }
+        .step-chip.active .num { background: rgba(212,160,23,0.2); color: var(--accent-light); }
+        .step-chip.done .num { background: rgba(34,197,94,0.2); color: var(--success); }
+        .step-arrow { color: var(--text-muted); font-size: 14px; }
+
+        .wizard {
+            max-width: 900px; margin: 0 auto;
+            padding: 0 32px 40px;
+        }
+        .wizard-title {
+            font-size: 15px; font-weight: 600; color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .wizard-title .count {
+            font-size: 12px; color: var(--text-muted);
+            background: var(--surface); padding: 2px 10px;
+            border-radius: 100px;
+        }
+
+        .sel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .sel-grid.large { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+        .sel-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+            display: flex; align-items: center; gap: 14px;
+        }
+        .sel-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            background: var(--surface-hover);
+        }
+        .sel-card:active { transform: translateY(0); }
+        .sel-card .icon {
+            width: 40px; height: 40px; min-width: 40px;
+            border-radius: 10px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 20px;
+            background: var(--accent-surface);
+            border: 1px solid rgba(212,160,23,0.1);
+        }
+        .sel-card .info { flex: 1; min-width: 0; }
+        .sel-card .name {
+            font-size: 14px; font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sel-card .sub {
+            font-size: 12px; color: var(--text-muted); margin-top: 2px;
+        }
+        .sel-card .arrow {
+            color: var(--text-muted); font-size: 16px;
+            transition: transform 0.2s;
+        }
+        .sel-card:hover .arrow { transform: translateX(3px); color: var(--accent-light); }
+
+        .search-wrap { margin-bottom: 20px; }
+        .search-input {
+            width: 100%; padding: 12px 20px;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text); font-size: 14px; font-family: inherit;
+            outline: none; transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: rgba(212,160,23,0.3);
+            box-shadow: 0 0 0 3px rgba(212,160,23,0.06);
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .agents-result {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            margin-top: 8px;
+        }
+        .result-header {
+            margin-bottom: 24px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .result-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .result-header p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .result-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 100px; margin-top: 12px;
+            font-size: 12px; font-weight: 500;
+            background: var(--accent-surface); color: var(--accent-light);
+            border: 1px solid rgba(212,160,23,0.15);
+        }
+        .agents-list { display: flex; flex-direction: column; gap: 12px; }
+        .agent-row {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+        .agent-row:hover {
+            border-color: var(--border-hover);
+            background: var(--surface-hover);
+        }
+        .agent-row .a-icon {
+            width: 44px; height: 44px; min-width: 44px;
+            border-radius: 12px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 20px;
+            background: var(--accent-surface);
+            border: 1px solid rgba(212,160,23,0.12);
+        }
+        .agent-row .a-info { flex: 1; }
+        .agent-row .a-name { font-size: 15px; font-weight: 700; }
+        .agent-row .a-desc {
+            font-size: 13px; color: var(--text-secondary);
+            margin-top: 2px; line-height: 1.4;
+        }
+        .agent-row .a-dept {
+            font-size: 10px; font-weight: 600; padding: 3px 10px;
+            border-radius: 4px; white-space: nowrap;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 13px; font-weight: 500;
+            background: var(--surface); border: 1px solid var(--glass-border);
+            color: var(--text-secondary); cursor: pointer;
+            transition: all 0.2s; margin-bottom: 20px;
+            font-family: inherit;
+        }
+        .back-btn:hover { background: var(--surface-hover); color: var(--text); }
+
+        /* === AGENTS GRID (all agents section) === */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .agent-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .agent-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+        .agent-card-name {
+            font-size: 16px; font-weight: 700; margin-bottom: 8px;
+        }
+        .agent-card-dept {
+            display: inline-block;
+            font-size: 10px; font-weight: 600; padding: 3px 8px;
+            border-radius: 4px; text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .agent-card-desc {
+            font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+        }
+
+        /* === DEMO CHAT === */
+        .chat-container {
+            max-width: 680px; margin: 0 auto;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+        .chat-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .chat-avatar {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--gradient-gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 800; color: #09090b;
+        }
+        .chat-header-info { flex: 1; }
+        .chat-header-name { font-size: 14px; font-weight: 700; }
+        .chat-header-sub { font-size: 12px; color: var(--text-muted); }
+        .chat-online {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 500; color: var(--success);
+        }
+        .chat-online-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success);
+        }
+        .chat-messages {
+            height: 380px; overflow-y: auto;
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        .chat-msg {
+            max-width: 85%; padding: 12px 16px;
+            border-radius: 14px; font-size: 14px; line-height: 1.5;
+        }
+        .chat-msg.bot {
+            align-self: flex-start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .chat-msg.user {
+            align-self: flex-end;
+            background: rgba(212,160,23,0.15);
+            border: 1px solid rgba(212,160,23,0.2);
+            color: var(--text);
+        }
+        .chat-msg .agent-badge {
+            display: inline-block; font-size: 11px; font-weight: 600;
+            padding: 2px 8px; border-radius: 4px; margin-top: 8px;
+        }
+        .chat-msg .confidence {
+            font-size: 11px; color: var(--text-muted); margin-top: 4px;
+        }
+        .chat-input-area {
+            display: flex; gap: 8px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+        }
+        .chat-input {
+            flex: 1; padding: 12px 16px;
+            background: var(--surface); border: 1px solid var(--glass-border);
+            border-radius: 12px; color: var(--text);
+            font-size: 14px; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: rgba(212,160,23,0.3); }
+        .chat-input::placeholder { color: var(--text-muted); }
+        .chat-send {
+            padding: 12px 20px; border-radius: 12px;
+            background: var(--gradient-gold); color: #09090b;
+            border: none; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .chat-send:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,160,23,0.3); }
+        .chat-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* === PRICING === */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+        .tier-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            position: relative;
+        }
+        .tier-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .tier-card.featured {
+            border-top: 2px solid transparent;
+            border-image: var(--gradient-gold) 1;
+            border-image-slice: 1 1 0 1;
+            background: linear-gradient(180deg, rgba(212,160,23,0.06) 0%, var(--glass) 40%);
+        }
+        .tier-badge {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px; margin-bottom: 16px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .tier-card.featured .tier-badge {
+            background: var(--accent-surface); color: var(--accent-light);
+            border: 1px solid rgba(212,160,23,0.2);
+        }
+        .tier-card:not(.featured) .tier-badge {
+            background: var(--surface); color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+        }
+        .tier-price {
+            font-size: 32px; font-weight: 800; margin-bottom: 4px;
+        }
+        .tier-price .currency { font-size: 16px; font-weight: 600; color: var(--text-secondary); }
+        .tier-period { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+        .tier-features { list-style: none; margin-bottom: 24px; }
+        .tier-features li {
+            font-size: 13px; color: var(--text-secondary);
+            padding: 6px 0; display: flex; align-items: center; gap: 8px;
+        }
+        .tier-features li::before {
+            content: '\2713'; font-size: 12px; font-weight: 700;
+            color: var(--success);
+            width: 18px; height: 18px; min-width: 18px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(34,197,94,0.1); border-radius: 50%;
+        }
+        .tier-btn {
+            width: 100%; padding: 12px; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            border: none; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .tier-card.featured .tier-btn {
+            background: var(--gradient-gold); color: #09090b;
+        }
+        .tier-card:not(.featured) .tier-btn {
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+        .tier-btn:hover { transform: translateY(-1px); }
+
+        /* === FOOTER === */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 32px;
+        }
+        .footer-content {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .footer-left { font-size: 12px; color: var(--text-muted); }
+        .footer-center { display: flex; gap: 20px; }
+        .footer-center a {
+            font-size: 12px; color: var(--text-muted);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .footer-center a:hover { color: var(--text-secondary); }
+        .footer-badges { display: flex; gap: 10px; }
+        .footer-badge {
+            font-size: 10px; font-weight: 600; padding: 4px 10px;
+            border-radius: 4px; text-transform: uppercase;
+            background: var(--surface); border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.35s ease forwards; }
+
+        .animate-on-scroll {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .animate-on-scroll.visible {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .header { padding: 0 20px; }
+            .nav { display: none; }
+            .hero { padding: 60px 20px 40px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .hero-stats { gap: 20px; flex-wrap: wrap; }
+            .section { padding: 60px 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .steps-bar, .wizard { padding-left: 20px; padding-right: 20px; }
+            .sel-grid, .sel-grid.large { grid-template-columns: 1fr; }
+            .agents-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .footer-content { flex-direction: column; gap: 16px; text-align: center; }
+            .footer-badges { justify-content: center; }
+            .agents-result { padding: 20px; }
+            .chat-container { border-radius: var(--radius-lg); }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 28px; }
+            .hero-stat .num { font-size: 22px; }
+            .hero-stats { gap: 16px; }
+            .chat-messages { height: 300px; }
+            .tier-price { font-size: 26px; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body>
 
-<!-- Header desktop -->
-<header class="border-b border-gray-800 bg-gray-950/90 backdrop-blur sticky top-0 z-50 hidden md:block">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 bg-zavod-600 rounded-lg flex items-center justify-center font-bold text-sm">AZ</div>
-      <span class="font-bold text-lg">AI Zavod</span>
-      <span class="text-xs bg-zavod-700/30 text-zavod-400 px-2 py-0.5 rounded-full">CONDUCTOR</span>
-    </div>
-    <nav class="flex gap-1">
-      <button onclick="showPage('dashboard')" class="nav-btn px-3 py-1.5 rounded-lg text-sm hover:bg-gray-800 transition" data-page="dashboard">Панель</button>
-      <button onclick="showPage('ask')" class="nav-btn px-3 py-1.5 rounded-lg text-sm hover:bg-gray-800 transition" data-page="ask">Запрос</button>
-      <button onclick="showPage('orchestrate')" class="nav-btn px-3 py-1.5 rounded-lg text-sm hover:bg-gray-800 transition" data-page="orchestrate">Оркестрация</button>
-      <button onclick="showPage('tasks')" class="nav-btn px-3 py-1.5 rounded-lg text-sm hover:bg-gray-800 transition" data-page="tasks">Задачи</button>
-      <button onclick="showPage('agents')" class="nav-btn px-3 py-1.5 rounded-lg text-sm hover:bg-gray-800 transition" data-page="agents">Агенты</button>
-    </nav>
-  </div>
-</header>
+<div class="ambient"></div>
+<div class="page">
 
-<!-- Header mobile -->
-<header class="border-b border-gray-800 bg-gray-950/90 backdrop-blur sticky top-0 z-50 md:hidden">
-  <div class="px-4 py-3 flex items-center gap-3">
-    <div class="w-7 h-7 bg-zavod-600 rounded-lg flex items-center justify-center font-bold text-xs">AZ</div>
-    <span class="font-bold">AI Zavod</span>
-    <span class="text-xs bg-zavod-700/30 text-zavod-400 px-1.5 py-0.5 rounded-full">CONDUCTOR</span>
-  </div>
-</header>
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                <span class="logo-ai">AI</span>&nbsp;<span class="logo-altyn">ALTYN</span>
+            </div>
+            <nav class="nav">
+                <a href="#select">Подбор</a>
+                <a href="#agents">Агенты</a>
+                <a href="#demo">Демо</a>
+                <a href="#pricing">Тарифы</a>
+            </nav>
+        </div>
+        <div class="version-badge">
+            <span class="pulse-dot"></span> v1.0
+        </div>
+    </header>
 
-<!-- Bottom nav mobile -->
-<nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 border-t border-gray-800 backdrop-blur z-50 md:hidden safe-bottom">
-  <div class="flex justify-around py-2">
-    <button onclick="showPage('dashboard')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="dashboard">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-      <span class="text-[10px]">Панель</span>
-    </button>
-    <button onclick="showPage('ask')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="ask">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-      <span class="text-[10px]">Запрос</span>
-    </button>
-    <button onclick="showPage('orchestrate')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="orchestrate">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-      <span class="text-[10px]">Задача</span>
-    </button>
-    <button onclick="showPage('tasks')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="tasks">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-      <span class="text-[10px]">Задачи</span>
-    </button>
-    <button onclick="showPage('agents')" class="mob-nav flex flex-col items-center gap-0.5 px-2 py-1" data-page="agents">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      <span class="text-[10px]">Агенты</span>
-    </button>
-  </div>
-</nav>
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-pill">Мультиагентная AI-платформа</div>
+        <h1>Ваша команда <span class="gr">AI-специалистов</span></h1>
+        <p class="subtitle">19 интеллектуальных агентов для автоматизации бизнеса. Юрист, бухгалтер, маркетолог, разработчик — работают 24/7 без выходных.</p>
+        <div class="hero-buttons">
+            <a href="#select" class="btn-primary">Подобрать агентов</a>
+            <a href="#features" class="btn-outline">Узнать больше</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><div class="num">19</div><div class="label">AI-агентов</div></div>
+            <div class="hero-stat"><div class="num">37</div><div class="label">категорий</div></div>
+            <div class="hero-stat"><div class="num">262</div><div class="label">отрасли</div></div>
+            <div class="hero-stat"><div class="num">24/7</div><div class="label">доступность</div></div>
+        </div>
+    </section>
 
-<main class="max-w-5xl mx-auto px-3 md:px-4 py-4 md:py-6">
+    <!-- ===== FEATURES ===== -->
+    <section class="section animate-on-scroll" id="features">
+        <div class="section-header">
+            <h2>Почему <span class="gr">AI Altyn</span></h2>
+            <p>Платформа, которая объединяет лучшие AI-практики для вашего бизнеса</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#9881;</div>
+                <h3>Маэстро</h3>
+                <p>Мета-оркестратор управляет всеми агентами. Автоматически определяет задачу и направляет к нужному специалисту.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128640;</div>
+                <h3>Мгновенная маршрутизация</h3>
+                <p>Интеллектуальная классификация запросов. Маэстро анализирует контекст и выбирает лучшего агента за миллисекунды.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128202;</div>
+                <h3>Эволюция</h3>
+                <p>Система самообучения DARWIN. Агенты оценивают качество работы друг друга и постоянно улучшаются.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128274;</div>
+                <h3>Щит</h3>
+                <p>3 контура защиты данных. Полное соответствие 152-ФЗ о персональных данных и требованиям безопасности.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128187;</div>
+                <h3>Telegram + API + Web</h3>
+                <p>Интеграция за минуты. Подключите агентов через Telegram-бота, REST API или веб-интерфейс.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#127919;</div>
+                <h3>Заточен под РФ/ЕАЭС</h3>
+                <p>ТР ТС, ОКВЭД-2, УСН/ОСН — агенты знают российское и евразийское законодательство в деталях.</p>
+            </div>
+        </div>
+    </section>
 
-<!-- Dashboard -->
-<div id="page-dashboard" class="page fade-in">
-  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Панель управления</h1>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
-      <div class="text-[10px] md:text-xs text-gray-500 mb-1">Всего</div>
-      <div id="stat-total" class="text-2xl md:text-3xl font-bold">--</div>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
-      <div class="text-[10px] md:text-xs text-gray-500 mb-1">В очереди</div>
-      <div id="stat-pending" class="text-2xl md:text-3xl font-bold text-yellow-400">--</div>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
-      <div class="text-[10px] md:text-xs text-gray-500 mb-1">В работе</div>
-      <div id="stat-progress" class="text-2xl md:text-3xl font-bold text-blue-400">--</div>
-    </div>
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 md:p-4">
-      <div class="text-[10px] md:text-xs text-gray-500 mb-1">Завершено</div>
-      <div id="stat-completed" class="text-2xl md:text-3xl font-bold text-green-400">--</div>
-    </div>
-  </div>
-  <h2 class="text-base md:text-lg font-semibold mb-3">Последние задачи</h2>
-  <div id="dashboard-recent" class="space-y-2"></div>
+    <!-- ===== BUSINESS SELECTOR ===== -->
+    <section class="section" id="select">
+        <div class="section-header">
+            <h2>Подберите <span class="gr">AI-агентов</span> для бизнеса</h2>
+            <p>Выберите страну, город и отрасль — мы покажем, какие специалисты готовы работать на вас</p>
+        </div>
+        <div class="steps-bar" id="steps-bar"></div>
+        <div class="wizard" id="wizard"></div>
+    </section>
+
+    <!-- ===== AGENTS GRID ===== -->
+    <section class="section animate-on-scroll" id="agents">
+        <div class="section-header">
+            <h2>Наши <span class="gr">AI-агенты</span></h2>
+            <p>19 специалистов в 9 департаментах, готовых решать задачи вашего бизнеса</p>
+        </div>
+        <div class="agents-grid" id="agents-grid">
+            <div style="text-align:center;padding:40px;color:var(--text-muted)">Загрузка агентов...</div>
+        </div>
+    </section>
+
+    <!-- ===== DEMO CHAT ===== -->
+    <section class="section animate-on-scroll" id="demo">
+        <div class="section-header">
+            <h2>Попробуйте <span class="gr">прямо сейчас</span></h2>
+            <p>Задайте вопрос — Маэстро направит вас к нужному агенту</p>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-avatar">AI</div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name">Маэстро — умная маршрутизация</div>
+                    <div class="chat-header-sub">AI ALTYN</div>
+                </div>
+                <div class="chat-online"><span class="chat-online-dot"></span> Онлайн</div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-msg bot">
+                    Здравствуйте! Я Маэстро — мета-оркестратор платформы AI Altyn.<br><br>
+                    У меня в команде 19 AI-агентов: юрист, бухгалтер, маркетолог, контент-менеджер, специалист по ценообразованию и многие другие.<br><br>
+                    Опишите вашу задачу, и я направлю вас к нужному специалисту.
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input class="chat-input" id="chat-input" placeholder="Напишите ваш вопрос..." onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="chat-send" id="chat-send" onclick="sendChat()">Отправить</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRICING ===== -->
+    <section class="section animate-on-scroll" id="pricing">
+        <div class="section-header">
+            <h2>Тарифы</h2>
+            <p>Выберите план, подходящий для вашего бизнеса</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="tier-card">
+                <div class="tier-badge">Free</div>
+                <div class="tier-price">0 <span class="currency">руб</span></div>
+                <div class="tier-period">бесплатно навсегда</div>
+                <ul class="tier-features">
+                    <li>5 запросов в день</li>
+                    <li>3 агента</li>
+                    <li>Telegram-бот</li>
+                    <li>Базовая поддержка</li>
+                </ul>
+                <button class="tier-btn">Начать бесплатно</button>
+            </div>
+            <div class="tier-card">
+                <div class="tier-badge">Starter</div>
+                <div class="tier-price">4 990 <span class="currency">руб/мес</span></div>
+                <div class="tier-period">для малого бизнеса</div>
+                <ul class="tier-features">
+                    <li>50 запросов в день</li>
+                    <li>10 агентов</li>
+                    <li>REST API доступ</li>
+                    <li>Telegram + Web</li>
+                    <li>Email-поддержка</li>
+                </ul>
+                <button class="tier-btn">Выбрать Starter</button>
+            </div>
+            <div class="tier-card featured">
+                <div class="tier-badge">Pro</div>
+                <div class="tier-price">14 990 <span class="currency">руб/мес</span></div>
+                <div class="tier-period">для растущих компаний</div>
+                <ul class="tier-features">
+                    <li>200 запросов в день</li>
+                    <li>Все 19 агентов</li>
+                    <li>Маэстро-оркестратор</li>
+                    <li>Все интеграции</li>
+                    <li>Приоритетная поддержка</li>
+                    <li>Аналитика и отчёты</li>
+                </ul>
+                <button class="tier-btn">Выбрать Pro</button>
+            </div>
+            <div class="tier-card">
+                <div class="tier-badge">Enterprise</div>
+                <div class="tier-price">49 990+ <span class="currency">руб/мес</span></div>
+                <div class="tier-period">индивидуально</div>
+                <ul class="tier-features">
+                    <li>Безлимит запросов</li>
+                    <li>Кастомные агенты</li>
+                    <li>SLA 99.9%</li>
+                    <li>Личный менеджер</li>
+                    <li>On-premise развёртывание</li>
+                    <li>Обучение команды</li>
+                </ul>
+                <button class="tier-btn">Связаться</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">AI Altyn v1.0 &copy; 2024&ndash;2026</div>
+            <div class="footer-center">
+                <a href="/privacy">Конфиденциальность</a>
+                <a href="/terms">Условия</a>
+                <a href="mailto:khalyafievazat@gmail.com">Контакты</a>
+            </div>
+            <div class="footer-badges">
+                <span class="footer-badge">Щит</span>
+                <span class="footer-badge">152-ФЗ</span>
+                <span class="footer-badge">ЕАЭС</span>
+            </div>
+        </div>
+    </footer>
+
 </div>
-
-<!-- Ask -->
-<div id="page-ask" class="page hidden fade-in">
-  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Запрос к CONDUCTOR</h1>
-  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
-    <textarea id="ask-input" rows="3" placeholder="Задай любой вопрос..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-zavod-500 resize-none"></textarea>
-    <div class="flex justify-between items-center mt-3">
-      <span id="ask-status" class="text-xs text-gray-500"></span>
-      <button onclick="askConductor()" id="ask-btn" class="bg-zavod-600 hover:bg-zavod-700 active:bg-zavod-800 px-5 py-2.5 rounded-lg text-sm font-medium transition">Отправить</button>
-    </div>
-  </div>
-  <div id="ask-result" class="mt-4 hidden">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
-      <div class="flex flex-wrap items-center gap-2 mb-3">
-        <span id="ask-agent-badge" class="bg-zavod-700/30 text-zavod-400 px-2 py-0.5 rounded text-xs font-medium"></span>
-        <span id="ask-confidence" class="text-xs text-gray-500"></span>
-        <span id="ask-duration" class="text-xs text-gray-500"></span>
-      </div>
-      <div id="ask-response" class="text-sm leading-relaxed whitespace-pre-wrap break-words"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Orchestrate -->
-<div id="page-orchestrate" class="page hidden fade-in">
-  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Оркестрация задачи</h1>
-  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
-    <textarea id="orch-input" rows="3" placeholder="Опиши задачу..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-zavod-500 resize-none"></textarea>
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3">
-      <select id="orch-priority" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
-        <option value="normal">Обычный</option>
-        <option value="high">Высокий</option>
-        <option value="critical">Критический</option>
-        <option value="low">Низкий</option>
-      </select>
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <span id="orch-status" class="text-xs text-gray-500"></span>
-        <button onclick="orchestrateTask()" id="orch-btn" class="bg-zavod-600 hover:bg-zavod-700 active:bg-zavod-800 px-5 py-2.5 rounded-lg text-sm font-medium transition w-full sm:w-auto">Декомпозировать</button>
-      </div>
-    </div>
-  </div>
-  <div id="orch-result" class="mt-4 hidden">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
-      <div class="flex flex-wrap items-center gap-2 mb-3">
-        <span class="text-xs text-gray-500">Задача:</span>
-        <span id="orch-task-id" class="text-xs font-mono text-zavod-400"></span>
-        <span id="orch-duration" class="text-xs text-gray-500 ml-auto"></span>
-      </div>
-      <p id="orch-analysis" class="text-sm text-gray-400 mb-4 italic"></p>
-      <div id="orch-tree" class="overflow-x-auto"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Tasks -->
-<div id="page-tasks" class="page hidden fade-in">
-  <div class="flex items-center justify-between mb-4 md:mb-6">
-    <h1 class="text-xl md:text-2xl font-bold">Задачи</h1>
-    <select id="task-filter" onchange="loadTasks()" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
-      <option value="">Все</option>
-      <option value="pending">В очереди</option>
-      <option value="in_progress">В работе</option>
-      <option value="decomposed">Декомпозированы</option>
-      <option value="completed">Завершены</option>
-      <option value="failed">Ошибки</option>
-    </select>
-  </div>
-  <div id="tasks-list" class="space-y-2"></div>
-</div>
-
-<!-- Task Detail -->
-<div id="page-task-detail" class="page hidden fade-in">
-  <button onclick="showPage('tasks')" class="text-sm text-zavod-400 hover:text-zavod-300 mb-4 inline-block">&larr; Назад</button>
-  <div id="task-detail-content"></div>
-</div>
-
-<!-- Agents -->
-<div id="page-agents" class="page hidden fade-in">
-  <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Агенты</h1>
-  <div id="agents-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-</div>
-
-</main>
 
 <script>
-const API = '/api/conductor';
-const STATUS_RU = {pending:'в очереди',in_progress:'в работе',completed:'завершено',failed:'ошибка',decomposed:'декомпозировано',blocked:'заблокировано',cancelled:'отменено'};
-const PRIORITY_RU = {critical:'критический',high:'высокий',normal:'обычный',low:'низкий'};
+// ─── DATA ───────────────────────────────────────────────────────────────────
 
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  document.getElementById('page-' + name).classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.toggle('bg-gray-800', b.dataset.page === name);
-    b.classList.toggle('text-zavod-400', b.dataset.page === name);
-  });
-  document.querySelectorAll('.mob-nav').forEach(b => {
-    const active = b.dataset.page === name;
-    b.classList.toggle('text-zavod-400', active);
-    b.classList.toggle('text-gray-500', !active);
-  });
-  if (name === 'dashboard') loadDashboard();
-  if (name === 'tasks') loadTasks();
-  if (name === 'agents') loadAgents();
-  window.scrollTo(0, 0);
+const COUNTRIES = [
+    { code: 'ru', name: 'Россия', flag: '\u{1F1F7}\u{1F1FA}' },
+    { code: 'kz', name: 'Казахстан', flag: '\u{1F1F0}\u{1F1FF}' },
+    { code: 'by', name: 'Беларусь', flag: '\u{1F1E7}\u{1F1FE}' },
+    { code: 'kg', name: 'Кыргызстан', flag: '\u{1F1F0}\u{1F1EC}' },
+    { code: 'am', name: 'Армения', flag: '\u{1F1E6}\u{1F1F2}' },
+];
+
+const CITIES = {
+    ru: ['Москва','Санкт-Петербург','Новосибирск','Екатеринбург','Казань','Нижний Новгород','Челябинск','Самара','Ростов-на-Дону','Уфа','Красноярск','Воронеж','Пермь','Волгоград','Краснодар','Тюмень','Саратов','Тольятти','Ижевск','Барнаул','Иркутск','Ульяновск','Хабаровск','Владивосток','Ярославль','Махачкала','Томск','Оренбург','Кемерово','Новокузнецк','Рязань','Астрахань','Набережные Челны','Пенза','Липецк','Киров','Чебоксары','Калининград','Тула','Курск','Ставрополь','Сочи','Улан-Удэ','Тверь','Магнитогорск','Иваново','Брянск','Белгород','Сургут','Владимир','Нижний Тагил','Архангельск','Чита','Калуга','Симферополь','Смоленск','Волжский','Якутск','Саранск','Череповец'],
+    kz: ['Астана','Алматы','Шымкент','Караганда','Актобе','Тараз','Павлодар','Семей','Атырау','Костанай','Кызылорда','Уральск','Петропавловск','Темиртау','Туркестан','Актау','Экибастуз','Талдыкорган','Кокшетау','Рудный'],
+    by: ['Минск','Гомель','Могилёв','Витебск','Гродно','Брест','Бобруйск','Барановичи','Борисов','Пинск','Орша','Мозырь','Новополоцк','Солигорск','Лида','Молодечно','Полоцк','Жлобин','Светлогорск','Речица'],
+    kg: ['Бишкек','Ош','Джалал-Абад','Каракол','Токмок','Узген','Балыкчи','Кара-Балта','Нарын','Талас','Кант','Кызыл-Кия','Майлуу-Суу','Сулюкта','Кочкор-Ата'],
+    am: ['Ереван','Гюмри','Ванадзор','Вагаршапат','Абовян','Капан','Раздан','Армавир','Арташат','Севан','Дилижан','Иджеван','Горис','Масис','Аштарак'],
+};
+const CITIES_VISIBLE = 20;
+
+const CATEGORY_ICONS = {
+    'Медицина': '\u{1F3E5}', 'Образование': '\u{1F393}', 'IT / Digital': '\u{1F4BB}',
+    'Торговля': '\u{1F6D2}', 'HoReCa': '\u{1F37D}', 'Финансы': '\u{1F4B3}',
+    'Недвижимость': '\u{1F3E0}', 'Производство': '\u{1F3ED}', 'Красота': '\u{2728}',
+    'Спорт': '\u{26BD}', 'Логистика / Транспорт': '\u{1F69B}', 'Туризм': '\u{2708}',
+    'Сельское хозяйство': '\u{1F33E}', 'Энергетика': '\u{26A1}', 'Связь / Телеком': '\u{1F4F6}',
+    'Авто легковые': '\u{1F697}', 'Авто грузовые': '\u{1F69A}', 'Производство авто': '\u{1F3CE}',
+    'Развлечения': '\u{1F3AC}', 'Услуги': '\u{1F527}', 'Бытовые услуги': '\u{1F9F9}',
+    'Кинопроизводство': '\u{1F3AC}', 'Музыка': '\u{1F3B5}', 'Издательство / СМИ': '\u{1F4F0}',
+    'Медиа / Креатив': '\u{1F3A8}', 'Государство / НКО': '\u{1F3DB}',
+    'Добыча полезных ископаемых': '\u{26CF}', 'ЖКХ / Экология': '\u{267B}',
+    'Животные': '\u{1F43E}', 'Лесное хозяйство': '\u{1F332}', 'ОПК / Космос': '\u{1F680}',
+    'Ритуальные услуги': '\u{1F56F}', 'Социальная сфера': '\u{1F91D}',
+    'Текстиль / Одежда': '\u{1F455}', 'Цветы / Подарки': '\u{1F490}',
+    'Event / Праздники': '\u{1F389}', 'Авиация / ЖД / Водный транспорт': '\u{2708}',
+};
+
+const DEPT_COLORS = {
+    'Руководство':'#ef4444','Продукт':'#3b82f6','Финансы':'#22c55e',
+    'Продажи':'#f97316','Контент':'#a855f7','Юридический':'#06b6d4',
+    'Бухгалтерия':'#eab308','Самообучение':'#ec4899','Безопасность':'#ef4444',
+    'Наука':'#14b8a6','Продвижение':'#8b5cf6','Нейминг':'#f59e0b',
+    'Патенты':'#6366f1','Голос':'#10b981','Казначейство':'#f43f5e',
+};
+
+const AGENT_ICONS = {
+    'ceo_agent':'\u{1F9E0}','certifier':'\u{1F4CB}','opportunity_scanner':'\u{1F50D}',
+    'idea_generator':'\u{1F4A1}','market_analyzer':'\u{1F4CA}','freelance_agent':'\u{1F4BC}',
+    'pricing_agent':'\u{1F4B0}','outreach_agent':'\u{1F4E7}','content_factory':'\u{1F4F1}',
+    'lawyer_agent':'\u{2696}','accountant_agent':'\u{1F9EE}','darwin_agent':'\u{1F9EC}',
+    'guardian_agent':'\u{1F6E1}','scholar_agent':'\u{1F393}','herald_agent':'\u{1F4E2}',
+    'namer_agent':'\u{270F}','guardian_ip_agent':'\u{1F512}','voice_agent':'\u{1F3A4}',
+    'treasurer_agent':'\u{1F4B5}',
+};
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+
+let state = { step: 1, country: null, city: null, category: null, industry: null };
+let catalogData = null;
+let agentsData = null;
+
+const STEPS = [
+    { num: 1, label: 'Страна' },
+    { num: 2, label: 'Город' },
+    { num: 3, label: 'Отрасль' },
+    { num: 4, label: 'Направление' },
+    { num: 5, label: 'Агенты' },
+];
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+
+async function init() {
+    try {
+        const [catRes, agRes] = await Promise.all([
+            fetch('/data/industries/industries.json').then(r => r.ok ? r.json() : null),
+            fetch('/api/conductor/agents').then(r => r.ok ? r.json() : null),
+        ]);
+        catalogData = catRes;
+        agentsData = agRes;
+    } catch(e) {
+        console.warn('Data load error:', e);
+    }
+
+    if (!catalogData) {
+        try {
+            const r = await fetch('/industries.json');
+            if (r.ok) catalogData = await r.json();
+        } catch(e) {}
+    }
+
+    render();
+    renderAgentsGrid();
+    initScrollAnimations();
 }
 
-async function loadDashboard() {
-  try {
-    const d = await (await fetch(API + '/dashboard')).json();
-    document.getElementById('stat-total').textContent = d.total || 0;
-    document.getElementById('stat-pending').textContent = (d.by_status?.pending || 0) + (d.by_status?.decomposed || 0);
-    document.getElementById('stat-progress').textContent = d.by_status?.in_progress || 0;
-    document.getElementById('stat-completed').textContent = d.by_status?.completed || 0;
-    document.getElementById('dashboard-recent').innerHTML = (d.recent || []).map(t => taskCard(t)).join('') || '<p class="text-gray-600 text-sm">Нет задач</p>';
-  } catch(e) { console.error(e); }
+// ─── SCROLL ANIMATIONS ─────────────────────────────────────────────────────
+
+function initScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 }
 
-async function askConductor() {
-  const q = document.getElementById('ask-input').value.trim();
-  if (!q) return;
-  const btn = document.getElementById('ask-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>';
-  document.getElementById('ask-status').textContent = 'Обработка...';
-  try {
-    const d = await (await fetch(API + '/route', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query: q})})).json();
-    document.getElementById('ask-result').classList.remove('hidden');
-    document.getElementById('ask-agent-badge').textContent = (d.title || d.agent) + ' [' + d.department + ']';
-    document.getElementById('ask-confidence').textContent = 'Уверенность: ' + (d.confidence * 100).toFixed(0) + '%';
-    document.getElementById('ask-duration').textContent = (d.duration_ms / 1000).toFixed(1) + ' сек';
-    document.getElementById('ask-response').textContent = d.response;
-    document.getElementById('ask-status').textContent = '';
-  } catch(e) {
-    document.getElementById('ask-status').textContent = 'Ошибка: ' + e.message;
-  }
-  btn.disabled = false; btn.textContent = 'Отправить';
-}
-document.getElementById('ask-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askConductor(); }
-});
+// ─── AGENTS GRID (Section) ─────────────────────────────────────────────────
 
-async function orchestrateTask() {
-  const q = document.getElementById('orch-input').value.trim();
-  if (!q) return;
-  const priority = document.getElementById('orch-priority').value;
-  const btn = document.getElementById('orch-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span> Анализ...';
-  document.getElementById('orch-status').textContent = 'CEO анализирует...';
-  try {
-    const d = await (await fetch(API + '/orchestrate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({task: q, priority})})).json();
-    document.getElementById('orch-result').classList.remove('hidden');
-    document.getElementById('orch-task-id').textContent = '#' + (d.task_id || '?');
-    document.getElementById('orch-duration').textContent = (d.duration_ms / 1000).toFixed(1) + ' сек';
-    document.getElementById('orch-analysis').textContent = d.analysis || '';
-    document.getElementById('orch-tree').innerHTML = renderOrchTree(d.directors || []);
-    document.getElementById('orch-status').textContent = '';
-  } catch(e) {
-    document.getElementById('orch-status').textContent = 'Ошибка: ' + e.message;
-  }
-  btn.disabled = false; btn.textContent = 'Декомпозировать';
-}
+function renderAgentsGrid() {
+    const grid = document.getElementById('agents-grid');
+    const agents = agentsData || [];
 
-function renderOrchTree(dirs) {
-  const prColor = {critical:'text-red-400 bg-red-500/10',high:'text-orange-400 bg-orange-500/10',normal:'text-gray-400 bg-gray-500/10',low:'text-gray-600 bg-gray-500/10'};
-  return dirs.map(d => {
-    const depts = (d.departments || []).map(dp =>
-      `<div class="tree-line py-1.5">
-        <div class="flex items-start gap-2">
-          <span class="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 flex-shrink-0"></span>
-          <div class="min-w-0">
-            <span class="text-xs font-medium text-gray-400">${dp.department || ''}</span>
-            <span class="text-[10px] text-gray-600 ml-1">${dp.estimated_hours || 0}ч</span>
-            <p class="text-xs text-gray-500 mt-0.5 break-words">${dp.task || ''}</p>
-          </div>
-        </div>
-      </div>`).join('');
-    const pc = prColor[d.priority] || prColor.normal;
-    return `<div class="mb-4">
-      <div class="flex flex-wrap items-center gap-2 mb-1">
-        <span class="w-2.5 h-2.5 rounded bg-zavod-600 flex-shrink-0"></span>
-        <span class="font-semibold text-sm">${d.title || d.role?.toUpperCase()}</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded ${pc}">${PRIORITY_RU[d.priority] || d.priority}</span>
-        <span class="text-[10px] text-gray-600">${d.estimated_hours || 0}ч</span>
-      </div>
-      <p class="text-xs text-gray-400 ml-5 mb-1 break-words">${d.task || ''}</p>
-      ${d.depends_on?.length ? `<p class="text-[10px] text-yellow-600 ml-5 mb-1">Зависит от: ${d.depends_on.join(', ')}</p>` : ''}
-      <div class="ml-2">${depts}</div>
-    </div>`;
-  }).join('');
-}
+    if (!agents.length) {
+        grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);grid-column:1/-1">Агенты загружаются с сервера...</div>';
+        return;
+    }
 
-async function loadTasks() {
-  const f = document.getElementById('task-filter').value;
-  try {
-    const tasks = await (await fetch(API + '/tasks' + (f ? '?status=' + f : '') + '&limit=50')).json();
-    document.getElementById('tasks-list').innerHTML = tasks.length
-      ? tasks.map(t => taskCard(t, true)).join('')
-      : '<p class="text-gray-600 text-sm">Нет задач</p>';
-  } catch(e) { console.error(e); }
-}
-
-function taskCard(t, clickable) {
-  const colors = {
-    pending:'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    in_progress:'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    completed:'bg-green-500/10 text-green-400 border-green-500/20',
-    failed:'bg-red-500/10 text-red-400 border-red-500/20',
-    decomposed:'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    blocked:'bg-gray-500/10 text-gray-400 border-gray-500/20',
-    cancelled:'bg-gray-500/10 text-gray-500 border-gray-500/20',
-  };
-  const c = colors[t.status] || colors.pending;
-  const click = clickable ? `onclick="loadTaskDetail(${t.id})" style="cursor:pointer"` : '';
-  const role = t.role || t.agent_role || t.assigned_to || '';
-  return `<div ${click} class="bg-gray-900 border border-gray-800 rounded-lg p-3 hover:border-gray-700 active:bg-gray-800/50 transition">
-    <div class="flex items-start justify-between gap-2">
-      <div class="min-w-0 flex-1">
-        <div class="flex items-center gap-1.5 mb-1">
-          <span class="text-[10px] font-mono text-gray-600">#${t.id}</span>
-          ${role ? `<span class="text-[10px] text-zavod-400">${role}</span>` : ''}
-        </div>
-        <p class="text-sm truncate">${t.title}</p>
-      </div>
-      <span class="text-[10px] px-1.5 py-0.5 rounded border ${c} whitespace-nowrap flex-shrink-0">${STATUS_RU[t.status] || t.status}</span>
-    </div>
-  </div>`;
-}
-
-async function loadTaskDetail(id) {
-  showPage('task-detail');
-  try {
-    const [tree, detail] = await Promise.all([
-      (await fetch(API + '/tree/' + id)).json(),
-      (await fetch(API + '/tasks/' + id)).json(),
-    ]);
-    const colors = {pending:'text-yellow-400',in_progress:'text-blue-400',completed:'text-green-400',failed:'text-red-400',decomposed:'text-purple-400'};
-    document.getElementById('task-detail-content').innerHTML = `
-      <h1 class="text-lg md:text-xl font-bold mb-2 break-words">#${detail.id} ${detail.title}</h1>
-      <div class="flex flex-wrap gap-2 mb-4">
-        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-800 ${colors[detail.status] || ''}">${STATUS_RU[detail.status] || detail.status}</span>
-        <span class="text-xs text-gray-500">${PRIORITY_RU[detail.priority] || detail.priority}</span>
-        <span class="text-xs text-zavod-400">${detail.assigned_to || detail.agent_role || ''}</span>
-        ${detail.estimated_hours ? `<span class="text-xs text-gray-600">${detail.estimated_hours}ч</span>` : ''}
-      </div>
-      ${detail.description ? `<p class="text-sm text-gray-400 mb-4 break-words">${detail.description}</p>` : ''}
-      ${detail.result ? `<div class="bg-gray-900 border border-green-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-green-400 mb-1">Результат:</p><p class="text-sm whitespace-pre-wrap break-words">${detail.result}</p></div>` : ''}
-      ${detail.error ? `<div class="bg-gray-900 border border-red-900/30 rounded-lg p-3 mb-4"><p class="text-xs text-red-400 mb-1">Ошибка:</p><p class="text-sm break-words">${detail.error}</p></div>` : ''}
-      ${tree.children?.length ? `<h2 class="text-base font-semibold mb-3 mt-6">Дерево задач</h2><div class="overflow-x-auto">${renderTaskTree(tree)}</div>` : ''}
-      ${detail.logs?.length ? `<h2 class="text-base font-semibold mb-3 mt-6">Журнал</h2><div class="space-y-1">${detail.logs.map(l => `<div class="flex gap-2 text-xs"><span class="text-gray-600 flex-shrink-0">${l.at?.split('T')[1]?.split('.')[0] || ''}</span><span class="text-zavod-400 flex-shrink-0">${l.action}</span><span class="text-gray-500 truncate">${l.message?.slice(0,80) || ''}</span></div>`).join('')}</div>` : ''}`;
-  } catch(e) { console.error(e); }
-}
-
-function renderTaskTree(node, depth=0) {
-  if (!node) return '';
-  const dots = {pending:'bg-yellow-500',in_progress:'bg-blue-500',completed:'bg-green-500',failed:'bg-red-500',decomposed:'bg-purple-500'};
-  const dot = dots[node.status] || 'bg-gray-500';
-  const children = (node.children || []).map(c => renderTaskTree(c, depth+1)).join('');
-  return `<div class="${depth > 0 ? 'tree-line' : ''} py-1">
-    <div class="flex items-center gap-1.5 cursor-pointer hover:bg-gray-800/50 rounded px-1 py-0.5" onclick="loadTaskDetail(${node.id})">
-      <span class="w-2 h-2 rounded-full ${dot} flex-shrink-0"></span>
-      <span class="text-[10px] text-zavod-400 flex-shrink-0">${node.assigned_to || ''}</span>
-      <span class="text-xs truncate">${node.title}</span>
-    </div>${children}</div>`;
-}
-
-async function loadAgents() {
-  try {
-    const agents = await (await fetch(API + '/agents')).json();
-    const dc = {
-      'Руководство':'bg-purple-500/10 text-purple-400','Продукт':'bg-blue-500/10 text-blue-400',
-      'Финансы':'bg-green-500/10 text-green-400','Продажи':'bg-orange-500/10 text-orange-400',
-      'Контент':'bg-pink-500/10 text-pink-400','Юридический':'bg-red-500/10 text-red-400',
-      'Бухгалтерия':'bg-emerald-500/10 text-emerald-400','Самообучение':'bg-cyan-500/10 text-cyan-400',
-      'Безопасность':'bg-red-500/10 text-red-400','Наука':'bg-indigo-500/10 text-indigo-400',
-      'Продвижение':'bg-teal-500/10 text-teal-400','Нейминг':'bg-amber-500/10 text-amber-400',
-      'Патенты':'bg-rose-500/10 text-rose-400','Голос':'bg-sky-500/10 text-sky-400',
-      'Казначейство':'bg-lime-500/10 text-lime-400',
-    };
-    document.getElementById('agents-grid').innerHTML = agents.map(a => {
-      const c = dc[a.department] || 'bg-gray-500/10 text-gray-400';
-      return `<div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-sm font-semibold">${a.title || a.name}</span>
-        </div>
-        <span class="text-[10px] px-2 py-0.5 rounded ${c} inline-block mb-2">${a.department}</span>
-        <p class="text-xs text-gray-500">${a.description}</p>
-      </div>`;
+    grid.innerHTML = agents.map(a => {
+        const color = DEPT_COLORS[a.department] || '#6b7280';
+        return `<div class="agent-card">
+            <div class="agent-card-name">${a.title}</div>
+            <span class="agent-card-dept" style="background:${color}18;color:${color};border:1px solid ${color}30">${a.department}</span>
+            <div class="agent-card-desc">${a.description}</div>
+        </div>`;
     }).join('');
-  } catch(e) { console.error(e); }
 }
 
-showPage('dashboard');
+// ─── WIZARD RENDER ──────────────────────────────────────────────────────────
+
+function render() {
+    renderSteps();
+    renderWizard();
+}
+
+function renderSteps() {
+    const bar = document.getElementById('steps-bar');
+    let html = '';
+    STEPS.forEach((s, i) => {
+        let cls = 'step-chip';
+        let val = '';
+        if (s.num < state.step) {
+            cls += ' done';
+            if (s.num === 1) val = state.country?.name || '';
+            if (s.num === 2) val = state.city || '';
+            if (s.num === 3) val = state.category || '';
+            if (s.num === 4) val = state.industry || '';
+        } else if (s.num === state.step) {
+            cls += ' active';
+        }
+        const clickable = s.num < state.step;
+        html += `<div class="${cls}" ${clickable ? `onclick="goToStep(${s.num})"` : ''}>
+            <span class="num">${s.num < state.step ? '\u2713' : s.num}</span>
+            ${val || s.label}
+        </div>`;
+        if (i < STEPS.length - 1) html += '<span class="step-arrow">\u203A</span>';
+    });
+    bar.innerHTML = html;
+}
+
+function renderWizard() {
+    const w = document.getElementById('wizard');
+    switch(state.step) {
+        case 1: renderCountries(w); break;
+        case 2: renderCities(w); break;
+        case 3: renderCategories(w); break;
+        case 4: renderIndustries(w); break;
+        case 5: renderAgentsResult(w); break;
+    }
+}
+
+function renderCountries(el) {
+    el.innerHTML = `
+        <div class="wizard-title">Выберите страну <span class="count">${COUNTRIES.length}</span></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5">
+            AI-агенты работают по законодательству выбранной страны: налоги, лицензии, сертификация, трудовое право.
+        </div>
+        <div class="sel-grid fade-up">
+            ${COUNTRIES.map(c => `
+                <div class="sel-card" onclick="selectCountry('${c.code}')">
+                    <div class="icon">${c.flag}</div>
+                    <div class="info"><div class="name">${c.name}</div></div>
+                    <div class="arrow">\u203A</div>
+                </div>`).join('')}
+        </div>`;
+}
+
+function renderCities(el) {
+    const cities = CITIES[state.country.code] || [];
+    const hidden = cities.length > CITIES_VISIBLE ? cities.length - CITIES_VISIBLE : 0;
+    el.innerHTML = `
+        <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
+        <div class="wizard-title">Выберите город <span class="count">${cities.length} ${declN(cities.length, ['город','города','городов'])}</span></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5">
+            Город влияет на доступные льготы, программы поддержки бизнеса и региональное законодательство.
+        </div>
+        <div class="search-wrap">
+            <input class="search-input" id="city-search" placeholder="Введите название города для поиска..." oninput="filterCities(this.value)" />
+            ${hidden > 0 ? `<div style="font-size:12px;color:var(--text-muted);margin-top:8px" id="city-hint">Показаны ${CITIES_VISIBLE} крупнейших. Ещё ${hidden} — начните вводить название</div>` : ''}
+        </div>
+        <div class="sel-grid fade-up" id="cards-grid">
+            ${cities.map((c, i) => `
+                <div class="sel-card" data-name="${c.toLowerCase()}" ${i >= CITIES_VISIBLE ? 'style="display:none" data-hidden="1"' : ''} onclick="selectCity('${esc(c)}')">
+                    <div class="icon">${state.country.flag}</div>
+                    <div class="info"><div class="name">${c}</div></div>
+                    <div class="arrow">\u203A</div>
+                </div>`).join('')}
+        </div>`;
+}
+
+function renderCategories(el) {
+    let categories = [];
+    if (catalogData && catalogData.industries) {
+        const cats = {};
+        catalogData.industries.forEach(i => {
+            if (!cats[i.category]) cats[i.category] = 0;
+            cats[i.category]++;
+        });
+        categories = Object.entries(cats).sort((a,b) => a[0].localeCompare(b[0],'ru'));
+    }
+
+    el.innerHTML = `
+        <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
+        <div class="wizard-title">Выберите отрасль <span class="count">${categories.length}</span></div>
+        <div class="search-wrap">
+            <input class="search-input" placeholder="Поиск отрасли..." oninput="filterCards(this.value)" />
+        </div>
+        <div class="sel-grid large fade-up" id="cards-grid">
+            ${categories.map(([cat, count]) => `
+                <div class="sel-card" data-name="${cat.toLowerCase()}" onclick="selectCategory('${esc(cat)}')">
+                    <div class="icon">${CATEGORY_ICONS[cat] || '\u{1F4C1}'}</div>
+                    <div class="info">
+                        <div class="name">${cat}</div>
+                        <div class="sub">${count} ${declN(count, ['направление','направления','направлений'])}</div>
+                    </div>
+                    <div class="arrow">\u203A</div>
+                </div>`).join('')}
+        </div>`;
+}
+
+function renderIndustries(el) {
+    let industries = [];
+    if (catalogData && catalogData.industries) {
+        industries = catalogData.industries.filter(i => i.category === state.category);
+    }
+
+    el.innerHTML = `
+        <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
+        <div class="wizard-title">${state.category} <span class="count">${industries.length}</span></div>
+        <div class="sel-grid large fade-up" id="cards-grid">
+            ${industries.map(ind => `
+                <div class="sel-card" data-name="${ind.industry.toLowerCase()}" onclick="selectIndustry('${esc(ind.industry)}')">
+                    <div class="icon">${CATEGORY_ICONS[state.category] || '\u{1F4C1}'}</div>
+                    <div class="info">
+                        <div class="name">${ind.industry}</div>
+                        <div class="sub">ОКВЭД ${ind.okved}</div>
+                    </div>
+                    <div class="arrow">\u203A</div>
+                </div>`).join('')}
+        </div>`;
+}
+
+function renderAgentsResult(el) {
+    const agents = agentsData || [];
+    const ind = catalogData?.industries?.find(i => i.industry === state.industry);
+
+    el.innerHTML = `
+        <button class="back-btn" onclick="goBack()">\u2190 Назад</button>
+        <div class="agents-result fade-up">
+            <div class="result-header">
+                <h2>AI-агенты для &laquo;${state.industry}&raquo;</h2>
+                <p>${state.country.flag} ${state.country.name}, ${state.city} &bull; ${state.category}</p>
+                ${ind ? `<div class="result-tag">ОКВЭД ${ind.okved} &mdash; ${ind.okved_description}</div>` : ''}
+            </div>
+            <div class="agents-list">
+                ${agents.map(a => {
+                    const color = DEPT_COLORS[a.department] || '#6b7280';
+                    const icon = AGENT_ICONS[a.name] || '\u{1F916}';
+                    return `<div class="agent-row">
+                        <div class="a-icon">${icon}</div>
+                        <div class="a-info">
+                            <div class="a-name">${a.title}</div>
+                            <div class="a-desc">${a.description}</div>
+                        </div>
+                        <span class="a-dept" style="background:${color}18;color:${color};border:1px solid ${color}30">${a.department}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+}
+
+// ─── ACTIONS ────────────────────────────────────────────────────────────────
+
+function selectCountry(code) {
+    state.country = COUNTRIES.find(c => c.code === code);
+    state.step = 2;
+    render();
+    scrollToWizard();
+}
+
+function selectCity(city) {
+    state.city = city;
+    state.step = 3;
+    render();
+    scrollToWizard();
+}
+
+function selectCategory(cat) {
+    state.category = cat;
+    state.step = 4;
+    render();
+    scrollToWizard();
+}
+
+function selectIndustry(ind) {
+    state.industry = ind;
+    state.step = 5;
+    render();
+    scrollToWizard();
+}
+
+function goToStep(n) {
+    state.step = n;
+    if (n <= 1) { state.country = null; state.city = null; state.category = null; state.industry = null; }
+    if (n <= 2) { state.city = null; state.category = null; state.industry = null; }
+    if (n <= 3) { state.category = null; state.industry = null; }
+    if (n <= 4) { state.industry = null; }
+    render();
+    scrollToWizard();
+}
+
+function goBack() {
+    if (state.step > 1) goToStep(state.step - 1);
+}
+
+function filterCards(q) {
+    const grid = document.getElementById('cards-grid');
+    if (!grid) return;
+    const lower = q.toLowerCase();
+    grid.querySelectorAll('.sel-card').forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        card.style.display = name.includes(lower) ? '' : 'none';
+    });
+}
+
+function filterCities(q) {
+    const grid = document.getElementById('cards-grid');
+    if (!grid) return;
+    const lower = q.toLowerCase().trim();
+    const hint = document.getElementById('city-hint');
+
+    grid.querySelectorAll('.sel-card').forEach((card, i) => {
+        const name = card.getAttribute('data-name') || '';
+        const isHidden = card.getAttribute('data-hidden') === '1';
+
+        if (!lower) {
+            card.style.display = isHidden ? 'none' : '';
+        } else {
+            card.style.display = name.includes(lower) ? '' : 'none';
+        }
+    });
+
+    if (hint) hint.style.display = lower ? 'none' : '';
+}
+
+function scrollToWizard() {
+    document.getElementById('select').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+function declN(n, forms) {
+    const abs = Math.abs(n) % 100;
+    const n1 = abs % 10;
+    if (abs > 10 && abs < 20) return forms[2];
+    if (n1 > 1 && n1 < 5) return forms[1];
+    if (n1 === 1) return forms[0];
+    return forms[2];
+}
+
+// ─── DEMO CHAT ──────────────────────────────────────────────────────────────
+
+let chatLoading = false;
+
+async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const btn = document.getElementById('chat-send');
+    const messages = document.getElementById('chat-messages');
+    const query = input.value.trim();
+
+    if (!query || chatLoading) return;
+
+    // Add user message
+    messages.innerHTML += `<div class="chat-msg user">${escHtml(query)}</div>`;
+    input.value = '';
+    chatLoading = true;
+    btn.disabled = true;
+
+    // Scroll to bottom
+    messages.scrollTop = messages.scrollHeight;
+
+    // Add typing indicator
+    const typingId = 'typing-' + Date.now();
+    messages.innerHTML += `<div class="chat-msg bot" id="${typingId}" style="color:var(--text-muted)">Маэстро анализирует запрос...</div>`;
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+        const res = await fetch('/api/conductor/route', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query }),
+        });
+
+        const typingEl = document.getElementById(typingId);
+
+        if (res.ok) {
+            const data = await res.json();
+            const agentName = data.agent_title || data.agent || 'Агент';
+            const dept = data.department || '';
+            const confidence = data.confidence ? Math.round(data.confidence * 100) : null;
+            const reply = data.reply || data.response || data.message || 'Запрос обработан.';
+            const color = DEPT_COLORS[dept] || '#6b7280';
+
+            if (typingEl) {
+                typingEl.innerHTML = `${escHtml(reply)}
+                    ${dept ? `<br><span class="agent-badge" style="background:${color}18;color:${color};border:1px solid ${color}30">${agentName} &middot; ${dept}</span>` : ''}
+                    ${confidence !== null ? `<div class="confidence">Уверенность: ${confidence}%</div>` : ''}`;
+                typingEl.style.color = '';
+            }
+        } else {
+            if (typingEl) {
+                typingEl.innerHTML = 'Сервер временно недоступен. Попробуйте позже.';
+                typingEl.style.color = '#ef4444';
+            }
+        }
+    } catch(e) {
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) {
+            typingEl.innerHTML = 'Не удалось подключиться к серверу. Проверьте соединение.';
+            typingEl.style.color = '#ef4444';
+        }
+    }
+
+    chatLoading = false;
+    btn.disabled = false;
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+// ─── START ──────────────────────────────────────────────────────────────────
+
+init();
 </script>
 </body>
 </html>

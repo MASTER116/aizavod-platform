@@ -53,7 +53,7 @@ services:
       redis:
         condition: service_healthy
     command: >
-      sh -c "alembic upgrade head &&
+      sh -c "
              uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 
   # ─── Celery Worker ─────────────────────────────────────
@@ -98,6 +98,14 @@ services:
     env_file: .env
     environment:
       BACKEND_BASE_URL: http://backend:8000
+      DATABASE_URL: postgresql://aizavod:aizavod_secret@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_USERNAME: ${GITHUB_USERNAME:-azatmaster}
+      DEVPOST_EMAIL: ${DEVPOST_EMAIL:-}
+      DEVPOST_PASSWORD: ${DEVPOST_PASSWORD:-}
+    volumes:
+      - hackathon_projects:/opt/aizavod/hackathon_projects
     depends_on:
       - backend
     command: python -m telegram_bot.main
@@ -123,6 +131,8 @@ services:
       N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD:-admin}
       BACKEND_BASE_URL: http://backend:8000
+      DATABASE_URL: postgresql://aizavod:aizavod_secret@postgres:5432/aizavod
+      REDIS_URL: redis://redis:6379/0
       BACKEND_API_KEY: ${BACKEND_API_KEY:-}
     volumes:
       - n8n_data:/home/node/.n8n
@@ -155,3 +165,4 @@ volumes:
   postgres_data:
   redis_data:
   n8n_data:
+  hackathon_projects:
