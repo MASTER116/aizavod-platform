@@ -546,6 +546,25 @@ class GenerationLog(Base):
     duration_seconds: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+# ─── ApiUsageLog ──────────────────────────────────────────────────────────
+
+
+class ApiUsageLog(Base):
+    """Трекинг каждого вызова Anthropic API: токены, стоимость, агент."""
+    __tablename__ = "api_usage_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    agent_name: Mapped[str] = mapped_column(String(64), index=True)
+    model: Mapped[str] = mapped_column(String(64))
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    duration_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(20), default="ok")
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 # ─── ComplianceLog ─────────────────────────────────────────────────────────
 
 

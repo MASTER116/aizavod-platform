@@ -1,12 +1,13 @@
 """BaseAgent — базовый класс для всех AI-агентов AI Zavod.
 
 Устраняет дублирование: инициализация клиента, вызов Claude API,
-обработка ошибок, валидация ключа.
+обработка ошибок, валидация ключа, трекинг токенов и стоимости.
 """
 from __future__ import annotations
 
 import logging
 import os
+import time
 
 logger = logging.getLogger("aizavod.base_agent")
 
@@ -65,10 +66,40 @@ class BaseAgent:
         else:
             kwargs["system"] = self.BREVITY_RULE.strip()
 
+        start = time.perf_counter()
         try:
             client = anthropic.AsyncAnthropic(api_key=self._api_key)
             response = await client.messages.create(**kwargs)
+            duration_ms = (time.perf_counter() - start) * 1000
+
+            # Трекинг токенов и стоимости
+            from services.api_usage_tracker import log_api_call
+            log_api_call(
+                agent_name=self.agent_name,
+                model=self._model,
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+                duration_ms=duration_ms,
+            )
+
             return response.content[0].text
         except Exception as e:
+            duration_ms = (time.perf_counter() - start) * 1000
             logger.error("Ошибка API в %s: %s", self.agent_name, e)
+
+            # Логируем ошибку
+            try:
+                from services.api_usage_tracker import log_api_call
+                log_api_call(
+                    agent_name=self.agent_name,
+                    model=self._model,
+                    input_tokens=0,
+                    output_tokens=0,
+                    duration_ms=duration_ms,
+                    status="error",
+                    error=str(e),
+                )
+            except Exception:
+                pass
+
             return f"Ошибка при обработке запроса: {e}"

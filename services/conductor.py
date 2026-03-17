@@ -238,6 +238,19 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_treasurer",
     ),
+    AgentInfo(
+        name="oracle_agent",
+        title="Предиктивный аналитик",
+        department="Аналитика",
+        description="ML-прогнозы: классификация, регрессия, временные ряды, аномалии, выживаемость. Загрузить CSV/Excel — получить прогноз.",
+        keywords=[
+            "прогноз", "предсказ", "предикт", "ml", "машинн обучен",
+            "классификац", "регрессия", "аномал", "временн ряд",
+            "churn", "fraud", "oracle", "predict", "forecast",
+            "csv", "датасет", "модел обуч", "скоринг",
+        ],
+        handler="_route_oracle",
+    ),
 ]
 
 
@@ -640,6 +653,7 @@ class Conductor:
             )
 
         import anthropic
+        import time as _time
 
         prompt = CLASSIFIER_PROMPT.format(
             agents_list=self._agents_list_text(),
@@ -647,13 +661,22 @@ class Conductor:
         )
 
         client = anthropic.AsyncAnthropic(api_key=self._api_key)
+        _start = _time.perf_counter()
         resp = await client.messages.create(
             model=self._model,
             max_tokens=500,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
         )
+        _dur = (_time.perf_counter() - _start) * 1000
         text = resp.content[0].text.strip()
+
+        # Трекинг
+        try:
+            from services.api_usage_tracker import log_api_call
+            log_api_call("conductor_classify", self._model, resp.usage.input_tokens, resp.usage.output_tokens, _dur)
+        except Exception:
+            pass
 
         try:
             # Попытка парсить напрямую
@@ -719,13 +742,25 @@ class Conductor:
         if not self._api_key:
             return "{}"
         import anthropic
+        import time as _time
+        model = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514")
         client = anthropic.AsyncAnthropic(api_key=self._api_key)
+        _start = _time.perf_counter()
         resp = await client.messages.create(
-            model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514"),
+            model=model,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
         )
+        _dur = (_time.perf_counter() - _start) * 1000
+
+        # Трекинг
+        try:
+            from services.api_usage_tracker import log_api_call
+            log_api_call("conductor_orchestrator", model, resp.usage.input_tokens, resp.usage.output_tokens, _dur)
+        except Exception:
+            pass
+
         return resp.content[0].text.strip()
 
     async def _parse_json(self, text: str) -> dict | None:
@@ -1250,6 +1285,12 @@ async def _route_hackathon(query: str) -> str:
 
     # Запуск конвейера
     return await launch_hackathon_pipeline(query)
+
+
+async def _route_oracle(query: str) -> str:
+    from services.oracle_agent import get_oracle_agent
+    agent = get_oracle_agent()
+    return await agent.process(query)
 
 
 # ─── Singleton ───────────────────────────────────────────────────────────────
