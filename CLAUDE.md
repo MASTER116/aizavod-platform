@@ -1,16 +1,31 @@
-# AI ZAVOD — Мультиагентная SaaS-платформа
+# AIALTYN (AI ZAVOD) — Единая мультиагентная SaaS-платформа
 
 ## Обзор проекта
-AI Zavod — платформа из 19+ AI-агентов, управляемая через Telegram-бот и мета-оркестратор CONDUCTOR.
-Основатель — инженер 32 года, Татарстан/Москва, доход 200К. ООО планируется август 2026.
-Цель: автоматизировать все бизнес-процессы — от поиска грантов до продаж на фрилансе.
+Aialtyn (AI + Алтын = Золотой стандарт AI-автоматизации) — единая платформа из 21+ AI-агентов с 3 уровнями доступа, управляемая через Telegram-бот, Web UI и мета-оркестратор CONDUCTOR.
+Бренд: Aialtyn. Рабочее название: AI Zavod. Домены: zavod-ii.ru → aialtyn.ru.
+
+### Уровни доступа
+1. **SIMPLE** (публичный) — 291 отрасль, базовые агенты. FREE/STARTER/PRO тарифы.
+2. **PRO** (только основатель) — полный CONDUCTOR, все агенты, CEO-декомпозиция, автономность.
+3. **ENTERPRISE** (2027+) — white-label, кастом-агенты, SLA, MCP-совместимость.
 
 ## Архитектура
 ```
-Telegram Bot (aiogram 3) → CONDUCTOR (мета-оркестратор) → 19 агентов
-                         → FastAPI Backend → PostgreSQL
-                         → Celery + Redis (фоновые задачи)
-                         → APScheduler (автономные циклы)
+[Telegram Bot / Web UI / REST API]
+              |
+      [FastAPI Gateway + Rate Limiter]
+              |
+      [CONDUCTOR v2 — Meta-Orchestrator]
+     /    |     |     |    \
+  21+ специализированных агентов
+  + QA-AGENT (critic) + COMPLIANCE-AGENT
+     \    |     |     |    /
+  [LLM Client: Claude API ←→ Ollama ←→ Cache]
+  [Circuit Breaker + Fallback Chain]
+              |
+      [PostgreSQL + Redis]
+              |
+      [Celery + APScheduler (автономность)]
 ```
 
 ### Docker Compose сервисы
@@ -23,8 +38,19 @@ Telegram Bot (aiogram 3) → CONDUCTOR (мета-оркестратор) → 19 
 - `n8n` — визуальная автоматизация
 
 ## Структура файлов
-- `services/` — бизнес-логика всех агентов
-  - `conductor.py` — CONDUCTOR мета-оркестратор (роутер + CEO-декомпозиция)
+- `services/conductor/` — **CONDUCTOR пакет (декомпозированный)**
+  - `__init__.py` — экспорты
+  - `schemas.py` — Pydantic-модели (AgentMessage, AgentResponse, AccessLevel, QAVerdict, MemoryEntry)
+  - `registry.py` — реестр агентов (AgentInfo, AGENTS, access_level, tier)
+  - `hierarchy.py` — директора, отделы, специалисты
+  - `prompts.py` — все промпты CONDUCTOR
+  - `routes.py` — обработчики маршрутов + ROUTE_HANDLERS dict
+  - `llm_client.py` — LLM-клиент с CircuitBreaker и Ollama fallback
+  - `core.py` — класс Conductor (основная логика)
+- `services/conductor.py` — обратная совместимость (re-export из пакета)
+- `services/qa_agent.py` — QA-AGENT (Critic pattern, PII-детекция, injection-маркеры)
+- `services/compliance_agent.py` — COMPLIANCE-AGENT (152-ФЗ, PII masking, audit log)
+- `services/` — бизнес-логика агентов
   - `conductor_autonomy.py` — автономный режим (auto_execute_cycle каждые 10 мин)
   - `opportunity_scanner.py` — поиск грантов/конкурсов, DevPost API, deep_analyze
   - `hackathon_pipeline.py` — полный цикл хакатонов (7 этапов)
@@ -47,7 +73,20 @@ Telegram Bot (aiogram 3) → CONDUCTOR (мета-оркестратор) → 19 
 2. **Оркестратор**: задача → CEO-декомпозиция → директора → отделы → специалисты
 
 ### 8 директоров: CTO, CFO, CMO, COO, CPO, CDO, CHRO, CLO
-### 19 агентов: ceo, certifier, opportunity_scanner, hackathon_manager, idea_generator, market_analyzer, freelance_agent, pricing_agent, outreach_agent, content_factory, lawyer_agent, accountant_agent, darwin_agent, guardian_agent, scholar_agent, herald_agent, namer_agent, guardian_ip_agent, voice_agent, treasurer_agent
+### 21+ агентов: ceo, certifier, opportunity_scanner, hackathon_manager, idea_generator, market_analyzer, freelance_agent, pricing_agent, outreach_agent, content_factory, lawyer_agent, accountant_agent, darwin_agent, guardian_agent, scholar_agent, herald_agent, namer_agent, guardian_ip_agent, voice_agent, treasurer_agent, oracle_agent
+### Новые системные агенты: qa_agent (critic), compliance_agent (152-ФЗ)
+
+### Circuit Breaker (LLM Client)
+- 3 состояния: CLOSED (норма) → OPEN (после 3 отказов, 60с timeout) → HALF_OPEN (пробный)
+- Fallback chain: Claude API → Ollama/Qwen3 → cached response → error
+- Файл: `services/conductor/llm_client.py`
+
+### Pydantic Schemas (межагентные сообщения)
+- `AgentMessage` — типизированное сообщение между агентами
+- `AgentResponse` — типизированный ответ с metadata, cost, tokens
+- `QAVerdict` — результат проверки QA-AGENT (APPROVE/IMPROVE/REJECT)
+- `AccessLevel` — simple/pro/enterprise
+- Файл: `services/conductor/schemas.py`
 
 ## Правила разработки
 

@@ -1,0 +1,255 @@
+"""Реестр агентов CONDUCTOR."""
+
+from services.conductor.schemas import AgentInfo, AccessLevel
+
+AGENTS: list[AgentInfo] = [
+    AgentInfo(
+        name="ceo_agent",
+        title="Генеральный директор",
+        department="Руководство",
+        description="Стратегические вопросы, планирование, декомпозиция задач, распределение по директорам",
+        keywords=["стратег", "план", "приоритет", "направлен", "задач", "цел", "развит"],
+        handler="_route_ceo",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="certifier",
+        title="Сертификатор",
+        department="Продукт",
+        description="Консультации по сертификации товаров, ТР ТС ЕАЭС, таможня, импорт, стоимость сертификации",
+        keywords=[
+            "сертифик", "тр тс", "еаэс", "декларац", "таможн", "импорт", "ввоз",
+            "растамож", "гост", "соответств", "оттс", "сбктс", "эра-глонасс",
+            "глонасс", "гбо", "лаборатор", "аккредит", "омологац",
+            "jac", "haval", "chery", "geely", "changan", "faw", "byd", "exeed",
+            "москвич", "лада", "камаз", "газ ", "уаз", "маз ",
+            "локализац", "ввоз авто", "параллельн", "спецтехник",
+        ],
+        handler="_route_certifier",
+        tier="enterprise",
+    ),
+    AgentInfo(
+        name="opportunity_scanner",
+        title="Сканер возможностей",
+        department="Финансы",
+        description="Поиск грантов, хакатонов, конкурсов, источники финансирования",
+        keywords=["грант", "конкурс", "субсид", "фонд", "инвестиц", "финансир", "рнф", "фаси", "сколков"],
+        handler="_route_opportunities",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="hackathon_manager",
+        title="Менеджер хакатонов",
+        department="Хакатоны",
+        description="Полный цикл участия в хакатонах: поиск на DevPost, анализ, генерация идей, план, документы, разработка MVP, подача проекта",
+        keywords=[
+            "хакатон", "hackathon", "devpost", "подать заявк хакатон",
+            "участвовать в хакатон", "хакатон подач", "hackathon pipeline",
+        ],
+        handler="_route_hackathon",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="idea_generator",
+        title="Генератор идей",
+        department="Финансы",
+        description="Генерация идей заработка, монетизация, бизнес-модели",
+        keywords=["идея", "заработ", "монетиз", "доход", "бизнес-модел", "как заработ"],
+        handler="_route_ideas",
+    ),
+    AgentInfo(
+        name="market_analyzer",
+        title="Аналитик рынка",
+        department="Финансы",
+        description="Анализ рынка, конкурентов, оценка ниши, подготовка заявок",
+        keywords=["рынок", "конкурент", "ниша", "анализ рынк", "заявк", "предложен"],
+        handler="_route_market",
+        tier="starter",
+    ),
+    AgentInfo(
+        name="freelance_agent",
+        title="Фрилансер",
+        department="Продажи",
+        description="Поиск заказов на фрилансе, Kwork, Upwork, генерация откликов",
+        keywords=["фриланс", "заказ", "kwork", "upwork", "отклик", "услуг", "портфолио"],
+        handler="_route_freelance",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="pricing_agent",
+        title="Оценщик проектов",
+        department="Продажи",
+        description="Оценка стоимости проектов, генерация коммерческих предложений",
+        keywords=["цен", "стоимост", "оценк", "кп ", "коммерческ", "бюджет проект", "смет"],
+        handler="_route_pricing",
+        tier="starter",
+    ),
+    AgentInfo(
+        name="outreach_agent",
+        title="Менеджер продаж",
+        department="Продажи",
+        description="Холодные продажи, генерация писем, поиск лидов, сегменты",
+        keywords=["продаж", "лид", "клиент", "холодн", "письм", "email", "сегмент", "привлеч"],
+        handler="_route_outreach",
+        tier="starter",
+    ),
+    AgentInfo(
+        name="content_factory",
+        title="Фабрика контента",
+        department="Контент",
+        description="Генерация контента для Instagram, TikTok, VK — изображения, видео, тексты",
+        keywords=["контент", "инстаграм", "instagram", "tiktok", "пост", "рилс", "reels", "сторис", "публикац"],
+        handler="_route_content",
+        tier="starter",
+    ),
+    AgentInfo(
+        name="lawyer_agent",
+        title="Юрист",
+        department="Юридический",
+        description="Юридические консультации: договоры, регистрация ИП/ООО, трудовое право, налоговые споры",
+        keywords=[
+            "юрист", "юридическ", "договор", "контракт", "регистрац ип", "регистрац ооо",
+            "трудов", "увольнен", "закон", "право", "суд", "иск", "штраф",
+            "лицензи", "оквэд", "устав", "налогов спор", "открыть ип", "открыть ооо",
+        ],
+        handler="_route_lawyer",
+    ),
+    AgentInfo(
+        name="accountant_agent",
+        title="Бухгалтер",
+        department="Бухгалтерия",
+        description="Бухгалтерия, налоги, отчетность, зарплата, выбор системы налогообложения для ИП/ООО",
+        keywords=[
+            "бухгалтер", "налог", "усн", "осн", "патент", "отчетност", "декларац налог",
+            "взнос", "ндфл", "зарплат", "страхов", "пфр", "фсс", "ндс",
+            "касс", "бухучет", "баланс", "календарь отчет",
+        ],
+        handler="_route_accountant",
+    ),
+    AgentInfo(
+        name="darwin_agent",
+        title="Эволюция",
+        department="Самообучение",
+        description="Анализ качества агентов, оптимизация промптов, еженедельные отчёты, поиск паттернов ошибок",
+        keywords=[
+            "качество агент", "оптимиз промпт", "самообуч", "darwin",
+            "улучш агент", "отчёт качеств", "анализ ответ",
+        ],
+        handler="_route_darwin",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="guardian_agent",
+        title="Страж безопасности",
+        department="Безопасность",
+        description="Антифрод, антиабьюз, проверка безопасности ввода/вывода, анализ поведения пользователей",
+        keywords=[
+            "безопасност", "фрод", "абьюз", "injection", "спам",
+            "guardian", "блокировк", "угроз", "атак", "защит",
+        ],
+        handler="_route_guardian",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="scholar_agent",
+        title="Учёный",
+        department="Наука",
+        description="Грантовые заявки, научные статьи, литобзоры, оформление по ГОСТ/ВАК",
+        keywords=[
+            "наук", "стать", "публикац", "гост", "вак", "ринц",
+            "литобзор", "диссертац", "исследован", "scholar",
+            "грантов заявк", "научн",
+        ],
+        handler="_route_scholar",
+        tier="pro",
+    ),
+    AgentInfo(
+        name="herald_agent",
+        title="Пиарщик",
+        department="Продвижение",
+        description="Open-source продвижение, README, статьи Хабр, Telegram-канал, Product Hunt",
+        keywords=[
+            "open-source", "readme", "habr", "хабр", "devrel",
+            "product hunt", "github", "телеграм канал", "herald",
+            "продвижен", "контент маркет",
+        ],
+        handler="_route_herald",
+        tier="starter",
+    ),
+    AgentInfo(
+        name="namer_agent",
+        title="Нейминг",
+        department="Нейминг",
+        description="Генерация названий, проверка доменов, товарных знаков, ЕГРЮЛ, соцсетей",
+        keywords=[
+            "названи", "нейминг", "имя компан", "имя продукт", "домен",
+            "бренд", "нейм", "как назвать",
+        ],
+        handler="_route_namer",
+    ),
+    AgentInfo(
+        name="guardian_ip_agent",
+        title="Страж интеллектуальной собственности",
+        department="Патенты",
+        description="Товарные знаки, патенты, IP-аудит, анализ доменов, защита интеллектуальной собственности",
+        keywords=[
+            "патент", "товарн знак", "фипс", "роспатент", "интеллектуальн",
+            "ip аудит", "мкту", "авторск прав", "реестр по",
+        ],
+        handler="_route_guardian_ip",
+        tier="pro",
+    ),
+    AgentInfo(
+        name="voice_agent",
+        title="Голосовой агент",
+        department="Голос",
+        description="Скрипты звонков, оптимизация для TTS, деловые и продающие звонки",
+        keywords=[
+            "звонок", "звонк", "скрипт", "tts", "голос", "voice",
+            "позвонить", "переговор", "телефон",
+        ],
+        handler="_route_voice",
+        tier="pro",
+    ),
+    AgentInfo(
+        name="treasurer_agent",
+        title="Казначей",
+        department="Казначейство",
+        description="Монетизация инфраструктуры, анализ расходов, поиск доходов, ценообразование, cash flow",
+        keywords=[
+            "расход", "оптимиз затрат", "cash flow", "денежн поток",
+            "окупаемост", "burn rate", "тариф", "ценообразован",
+            "treasurer", "монетизац инфра",
+        ],
+        handler="_route_treasurer",
+        access_level=AccessLevel.PRO,
+    ),
+    AgentInfo(
+        name="oracle_agent",
+        title="Предиктивный аналитик",
+        department="Аналитика",
+        description="ML-прогнозы: классификация, регрессия, временные ряды, аномалии, выживаемость. Загрузить CSV/Excel — получить прогноз.",
+        keywords=[
+            "прогноз", "предсказ", "предикт", "ml", "машинн обучен",
+            "классификац", "регрессия", "аномал", "временн ряд",
+            "churn", "fraud", "oracle", "predict", "forecast",
+            "csv", "датасет", "модел обуч", "скоринг",
+        ],
+        handler="_route_oracle",
+        tier="pro",
+    ),
+]
+
+
+def get_agent_by_name(name: str) -> AgentInfo | None:
+    """Найти агента по имени."""
+    return next((a for a in AGENTS if a.name == name), None)
+
+
+def get_agents_for_level(level: AccessLevel) -> list[AgentInfo]:
+    """Получить агентов доступных для данного уровня."""
+    if level == AccessLevel.ENTERPRISE:
+        return AGENTS
+    if level == AccessLevel.PRO:
+        return [a for a in AGENTS if a.access_level in (AccessLevel.SIMPLE, AccessLevel.PRO)]
+    return [a for a in AGENTS if a.access_level == AccessLevel.SIMPLE]
