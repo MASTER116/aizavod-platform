@@ -614,58 +614,6 @@ async def cb_my_ideas(callback: CallbackQuery):
         await callback.message.answer(f"Ошибка: {e}", reply_markup=money_menu_kb())
 
 
-# ─── 8. Hackathon Pipeline ──────────────────────────────────────────────
-
-@router.callback_query(F.data == "hackathon_pipeline")
-async def cb_hackathon_pipeline(callback: CallbackQuery):
-    await callback.answer()
-    msg = await callback.message.answer("🏆 Запускаю конвейер хакатонов v2... Это займет 5-15 минут.")
-
-    async def notify(text: str):
-        try:
-            await callback.message.answer(text, parse_mode="Markdown")
-        except Exception:
-            try:
-                await callback.message.answer(text)
-            except Exception:
-                pass
-
-    from services.hackathon_pipeline import launch_hackathon_pipeline
-    result = await launch_hackathon_pipeline(
-        max_hackathons=10,
-        min_prize=1,
-        min_hours=12,
-        notify_callback=notify,
-    )
-
-    await _safe_send(callback.message, result)
-    await callback.message.answer(
-        "Что дальше?",
-        reply_markup=_hackathon_kb(),
-    )
-
-
-@router.callback_query(F.data == "hackathon_status")
-async def cb_hackathon_status(callback: CallbackQuery):
-    await callback.answer()
-    from services.hackathon_pipeline import get_pipeline_status
-    status = await get_pipeline_status()
-    await _safe_send(callback.message, status)
-    await callback.message.answer(
-        "Что дальше?",
-        reply_markup=_hackathon_kb(),
-    )
-
-
-def _hackathon_kb():
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 Статус конвейера", callback_data="hackathon_status")],
-        [InlineKeyboardButton(text="🔄 Запустить заново", callback_data="hackathon_pipeline")],
-        [InlineKeyboardButton(text="◀️ Инвестиции", callback_data="menu_money")],
-    ])
-
-
 # ─── Старые хендлеры (без изменений) ────────────────────────────────────
 
 @router.callback_query(F.data == "money_ideas")

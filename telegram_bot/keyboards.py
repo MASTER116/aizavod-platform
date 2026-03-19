@@ -15,7 +15,30 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="📱 Фабрика контента", callback_data="menu_content")],
         [InlineKeyboardButton(text="🧠 Задача / Запрос", callback_data="menu_task")],
         [InlineKeyboardButton(text="📊 Статус системы", callback_data="menu_status")],
+        [InlineKeyboardButton(text="🔧 Админ-панель", callback_data="menu_admin")],
     ])
+
+
+# ─── Админ-панель ──────────────────────────────────────────────────────
+
+def admin_menu_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💚 Здоровье агентов", callback_data="admin_health")],
+        [InlineKeyboardButton(text="💵 Расходы и токены", callback_data="admin_costs")],
+        [InlineKeyboardButton(text="🧪 A/B эксперименты", callback_data="admin_ab")],
+        [InlineKeyboardButton(text="📊 Metering (лимиты)", callback_data="admin_metering")],
+        [InlineKeyboardButton(text="🛡 Compliance аудит", callback_data="admin_compliance")],
+        [InlineKeyboardButton(text="☠️ Kill-Switch", callback_data="admin_killswitch")],
+        [InlineKeyboardButton(text="◀️ Главное меню", callback_data="main_menu")],
+    ])
+
+
+def killswitch_kb(agents: list[str]) -> InlineKeyboardMarkup:
+    buttons = []
+    for agent in agents[:10]:
+        buttons.append([InlineKeyboardButton(text=f"☠️ Kill {agent}", callback_data=f"kill_{agent}")])
+    buttons.append([InlineKeyboardButton(text="◀️ Админ-панель", callback_data="menu_admin")])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 # ─── Привлечь инвестиции ─────────────────────────────────────────────────
@@ -24,7 +47,6 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 def money_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔍 Сканировать гранты и конкурсы", callback_data="money_scan")],
-        [InlineKeyboardButton(text="🏆 Хакатоны — полный цикл", callback_data="hackathon_pipeline")],
         [InlineKeyboardButton(text="🔬 Глубокий анализ конкурса", callback_data="money_deep_analyze")],
         [InlineKeyboardButton(text="💡 Идеи для заработка", callback_data="money_ideas")],
         [InlineKeyboardButton(text="📝 Заявка на конкурс", callback_data="money_proposal")],
