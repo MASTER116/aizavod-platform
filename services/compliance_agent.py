@@ -150,6 +150,50 @@ class ComplianceAgent:
             ],
         }
 
+    # === AI Content Disclaimer & Marking (закон о маркировке AI-контента) ===
+
+    AI_DISCLAIMER_RU = "\n\n---\n_Сгенерировано AI-ассистентом Aialtyn. Проверьте информацию перед использованием._"
+    AI_DISCLAIMER_SHORT = " [AI]"
+
+    def add_disclaimer(self, text: str, short: bool = False) -> str:
+        """Добавить AI-disclaimer к ответу агента (закон о маркировке)."""
+        if short:
+            return text + self.AI_DISCLAIMER_SHORT
+        return text + self.AI_DISCLAIMER_RU
+
+    def requires_human_approval(self, action: str) -> bool:
+        """Проверить, требует ли действие одобрения человека (agentic liability protection).
+
+        Возвращает True для: подписание документов, отправка писем, финансовые операции,
+        удаление данных, публикация контента.
+        """
+        high_risk_actions = [
+            "sign_document", "send_email", "send_message",
+            "financial_transaction", "payment", "invoice",
+            "delete_data", "delete_account",
+            "publish_content", "post_social",
+            "create_contract", "submit_application",
+            "make_call", "outbound_call",
+        ]
+        return action.lower() in high_risk_actions
+
+    def approval_gate(self, action: str, agent: str, details: str, user_id: int | None = None) -> dict:
+        """Human approval gate для высокорисковых действий."""
+        needs_approval = self.requires_human_approval(action)
+        self.audit_log(
+            action=f"approval_gate:{action}",
+            agent=agent,
+            user_id=user_id,
+            details=f"needs_approval={needs_approval}, {details[:200]}",
+        )
+        return {
+            "action": action,
+            "needs_approval": needs_approval,
+            "message": f"Действие '{action}' требует вашего одобрения." if needs_approval else "Действие разрешено.",
+            "agent": agent,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
 
 # Singleton
 _compliance_agent: ComplianceAgent | None = None
