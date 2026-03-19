@@ -1,126 +1,200 @@
-# AI ZAVOD — Мультиагентная платформа автоматизации бизнеса
+# Zavod-ii — Мультиагентная SaaS-платформа автоматизации бизнеса
 
-Платформа с 9 AI-агентами для поиска заработка, продаж, контента и управления бизнесом.
-Управление через Telegram-бот с интеллектуальным маршрутизатором запросов (CONDUCTOR).
+> "Заводи бизнес с AI" — 21+ AI-агент, 291 отрасль, 9 директоров, мета-оркестратор CONDUCTOR v2
+
+Платформа с 21+ специализированными AI-агентами для автоматизации бизнес-процессов в РФ/СНГ.
+Управление через Telegram-бот, Web UI и REST API.
 
 ## Архитектура
 
 ```
-Основатель (Telegram) → CONDUCTOR → Классификация → Агент → Ответ
-                              ↓
-                    CEO-агент (оркестратор)
-                    ├── Финансовый директор
-                    │   ├── OpportunityScanner (гранты, конкурсы)
-                    │   ├── IdeaGenerator (идеи заработка)
-                    │   └── MarketAnalyzer (рынок, конкуренты)
-                    ├── Директор по продажам
-                    │   ├── FreelanceAgent (заказы, отклики)
-                    │   ├── PricingAgent (оценка, КП)
-                    │   └── OutreachAgent (холодные продажи)
-                    ├── Директор по контенту
-                    │   └── ContentFactory (Instagram, TikTok)
-                    └── Директор по продукту
-                        └── CertifierService (сертификация ТС ЕАЭС)
+[Telegram Bot (admin-панель) / Web UI / REST API]
+              |
+      [FastAPI Gateway + Rate Limiter]
+              |
+      [CONDUCTOR v2 — Pipeline 17 шагов с safeguards]
+     /    |     |     |    \
+  21+ специализированных агентов
+  + QA-AGENT (critic) + COMPLIANCE-AGENT (152-ФЗ)
+     \    |     |     |    /
+  [LLM Client: Claude API (prompt caching) <-> Ollama <-> Cache]
+  [Circuit Breaker: CLOSED -> OPEN (3 failures) -> HALF_OPEN]
+              |
+      [PostgreSQL 16 + Redis 7]
+              |
+      [Celery + APScheduler (автономность)]
+      [Observability + Session Trace + Cost Tracking]
 ```
 
-## Агенты
-
-| Агент | Отдел | Функции |
-|-------|-------|---------|
-| CEO-агент | CEO | Стратегия, декомпозиция задач, распределение по директорам |
-| OpportunityScanner | Финансы | Поиск грантов, хакатонов, конкурсов (ФАСИ, РНФ, Сколково) |
-| IdeaGenerator | Финансы | Генерация идей заработка, монетизация |
-| MarketAnalyzer | Финансы | Анализ рынка, конкурентов, подготовка заявок |
-| FreelanceAgent | Продажи | Поиск заказов на Kwork/Upwork, генерация откликов |
-| PricingAgent | Продажи | Оценка стоимости проектов, коммерческие предложения |
-| OutreachAgent | Продажи | Холодные продажи, генерация писем, поиск лидов |
-| ContentFactory | Контент | Генерация контента для Instagram/TikTok/VK |
-| CertifierService | Продукт | Консультации по сертификации ТС, ТР ТС ЕАЭС (RAG + Claude) |
-
-## CONDUCTOR — маршрутизатор запросов
-
-Принимает произвольный запрос на естественном языке и автоматически направляет нужному агенту:
-
-1. **Быстрая классификация** — по ключевым словам (< 1ms)
-2. **Claude-классификация** — для сложных случаев (Claude Haiku 4.5)
-3. **Multi-agent** — если запрос затрагивает несколько агентов
+### 3-уровневая иерархия CONDUCTOR
 
 ```
-POST /api/conductor/route
-{"query": "найди гранты для IT-стартапа"}
-→ opportunity_scanner (confidence: 0.85)
+CEO (мета-оркестратор)
+├── CTO — Backend, Frontend, DevOps, AI/ML, QA, Security
+├── CFO — Бухгалтерия, Аналитика, Фриланс, Гранты
+├── CMO — Контент, Outreach, DevRel, SEO
+├── COO — Процессы, Партнёры
+├── CPO — Сертификация, SaaS
+├── CDO — ML/Данные
+├── CHRO — HR
+└── CLO — Юридический
 ```
 
-В Telegram-боте: просто напиши текст — CONDUCTOR сам определит агента.
+## Агенты (21+)
+
+| Агент | Отдел | Уровень | Описание |
+|-------|-------|---------|----------|
+| CEO | Руководство | PRO | Стратегия, декомпозиция задач, 3-уровневая оркестрация |
+| Certifier | Продукт | Enterprise | Сертификация ТС ЕАЭС (RAG + Claude) |
+| Opportunity Scanner | Финансы | PRO | Гранты, хакатоны, конкурсы (ФАСИ, РНФ, Сколково) |
+| Idea Generator | Финансы | Free | Идеи заработка, монетизация |
+| Market Analyzer | Финансы | Starter | Анализ рынка, конкурентов, заявки |
+| Freelance Agent | Продажи | PRO | Заказы на Kwork/Upwork, отклики |
+| Pricing Agent | Продажи | Starter | Оценка проектов, КП |
+| Outreach Agent | Продажи | Starter | Холодные продажи, генерация писем |
+| Content Factory | Контент | Starter | Instagram, TikTok, VK |
+| Lawyer | Юридический | Free | Договоры, регистрация ИП/ООО, право |
+| Accountant | Бухгалтерия | Free | Налоги, отчётность, УСН/ОСН |
+| Darwin | Самообучение | PRO | Self-learning, оценка качества, weekly reports |
+| Guardian | Безопасность | PRO | Антифрод, антиабьюз, injection detection |
+| Guardian IP | Патенты | Pro | Товарные знаки, патенты, IP-аудит |
+| Scholar | Наука | Pro | Грантовые заявки, научные статьи, ГОСТ/ВАК |
+| Herald | Продвижение | Starter | Open-source, Хабр, Product Hunt |
+| Namer | Нейминг | Free | Названия, домены, товарные знаки |
+| Voice | Голос | Pro | Скрипты звонков, TTS-оптимизация |
+| Treasurer | Казначейство | PRO | Монетизация, расходы, cash flow |
+| Oracle | Аналитика | Pro | ML-прогнозы, классификация, аномалии |
+| **QA-AGENT** | Система | — | Critic pattern, PII detection, injection markers |
+| **COMPLIANCE** | Система | — | 152-ФЗ, PII masking, AI disclaimers, approval gates |
+
+## Safeguards — 12 решённых проблем индустрии
+
+| Проблема | Решение | Модуль |
+|----------|---------|--------|
+| Deadlock между агентами | DFS cycle detection | `safeguards.py` DeadlockDetector |
+| Latency cascade (15-30 сек) | 10s budget + parallel dispatch | `safeguards.py` LatencyBudget |
+| Role confusion | Per-agent boundary validation | `safeguards.py` RoleBoundaryValidator |
+| Agent identity lifecycle | 5 states: DRAFT→ACTIVE→DEGRADED→SUSPENDED→RETIRED | `safeguards.py` LifecycleManager |
+| Agent-to-agent attack | Inter-agent firewall + context isolation | `safeguards.py` InterAgentFirewall |
+| Agent sprawl | Auto-sunset 30/90 days, usage tracking | `safeguards.py` LifecycleManager |
+| Coordination tax (O(n²)) | Max 5 handoffs, 7 agents per workflow | `safeguards.py` CoordinationLimiter |
+| UX trust gap | Progress streaming, confidence display | `safeguards.py` UXTransparency |
+| Over-permissioning | Per-agent tool allowlist, DB access control | `safeguards.py` PermissionGuard |
+| Debugging cost (40% sprint) | Error taxonomy (10 types), blame assignment | `safeguards.py` ErrorTracker |
+| No session observability | Correlation ID, replay, blame | `session_trace.py` SessionTracer |
+| 25 industry problems total | Full documentation | `docs/PROBLEMS_SOLUTIONS.md` |
+
+## Военные стандарты (13 стандартов)
+
+Архитектура проверена по 8 российским + 5 западным военным стандартам:
+
+| Стандарт | Что применяем |
+|----------|--------------|
+| ГОСТ РВ 0015-002-2020 | СМК, управление конфигурацией, аудиты |
+| ГОСТ Р 51904-2002 | 5 уровней критичности агентов (C/D/E) |
+| ГОСТ 27.310-95 | FMEA/FMECA per agent (S×O×D=RPN) |
+| ГОСТ Р 56939-2024 | Безопасная разработка ПО |
+| ГОСТ 19.101-2024 | 6 из 14 типов ЕСПД документов |
+| MIL-STD-498 | RTM, Review Gates, 6 DID документов |
+| DO-178C | V&V gate, structural coverage, independence |
+| MIL-STD-882E | Hazard Analysis |
+
+Подробнее: `docs/DEVELOPMENT_AUDIT.md`
 
 ## Стек
 
 | Компонент | Технология |
 |-----------|-----------|
 | Backend | FastAPI + SQLAlchemy 2.x + Pydantic v2 |
-| LLM | Claude Haiku 4.5 (Anthropic API) |
-| Telegram-бот | aiogram 3 + FSM |
+| LLM (основной) | Claude Haiku 4.5 (prompt caching, extended thinking) |
+| LLM (fallback) | Ollama + Qwen3-30B (локальный, $0/мес) |
+| Telegram-бот | aiogram 3 + FSM + admin-панель |
 | БД | PostgreSQL 16 + Redis 7 |
+| Фоновые задачи | Celery + APScheduler |
 | Инфраструктура | Docker Compose (8 контейнеров) |
-| Сервер | Hetzner, Ubuntu 22.04 |
-| RAG (CERTIFIER) | BM25 + Claude API |
-| Веб-поиск | DuckDuckGo HTML |
+| Reverse proxy | Nginx + SSL |
+| Автоматизация | n8n |
+| Тесты | pytest (74 теста: unit, integration, adversarial, golden) |
 
 ## Структура проекта
 
 ```
-aizavod-platform/
+zavod-ii/
 ├── backend/
 │   ├── main.py              # FastAPI + lifespan
-│   ├── config.py            # Конфигурация из .env
-│   ├── database.py          # SQLAlchemy + PostgreSQL
-│   ├── models.py            # 28+ ORM-моделей
-│   ├── schemas.py           # Pydantic v2 схемы
-│   ├── admin_auth.py        # JWT + API Key авторизация
-│   └── routes/
-│       ├── conductor.py     # CONDUCTOR API
-│       ├── certifier.py     # CERTIFIER API
-│       ├── opportunities.py # Гранты/конкурсы API
-│       ├── agent.py         # Оркестратор контента
-│       └── ...              # 15+ модулей роутов
+│   ├── models.py            # SQLAlchemy (ConductorTask, SavedIdea, ...)
+│   ├── admin_auth.py        # JWT + API Key
+│   └── routes/              # 15+ API роутов
 ├── services/
-│   ├── conductor.py         # CONDUCTOR — маршрутизатор
-│   ├── ceo_agent.py         # CEO-агент (оркестратор)
-│   ├── certifier_service.py # CERTIFIER (RAG + Claude)
-│   ├── opportunity_scanner.py # Сканер грантов
-│   ├── market_analyzer.py   # Анализ рынка
-│   ├── freelance_agent.py   # Фриланс-агент
-│   ├── pricing_agent.py     # Ценообразование
-│   ├── outreach_agent.py    # Холодные продажи
-│   ├── agent_orchestrator.py # Оркестратор контента (IG)
-│   └── ...                  # 30+ сервисов
+│   ├── conductor/           # CONDUCTOR v2 (декомпозированный пакет)
+│   │   ├── core.py          # Pipeline 17 шагов
+│   │   ├── safeguards.py    # 10 классов, 12 проблем
+│   │   ├── session_trace.py # Correlation ID, replay, blame
+│   │   ├── registry.py      # 21 агент с access_level, tier
+│   │   ├── hierarchy.py     # 9 директоров, 18 отделов
+│   │   ├── llm_client.py    # CircuitBreaker + Ollama fallback
+│   │   ├── memory.py        # Letta 3-level (Core/Recall/Archival)
+│   │   ├── observability.py # Langfuse-compatible traces, cost
+│   │   └── schemas.py       # Pydantic: AgentMessage, QAVerdict
+│   ├── qa_agent.py          # Critic pattern, PII, injection
+│   ├── compliance_agent.py  # 152-ФЗ, PII masking, approval gates
+│   ├── health_monitor.py    # DEADMAN kill-switch, 6 statuses
+│   ├── billing/metering.py  # Tier limits (FREE:50 - ENT:50000/day)
+│   ├── testing/ab_engine.py # A/B testing (Welch's t-test)
+│   └── ...                  # 30+ агентов и сервисов
 ├── telegram_bot/
-│   ├── main.py              # Бот + Dispatcher
-│   ├── handlers/
-│   │   ├── start.py         # Главное меню (5 разделов)
-│   │   ├── conductor.py     # Свободный ввод → CONDUCTOR
-│   │   ├── ceo.py           # CEO-агент (задачи, стратегия)
-│   │   ├── opportunities.py # Инвестиции
-│   │   ├── money.py         # Продажи и фриланс
-│   │   ├── system_status.py # Мониторинг системы
-│   │   └── ...
-│   ├── keyboards.py         # 6 inline-клавиатур
-│   └── middlewares.py       # Admin-only фильтр
-├── data/certifier/          # База знаний ТР ТС ЕАЭС (7 документов)
+│   ├── main.py              # aiogram 3
+│   ├── handlers/            # start, conductor, opportunities, admin_panel
+│   └── keyboards.py         # Inline-клавиатуры
+├── tests/                   # 74 теста (unit, integration, adversarial, golden)
+├── docs/
+│   ├── PROBLEMS_SOLUTIONS.md    # 25 проблем + решения
+│   ├── DEVELOPMENT_AUDIT.md     # 55-point аудит + 13 военных стандартов
+│   └── conductor/               # CONDUCTOR hierarchy, rules, plan
+├── prompts/                 # YAML промпты (5-block, directors, departments)
 ├── docker-compose.yml       # 8 контейнеров
-└── .env                     # Конфигурация
+└── .github/workflows/       # CI/CD deploy
 ```
 
-## Telegram-бот
+## Уровни доступа
 
-Меню бота:
-- **Привлечь инвестиции** — гранты, идеи, анализ рынка, заявки
-- **Продажи и фриланс** — заказы, отклики, КП, холодные продажи
-- **Фабрика контента** — Instagram Factory
-- **Задача / Запрос** — CEO-агент (вопрос, задача, стратегия)
-- **Статус системы** — сервер, Docker, БД, агенты
+| Уровень | Для кого | Агенты | Тариф |
+|---------|----------|--------|-------|
+| SIMPLE | Публичный | Базовые (lawyer, accountant, namer, idea) | FREE / STARTER 4990р / PRO 14990р |
+| PRO | Основатель | Все 21+ агент, CONDUCTOR, DARWIN, GUARDIAN | — |
+| ENTERPRISE | 2027+ | White-label, кастом-агенты, SLA, MCP | 49990р+ |
 
-Или просто напиши текст — CONDUCTOR автоматически направит нужному агенту.
+## CONDUCTOR — мета-оркестратор
+
+Два режима:
+1. **Роутер** — вопрос → keyword/Claude классификация → агент → ответ
+2. **Оркестратор** — задача → CEO-декомпозиция → директора → отделы → специалисты → сборка
+
+Pipeline v2 (17 шагов):
+```
+Session trace → Observability → Safeguards (latency, UX)
+→ Metering → Health check → Safeguards (pre-route)
+→ Classify → Route → Execute
+→ Safeguards (role validation, lifecycle)
+→ Session trace (span) → QA-AGENT → Compliance
+→ Observability (end) → Session trace (end)
+→ Metering (record) → DARWIN (background eval)
+→ UX (complete)
+```
+
+## API
+
+| Эндпоинт | Метод | Описание |
+|-----------|-------|----------|
+| `/health` | GET | Статус сервера |
+| `/api/conductor/route` | POST | Маршрутизация запроса |
+| `/api/conductor/orchestrate` | POST | 3-уровневая декомпозиция |
+| `/api/conductor/agents` | GET | Список агентов |
+| `/api/conductor/dashboard` | GET | Статистика CONDUCTOR |
+| `/api/conductor/tree/{id}` | GET | Дерево задач |
+| `/api/certifier/ask` | POST | Сертификация ТС ЕАЭС |
+| `/api/opportunities/scan` | POST | Сканирование грантов |
+| `/docs` | GET | Swagger UI |
 
 ## Запуск
 
@@ -130,7 +204,7 @@ aizavod-platform/
 git clone https://github.com/MASTER116/aizavod-platform.git
 cd aizavod-platform
 cp .env.example .env
-# Заполнить .env (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, POSTGRES_PASSWORD)
+# Заполнить: ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, POSTGRES_PASSWORD
 docker compose up -d
 ```
 
@@ -143,36 +217,50 @@ cp .env.example .env
 python run.py
 ```
 
-## API
+### Тесты
 
-| Эндпоинт | Метод | Описание |
-|-----------|-------|----------|
-| `/health` | GET | Статус сервера |
-| `/api/conductor/route` | POST | Маршрутизация запроса к агенту |
-| `/api/conductor/agents` | GET | Список доступных агентов |
-| `/api/certifier/ask` | POST | Вопрос по сертификации |
-| `/api/opportunities/scan` | POST | Сканирование грантов |
-| `/docs` | GET | Swagger UI |
+```bash
+pytest tests/ -v  # 74 теста, ~0.86s
+```
 
-## Переменные окружения
+## Telegram Admin-панель
 
-| Переменная | Описание |
-|------------|----------|
-| `ANTHROPIC_API_KEY` | Ключ Anthropic API (обязательно) |
-| `TELEGRAM_BOT_TOKEN` | Токен Telegram-бота |
-| `TELEGRAM_ADMIN_IDS` | ID админов через запятую |
-| `POSTGRES_PASSWORD` | Пароль PostgreSQL |
-| `BACKEND_API_KEY` | Ключ для API бэкенда |
-| `CONDUCTOR_MODEL` | Модель для CONDUCTOR (по умолчанию claude-haiku-4-5-20251001) |
-| `CEO_MODEL` | Модель для CEO-агента |
+6 секций управления прямо из Telegram:
+- Здоровье агентов (статусы, error rate, latency)
+- Расходы и токены (daily spend, per-agent cost/quality)
+- A/B эксперименты (winner, p-value, recommendation)
+- Metering лимиты (per-user usage, tier)
+- Compliance аудит (152-ФЗ, data residency, audit log)
+- Kill-Switch DEADMAN (kill/revive per agent)
 
 ## Roadmap
 
-- [x] Инфраструктура: Docker Compose, PostgreSQL, Redis
-- [x] CERTIFIER MVP (RAG + Claude API)
-- [x] 9 AI-агентов (CEO, финансы, продажи, контент, продукт)
-- [x] CONDUCTOR — интеллектуальный маршрутизатор
-- [x] Telegram-бот с 5 разделами управления
+- [x] 21+ AI-агентов с 3-уровневой иерархией CONDUCTOR
+- [x] Safeguards: 12 проблем AI-агентных систем решены
+- [x] 74 теста (unit, integration, adversarial, golden)
+- [x] Observability + Session Trace + Cost Tracking
+- [x] DARWIN self-learning + QA-AGENT + COMPLIANCE
+- [x] Telegram admin-панель (6 секций)
+- [x] A/B testing engine
+- [x] AI SEO (llms.txt, robots.txt, JSON-LD)
+- [x] Аудит по 13 военным стандартам (8 ГОСТ РВ + 5 MIL-STD)
+- [ ] Миграция ПД на RU-сервер (Selectel) — 152-ФЗ
+- [ ] Лендинг zavod-ii.ru
 - [ ] Первый платящий клиент
 - [ ] Регистрация ООО (август 2026)
-- [ ] Масштабирование: 37 категорий, 262 отрасли, 148 агентов
+- [ ] 291 отрасль, 148 агентов
+
+## Документация
+
+| Документ | Описание |
+|----------|----------|
+| `CLAUDE.md` | Полное описание проекта для AI-ассистентов |
+| `docs/PROBLEMS_SOLUTIONS.md` | 25 проблем индустрии + решения |
+| `docs/DEVELOPMENT_AUDIT.md` | Аудит 55 пунктов + 13 военных стандартов |
+| `docs/conductor/CONDUCTOR_HIERARCHY.md` | 9 директоров, 18 отделов, 3 уровня |
+| `docs/conductor/CONDUCTOR_RULES.md` | Правила декомпозиции задач |
+| `docs/conductor/IMPLEMENTATION_PLAN.md` | 7-шаговый план реализации |
+
+## Лицензия
+
+MIT
