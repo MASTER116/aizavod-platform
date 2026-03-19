@@ -98,7 +98,7 @@ services:
     env_file: .env
     environment:
       BACKEND_BASE_URL: http://backend:8000
-      DATABASE_URL: postgresql://aizavod:aizavod_secret@postgres:5432/aizavod
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
       REDIS_URL: redis://redis:6379/0
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITHUB_USERNAME: ${GITHUB_USERNAME:-azatmaster}
@@ -131,7 +131,7 @@ services:
       N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD:-admin}
       BACKEND_BASE_URL: http://backend:8000
-      DATABASE_URL: postgresql://aizavod:aizavod_secret@postgres:5432/aizavod
+      DATABASE_URL: postgresql://aizavod:${POSTGRES_PASSWORD:-aizavod_secret}@postgres:5432/aizavod
       REDIS_URL: redis://redis:6379/0
       BACKEND_API_KEY: ${BACKEND_API_KEY:-}
     volumes:

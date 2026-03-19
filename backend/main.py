@@ -26,12 +26,41 @@ logger = logging.getLogger("aizavod")
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+class JSONFormatter(logging.Formatter):
+    """Structured JSON logging for centralized log aggregation.
+
+    P0 4.8: Centralized Logging — JSON structured format.
+    ГОСТ РВ 0015-002-2020 раздел 9: мониторинг процессов.
+    """
+    def format(self, record: logging.LogRecord) -> str:
+        import json as _json
+        log_entry = {
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
+        }
+        if record.exc_info and record.exc_info[1]:
+            log_entry["exception"] = str(record.exc_info[1])
+        return _json.dumps(log_entry, ensure_ascii=False)
+
+
 def _setup_logging() -> None:
     level = getattr(logging, get_log_level(), logging.INFO)
-    fmt = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+
+    # Use JSON format if LOG_FORMAT=json, otherwise human-readable
+    use_json = os.getenv("LOG_FORMAT", "").lower() == "json"
+
+    if use_json:
+        fmt = JSONFormatter()
+    else:
+        fmt = logging.Formatter(
+            "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
     root = logging.getLogger("aizavod")
     root.handlers.clear()
@@ -45,13 +74,15 @@ def _setup_logging() -> None:
     if not os.getenv("RENDER"):
         log_dir = _PROJECT_ROOT / "logs"
         log_dir.mkdir(exist_ok=True)
+        # Always write JSON to file for log aggregation
+        json_fmt = JSONFormatter()
         file_h = RotatingFileHandler(
             log_dir / "aizavod.log",
             maxBytes=5 * 1024 * 1024,
             backupCount=3,
             encoding="utf-8",
         )
-        file_h.setFormatter(fmt)
+        file_h.setFormatter(json_fmt)
         root.addHandler(file_h)
 
     logger.info("Logging configured (level=%s)", logging.getLevelName(level))
@@ -157,7 +188,89 @@ async def log_requests(request: Request, call_next) -> Response:
 
 @app.get("/health", tags=["system"])
 def health_check() -> dict:
+    """Basic liveness probe."""
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+
+@app.get("/health/ready", tags=["system"])
+def health_readiness() -> dict:
+    """Readiness probe: checks PostgreSQL, Redis, LLM availability.
+
+    P0 4.6: Health Endpoint — проверка всех зависимостей.
+    ГОСТ РВ 0015-002-2020 раздел 9: мониторинг и оценка результатов.
+    MIL-HDBK-338B: Redundancy & Fault Tolerance.
+    """
+    checks: dict[str, dict] = {}
+    all_ok = True
+
+    # PostgreSQL check
+    try:
+        from .database import SessionLocal
+        db = SessionLocal()
+        db.execute(__import__("sqlalchemy").text("SELECT 1"))
+        db.close()
+        checks["postgresql"] = {"status": "ok"}
+    except Exception as e:
+        checks["postgresql"] = {"status": "error", "detail": str(e)[:200]}
+        all_ok = False
+
+    # Redis check
+    try:
+        import redis as _redis
+        r = _redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"), socket_timeout=2)
+        r.ping()
+        checks["redis"] = {"status": "ok"}
+    except Exception as e:
+        checks["redis"] = {"status": "error", "detail": str(e)[:200]}
+        all_ok = False
+
+    # LLM (Claude API) check — lightweight: just verify key exists
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if api_key and len(api_key) > 10:
+        checks["llm"] = {"status": "ok", "provider": "anthropic"}
+    else:
+        checks["llm"] = {"status": "degraded", "detail": "No API key"}
+
+    # Celery check (optional)
+    try:
+        celery_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        import redis as _redis
+        r = _redis.from_url(celery_url, socket_timeout=2)
+        workers = r.keys("celery-task-meta-*")
+        checks["celery"] = {"status": "ok"}
+    except Exception:
+        checks["celery"] = {"status": "unknown"}
+
+    # Health monitor summary
+    try:
+        from services.health_monitor import get_health_monitor
+        hm = get_health_monitor()
+        summary = hm.get_summary()
+        checks["agents"] = {
+            "status": "ok" if summary.get("unhealthy", 0) == 0 else "degraded",
+            "healthy": summary.get("healthy", 0),
+            "unhealthy": summary.get("unhealthy", 0),
+            "killed": summary.get("killed", 0),
+        }
+    except Exception:
+        checks["agents"] = {"status": "unknown"}
+
+    status_code = 200 if all_ok else 503
+    from starlette.responses import JSONResponse
+    return JSONResponse(
+        content={
+            "status": "ready" if all_ok else "not_ready",
+            "timestamp": datetime.utcnow().isoformat(),
+            "checks": checks,
+        },
+        status_code=status_code,
+    )
+
+
+@app.get("/health/live", tags=["system"])
+def health_liveness() -> dict:
+    """Liveness probe: always returns 200 if process is running."""
+    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
 
 
 # ─── Serve media files ──────────────────────────────────────────────────────

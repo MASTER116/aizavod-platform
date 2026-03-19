@@ -760,12 +760,17 @@ class TrendSnapshot(Base):
 
 
 class ConductorTask(Base):
+    """P0 5.1: Multi-tenancy — tenant_id для изоляции данных пользователей.
+    ГОСТ РВ 0015-002-2020 раздел 8: управление на стадиях ЖЦ.
+    """
     __tablename__ = "conductor_tasks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     parent_id: Mapped[int | None] = mapped_column(
         ForeignKey("conductor_tasks.id"), nullable=True, index=True
     )
+    # Multi-tenancy: isolate data per tenant/user
+    tenant_id: Mapped[str] = mapped_column(String(100), default="default", index=True)
 
     title: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(Text, default="")
@@ -812,15 +817,24 @@ class ConductorTask(Base):
 
 
 class ConductorLog(Base):
+    """Extended audit trail per ГОСТ РВ 0015-002-2020 + Method 10 (Formal Audit Trail)."""
     __tablename__ = "conductor_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     task_id: Mapped[int] = mapped_column(
         ForeignKey("conductor_tasks.id"), index=True
     )
+    tenant_id: Mapped[str] = mapped_column(String(100), default="default", index=True)
     action: Mapped[str] = mapped_column(String(100))
     message: Mapped[str] = mapped_column(Text, default="")
     metadata_json: Mapped[str] = mapped_column(Text, default="{}")
+    # Audit trail fields (ГОСТ РВ 0015-002-2020 раздел 9)
+    agent_name: Mapped[str] = mapped_column(String(100), default="", index=True)
+    correlation_id: Mapped[str] = mapped_column(String(100), default="")
+    input_hash: Mapped[str] = mapped_column(String(64), default="")
+    output_hash: Mapped[str] = mapped_column(String(64), default="")
+    qa_verdict: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    decision_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     task: Mapped["ConductorTask"] = relationship(
