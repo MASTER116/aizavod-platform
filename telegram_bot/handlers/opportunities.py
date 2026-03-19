@@ -419,7 +419,7 @@ async def cb_grant_docs(callback: CallbackQuery, state: FSMContext):
     from services.opportunity_scanner import get_scanner
     scanner = get_scanner()
     docs = await scanner.generate_submission_docs(
-        idea_title or "Проект AI Zavod",
+        idea_title or "Проект Zavod-ii",
         description,
         grant_title,
         budget_json,

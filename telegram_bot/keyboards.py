@@ -1,4 +1,4 @@
-"""Inline-клавиатуры для Telegram-бота AI Zavod."""
+"""Inline-клавиатуры для Telegram-бота Zavod-ii."""
 from __future__ import annotations
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton

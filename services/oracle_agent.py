@@ -1,4 +1,4 @@
-"""ORACLE Agent — предиктивный AI-агент для AI Zavod.
+"""ORACLE Agent — предиктивный AI-агент для Zavod-ii.
 
 Обёртка OraclePredictor под паттерн BaseAgent.
 Для файловых запросов: загрузи CSV/Excel через /api/oracle/predict.
@@ -12,7 +12,7 @@ from services.base_agent import BaseAgent
 
 logger = logging.getLogger("aizavod.oracle_agent")
 
-ORACLE_SYSTEM_PROMPT = """Ты — ORACLE, предиктивный AI-агент платформы AI Zavod.
+ORACLE_SYSTEM_PROMPT = """Ты — ORACLE, предиктивный AI-агент платформы Zavod-ii.
 
 Ты умеешь:
 1. Классификация (отток клиентов, скоринг лидов, фрод) → GradientBoosting, LogisticRegression

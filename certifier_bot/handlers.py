@@ -37,7 +37,7 @@ HELP = (
     "<b>Команды:</b>\n"
     "/start — начало\n"
     "/help — эта справка\n\n"
-    "Разработано: AI Zavod (aizavod.ru)"
+    "Разработано: Zavod-ii (aizavod.ru)"
 )
 
 LIMIT_REACHED = (

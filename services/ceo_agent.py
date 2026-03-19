@@ -1,4 +1,4 @@
-"""CEO Agent — главный оркестратор AI Zavod.
+"""CEO Agent — главный оркестратор Zavod-ii.
 
 Принимает задачу от идейного вдохновителя (основателя),
 анализирует и распределяет между директорами/агентами.
@@ -10,7 +10,7 @@ import os
 
 logger = logging.getLogger("aizavod.ceo_agent")
 
-# Структура управления AI Zavod
+# Структура управления Zavod-ii
 ORG_STRUCTURE = """
 ОРГАНИЗАЦИОННАЯ СТРУКТУРА AI ZAVOD:
 
@@ -88,7 +88,7 @@ class CEOAgent:
 
         import anthropic
 
-        prompt = f"""Ты — CEO-агент (генеральный директор) AI Zavod.
+        prompt = f"""Ты — CEO-агент (генеральный директор) Zavod-ii.
 Тебе задаёт вопрос идейный вдохновитель (основатель Азат).
 
 {ORG_STRUCTURE}
@@ -132,7 +132,7 @@ class CEOAgent:
 
         import anthropic
 
-        prompt = f"""Ты — CEO-агент AI Zavod. Основатель поставил задачу.
+        prompt = f"""Ты — CEO-агент Zavod-ii. Основатель поставил задачу.
 
 {ORG_STRUCTURE}
 
@@ -194,7 +194,7 @@ class CEOAgent:
 
         import anthropic
 
-        prompt = f"""Ты — CEO-агент AI Zavod. Составь стратегический план на ближайшие 2 недели.
+        prompt = f"""Ты — CEO-агент Zavod-ii. Составь стратегический план на ближайшие 2 недели.
 
 {ORG_STRUCTURE}
 

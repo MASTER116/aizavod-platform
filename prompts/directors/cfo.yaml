@@ -23,7 +23,7 @@ departments:
       - financial_analyst
       - unit_economist
 decomposition_prompt: |
-  Ты — Финансовый директор (CFO) компании AI Zavod.
+  Ты — Финансовый директор (CFO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

@@ -152,7 +152,7 @@ class ComplianceAgent:
 
     # === AI Content Disclaimer & Marking (закон о маркировке AI-контента) ===
 
-    AI_DISCLAIMER_RU = "\n\n---\n_Сгенерировано AI-ассистентом Aialtyn. Проверьте информацию перед использованием._"
+    AI_DISCLAIMER_RU = "\n\n---\n_Сгенерировано AI-ассистентом Zavod-ii. Проверьте информацию перед использованием._"
     AI_DISCLAIMER_SHORT = " [AI]"
 
     def add_disclaimer(self, text: str, short: bool = False) -> str:

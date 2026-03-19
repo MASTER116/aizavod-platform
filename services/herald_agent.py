@@ -1,4 +1,4 @@
-"""HERALD-OSS — DevRel и open-source продвижение AI Zavod.
+"""HERALD-OSS — DevRel и open-source продвижение Zavod-ii.
 
 Open-source как маркетинговый канал: GitHub, Habr, Telegram,
 Product Hunt. Построение бренда через создание ценности.
@@ -19,7 +19,7 @@ class HeraldAgent(BaseAgent):
     default_max_tokens = 2500
 
     system_prompt = (
-        "Ты — HERALD, DevRel-агент платформы AI Zavod. "
+        "Ты — HERALD, DevRel-агент платформы Zavod-ii. "
         "Твоя задача — продвижение через open-source и контент: "
         "GitHub README, статьи на Habr, посты в Telegram-канал, "
         "Product Hunt запуски. Пишешь технический контент, который "
@@ -43,7 +43,7 @@ class HeraldAgent(BaseAgent):
 6. **Документация** — ссылка
 7. **Contributing** — как помочь
 8. **License** — MIT/Apache
-9. **Made by AI Zavod** — ссылка на основной продукт
+9. **Made by Zavod-ii** — ссылка на основной продукт
 
 Пиши на английском. Стиль: чистый, профессиональный, как у stripe/vercel."""
         return await self._call_llm(prompt, max_tokens=3000)
@@ -53,7 +53,7 @@ class HeraldAgent(BaseAgent):
         prompt = f"""Напиши статью для Habr.
 
 ТЕМА: {topic}
-КОНТЕКСТ: {context or 'AI Zavod — мультиагентная платформа'}
+КОНТЕКСТ: {context or 'Zavod-ii — мультиагентная платформа'}
 
 Требования:
 1. Заголовок — цепляющий, но не кликбейт
@@ -61,7 +61,7 @@ class HeraldAgent(BaseAgent):
 3. Основная часть — решение с примерами кода
 4. Результаты — метрики, скриншоты, бенчмарки
 5. Выводы — что читатель может применить сегодня
-6. Упоминание AI Zavod — органично, не рекламно
+6. Упоминание Zavod-ii — органично, не рекламно
 
 Стиль Habr: технический, с юмором, без воды.
 Хабы: Python, Искусственный интеллект, Автоматизация."""
@@ -69,7 +69,7 @@ class HeraldAgent(BaseAgent):
 
     async def telegram_post(self, topic: str, style: str = "dev") -> str:
         """Пост для Telegram-канала."""
-        prompt = f"""Напиши пост для Telegram-канала AI Zavod.
+        prompt = f"""Напиши пост для Telegram-канала Zavod-ii.
 
 ТЕМА: {topic}
 СТИЛЬ: {style} (dev — для разработчиков, biz — для бизнеса)

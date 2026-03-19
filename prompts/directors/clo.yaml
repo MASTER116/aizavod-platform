@@ -18,7 +18,7 @@ departments:
       - registration_specialist
       - license_manager
 decomposition_prompt: |
-  Ты — Юридический директор (CLO) компании AI Zavod.
+  Ты — Юридический директор (CLO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

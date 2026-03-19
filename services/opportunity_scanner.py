@@ -139,7 +139,7 @@ class Opportunity:
 
 
 class OpportunityScanner:
-    """Глубокий поиск и анализ возможностей для AI Zavod."""
+    """Глубокий поиск и анализ возможностей для Zavod-ii."""
 
     def __init__(self) -> None:
         self._anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
@@ -532,7 +532,7 @@ class OpportunityScanner:
 
     async def generate_ideas(self, context: str = "") -> str:
         """Генерация идей заработка (общая, без привязки к конкурсу)."""
-        prompt = f"""Ты — стратегический советник IT-стартапа AI Zavod.
+        prompt = f"""Ты — стратегический советник IT-стартапа Zavod-ii.
 
 {PARTICIPANT_CONTEXT}
 
@@ -556,7 +556,7 @@ class OpportunityScanner:
 
     async def scan_sources_summary(self) -> str:
         """Форматированная сводка всех известных источников."""
-        lines = ["<b>Источники возможностей для AI Zavod:</b>\n"]
+        lines = ["<b>Источники возможностей для Zavod-ii:</b>\n"]
         by_type: dict[str, list[dict]] = {}
         for s in SOURCES:
             by_type.setdefault(s["type"], []).append(s)
@@ -582,7 +582,7 @@ class OpportunityScanner:
 
     async def analyze_opportunity(self, opp: Opportunity) -> str:
         """Быстрый анализ найденной возможности."""
-        prompt = f"""Проанализируй эту возможность для AI Zavod:
+        prompt = f"""Проанализируй эту возможность для Zavod-ii:
 
 ВОЗМОЖНОСТЬ:
 - Название: {opp.title}

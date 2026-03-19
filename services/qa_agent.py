@@ -16,7 +16,7 @@ import re
 
 logger = logging.getLogger("aizavod.qa_agent")
 
-QA_SYSTEM_PROMPT = """Ты — QA-AGENT платформы Aialtyn. Твоя роль — независимая проверка
+QA_SYSTEM_PROMPT = """Ты — QA-AGENT платформы Zavod-ii. Твоя роль — независимая проверка
 выходов других агентов перед отправкой клиенту.
 
 ## Правила

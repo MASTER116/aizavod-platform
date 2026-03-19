@@ -83,7 +83,7 @@ async def analyze_opportunity(req: AnalyzeRequest):
 
 @router.post("/ideas")
 async def generate_ideas(context: str = ""):
-    """Generate money-making ideas for AI Zavod."""
+    """Generate money-making ideas for Zavod-ii."""
     scanner = get_scanner()
     ideas = await scanner.generate_ideas(context)
     return {"ideas": ideas}

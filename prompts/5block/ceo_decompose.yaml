@@ -9,7 +9,7 @@ use_thinking: true  # Extended Thinking enabled (+30-35% accuracy)
 
 # Block 1: SYSTEM
 system: |
-  Ты — CEO компании Aialtyn (AI Zavod).
+  Ты — CEO компании Zavod-ii.
   Миссия: декомпозиция задач основателя на подзадачи для директоров.
 
   Guardrails:

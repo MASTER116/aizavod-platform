@@ -18,7 +18,7 @@ departments:
       - support_agent
       - onboarding_specialist
 decomposition_prompt: |
-  Ты — Операционный директор (COO) компании AI Zavod.
+  Ты — Операционный директор (COO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

@@ -28,7 +28,7 @@ logger = logging.getLogger("aizavod.conductor")
 
 
 class Conductor:
-    """Главный маршрутизатор запросов AI Zavod."""
+    """Главный маршрутизатор запросов Zavod-ii."""
 
     def __init__(self) -> None:
         self._llm = get_llm_client()
@@ -263,18 +263,64 @@ class Conductor:
         full_tree["duration_ms"] = (time.monotonic() - start) * 1000
         return full_tree
 
-    async def process(self, query: str) -> ConductorResult:
-        """Главный метод: классифицировать -> маршрутизировать -> вернуть результат."""
+    async def process(self, query: str, user_id: int | None = None, user_tier: str = "free") -> ConductorResult:
+        """Главный метод: classify -> meter -> route -> QA -> comply -> trace -> return.
+
+        Полный pipeline:
+        1. Observability: start trace
+        2. Metering: check daily limits
+        3. Health: check agent availability
+        4. Classify: determine agent
+        5. Route: call agent handler
+        6. QA: validate response (critic pattern)
+        7. Compliance: add AI disclaimer
+        8. Observability: end trace with cost
+        """
         start = time.monotonic()
 
-        # 1. Классификация
+        # === 0. Observability: start trace ===
+        trace_id = None
+        try:
+            from services.conductor.observability import get_tracker
+            tracker = get_tracker()
+            trace_id = tracker.start_trace(query, user_id=user_id)
+        except Exception:
+            pass
+
+        # === 1. Metering: check limits ===
+        if user_id:
+            try:
+                from services.billing.metering import get_usage_meter
+                meter = get_usage_meter()
+                can_call, limit_msg = meter.can_call(user_id, user_tier)
+                if not can_call:
+                    return ConductorResult(
+                        query=query, route=RouteDecision(agent="system", confidence=1.0,
+                            reasoning="limit_exceeded", reformulated_query=query),
+                        response=limit_msg, agent_name="system",
+                        department="billing", duration_ms=0,
+                    )
+            except Exception:
+                pass
+
+        # === 2. Классификация ===
         route = await self._classify(query)
         logger.info(
             "CONDUCTOR: '%s' -> %s (confidence=%.2f)",
             query[:80], route.agent, route.confidence,
         )
 
-        # 2. Маршрутизация
+        # === 3. Health: check agent availability ===
+        try:
+            from services.health_monitor import get_health_monitor
+            hm = get_health_monitor()
+            if not hm.can_execute(route.agent):
+                route.agent = "ceo_agent"
+                route.reasoning = f"Agent {route.agent} unavailable, fallback to CEO"
+        except Exception:
+            pass
+
+        # === 4. Маршрутизация ===
         agent_info = next((a for a in AGENTS if a.name == route.agent), None)
         if not agent_info:
             agent_info = AGENTS[0]
@@ -284,13 +330,47 @@ class Conductor:
         if handler_fn is None:
             response = f"Агент {route.agent} не реализован"
         else:
+            agent_start = time.monotonic()
             try:
                 response = await handler_fn(route.reformulated_query)
+                # Record success in health monitor
+                try:
+                    from services.health_monitor import get_health_monitor
+                    hm = get_health_monitor()
+                    hm.record_call(route.agent, (time.monotonic() - agent_start) * 1000, True)
+                except Exception:
+                    pass
             except Exception as e:
                 logger.error("Ошибка агента %s: %s", route.agent, e)
                 response = f"Ошибка при обработке: {e}"
+                try:
+                    from services.health_monitor import get_health_monitor
+                    hm = get_health_monitor()
+                    hm.record_call(route.agent, (time.monotonic() - agent_start) * 1000, False, str(e))
+                except Exception:
+                    pass
 
-        # 3. Вторичные агенты
+        # === 5. QA-AGENT: validate response (critic pattern) ===
+        qa_score = None
+        try:
+            from services.qa_agent import get_qa_agent
+            qa = get_qa_agent()
+            qa_result = qa.quick_check(response)
+            qa_score = qa_result.get("safety_score", 10)
+            if not qa_result["pass"]:
+                logger.warning("QA failed for %s: %s", route.agent, qa_result["issues"])
+        except Exception:
+            pass
+
+        # === 6. Compliance: add AI disclaimer ===
+        try:
+            from services.compliance_agent import get_compliance_agent
+            compliance = get_compliance_agent()
+            response = compliance.add_disclaimer(response, short=True)
+        except Exception:
+            pass
+
+        # === 7. Вторичные агенты ===
         secondary_responses: dict[str, str] = {}
         if route.multi_agent and route.secondary_agents:
             for sec_name in route.secondary_agents[:2]:
@@ -306,7 +386,32 @@ class Conductor:
 
         duration = (time.monotonic() - start) * 1000
 
-        # 4. DARWIN: фоновая оценка
+        # === 8. Observability: end trace ===
+        if trace_id:
+            try:
+                from services.conductor.observability import get_tracker
+                tracker = get_tracker()
+                tracker.add_span(
+                    trace_id, agent_info.name, "process",
+                    input_text=query[:200], output_text=response[:200],
+                    model=self._llm._default_model,
+                    latency_ms=duration,
+                    quality_score=qa_score,
+                )
+                tracker.end_trace(trace_id, response[:200], agent_info.name)
+            except Exception:
+                pass
+
+        # === 9. Metering: record usage ===
+        if user_id:
+            try:
+                from services.billing.metering import get_usage_meter
+                meter = get_usage_meter()
+                meter.record(user_id, tokens=0, cost_usd=0.0, tier=user_tier)
+            except Exception:
+                pass
+
+        # === 10. DARWIN: фоновая оценка ===
         try:
             import asyncio
             asyncio.create_task(
@@ -323,6 +428,7 @@ class Conductor:
             department=agent_info.department,
             duration_ms=duration,
             secondary_responses=secondary_responses,
+            qa_score=qa_score,
         )
 
     async def _darwin_background_eval(self, query: str, agent_name: str, response: str):

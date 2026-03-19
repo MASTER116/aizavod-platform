@@ -1,4 +1,4 @@
-"""CONDUCTOR — мета-оркестратор AI Zavod.
+"""CONDUCTOR — мета-оркестратор Zavod-ii.
 
 DEPRECATED: Этот файл оставлен для обратной совместимости.
 Вся логика перенесена в пакет services/conductor/.

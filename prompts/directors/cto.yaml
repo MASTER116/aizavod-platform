@@ -37,7 +37,7 @@ departments:
       - qa_engineer
       - automation_tester
 decomposition_prompt: |
-  Ты — Технический директор (CTO) компании AI Zavod.
+  Ты — Технический директор (CTO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

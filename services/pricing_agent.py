@@ -81,7 +81,7 @@ class PricingAgent:
 ПРОЕКТ: {project_desc}
 {f'БЮДЖЕТ КЛИЕНТА: {price}' if price else ''}
 
-ОТ КОГО: AI Zavod — разработка AI-решений и автоматизации
+ОТ КОГО: Zavod-ii — разработка AI-решений и автоматизации
 ОСНОВАТЕЛЬ: Азат (Python-разработчик, опыт: Telegram-боты, AI-интеграция, FastAPI)
 
 Структура КП:
@@ -89,7 +89,7 @@ class PricingAgent:
 ## Коммерческое предложение
 
 **Для:** {client_name}
-**От:** AI Zavod
+**От:** Zavod-ii
 **Дата:** [текущая дата]
 
 ### Задача

@@ -1,5 +1,5 @@
 department_code: "cpo.saas"
-title: "AI Zavod SaaS платформа"
+title: "Zavod-ii SaaS платформа"
 director: cpo
 specialists:
   - code: "product_manager"
@@ -15,7 +15,7 @@ specialists:
       - "user stories"
       - "acceptance criteria"
 decomposition_prompt: |
-  Ты — начальник отдела «AI Zavod SaaS платформа» в компании AI Zavod.
+  Ты — начальник отдела «Zavod-ii SaaS платформа» в компании Zavod-ii.
   Директор поставил задачу для твоего отдела. Разбей её на конкретные задачи для специалистов.
 
   ТВОИ СПЕЦИАЛИСТЫ:

@@ -78,7 +78,8 @@ async def _handle_route(message: Message, query: str, conductor):
     """Режим роутера — направить к одному агенту."""
     await message.answer("🔄 CONDUCTOR анализирует запрос...")
 
-    result = await conductor.process(query)
+    user_id = message.from_user.id if message.from_user else None
+    result = await conductor.process(query, user_id=user_id, user_tier="pro")
 
     dept_emoji = DEPT_EMOJI.get(result.department, "🤖")
 

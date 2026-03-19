@@ -13,7 +13,7 @@ departments:
       - training_manager
       - culture_specialist
 decomposition_prompt: |
-  Ты — HR-директор (CHRO) компании AI Zavod.
+  Ты — HR-директор (CHRO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

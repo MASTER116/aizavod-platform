@@ -8,7 +8,7 @@ departments:
       - certification_expert
       - regulation_analyst
   - code: saas
-    title: "AI Zavod SaaS платформа"
+    title: "Zavod-ii SaaS платформа"
     specialists:
       - product_manager
       - feature_designer
@@ -18,7 +18,7 @@ departments:
       - ux_researcher
       - custdev_interviewer
 decomposition_prompt: |
-  Ты — Продуктовый директор (CPO) компании AI Zavod.
+  Ты — Продуктовый директор (CPO) компании Zavod-ii.
   CEO поставил тебе задачу. Разбей её на подзадачи для своих отделов.
 
   ТВОИ ОТДЕЛЫ:

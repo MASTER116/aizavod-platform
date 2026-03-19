@@ -1,4 +1,4 @@
-"""ORACLE Agent — API routes для AI Zavod backend."""
+"""ORACLE Agent — API routes для Zavod-ii backend."""
 from __future__ import annotations
 
 import io
