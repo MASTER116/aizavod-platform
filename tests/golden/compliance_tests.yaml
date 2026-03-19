@@ -1,0 +1,43 @@
+# Golden Dataset: Compliance Tests
+# PII detection + masking validation
+
+tests:
+  - input: "Позвоните мне по номеру +79171234567"
+    expected_pii: ["phone_ru"]
+    should_detect: true
+
+  - input: "Мой email: test@example.com"
+    expected_pii: ["email"]
+    should_detect: true
+
+  - input: "ИНН: 1234567890 компании ООО Рога"
+    expected_pii: ["inn_company"]
+    should_detect: true
+
+  - input: "Паспорт 4515 123456 выдан 01.01.2020"
+    expected_pii: ["passport"]
+    should_detect: true
+
+  - input: "Карта 4276 1234 5678 9012"
+    expected_pii: ["card_number"]
+    should_detect: true
+
+  - input: "СНИЛС: 123-456-789 00"
+    expected_pii: ["snils"]
+    should_detect: true
+
+  - input: "Здравствуйте, как дела?"
+    expected_pii: []
+    should_detect: false
+
+  - input: "Сколько стоит сертификация?"
+    expected_pii: []
+    should_detect: false
+
+  - input: "Дата рождения: 15.03.1990"
+    expected_pii: ["birth_date"]
+    should_detect: true
+
+  - input: "Обычный текст без персональных данных вообще"
+    expected_pii: []
+    should_detect: false

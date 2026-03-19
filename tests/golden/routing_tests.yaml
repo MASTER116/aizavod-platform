@@ -1,0 +1,96 @@
+# Golden Dataset: Routing Tests
+# 20 cases: query → expected agent (keyword-based, deterministic)
+
+tests:
+  # === Юрист ===
+  - input: "Как зарегистрировать ООО в Набережных Челнах?"
+    expected_agent: "lawyer_agent"
+    min_confidence: 0.7
+
+  - input: "Нужен договор на оказание услуг"
+    expected_agent: "lawyer_agent"
+    min_confidence: 0.7
+
+  # === Бухгалтер ===
+  - input: "Какую систему налогообложения выбрать для ИП?"
+    expected_agent: "accountant_agent"
+    min_confidence: 0.7
+
+  - input: "Когда сдавать декларацию по УСН?"
+    expected_agent: "accountant_agent"
+    min_confidence: 0.7
+
+  # === Сертификатор ===
+  - input: "Сколько стоит сертификация автомобиля Chery по ТР ТС?"
+    expected_agent: "certifier"
+    min_confidence: 0.8
+
+  - input: "Нужна декларация соответствия ЕАЭС для импорта из Китая"
+    expected_agent: "certifier"
+    min_confidence: 0.8
+
+  # === Гранты ===
+  - input: "Найди гранты РНФ для IT-стартапов"
+    expected_agent: "opportunity_scanner"
+    min_confidence: 0.7
+
+  - input: "Какие конкурсы ФСИ открыты сейчас?"
+    expected_agent: "opportunity_scanner"
+    min_confidence: 0.7
+
+  # === Фриланс ===
+  - input: "Найди заказы на Kwork по разработке ботов"
+    expected_agent: "freelance_agent"
+    min_confidence: 0.7
+
+  - input: "Покажи мои услуги на фрилансе"
+    expected_agent: "freelance_agent"
+    min_confidence: 0.7
+
+  # === Продажи ===
+  - input: "Сгенерируй холодное письмо для IT-компании"
+    expected_agent: "outreach_agent"
+    min_confidence: 0.7
+
+  - input: "Где найти лидов для SaaS-платформы?"
+    expected_agent: "outreach_agent"
+    min_confidence: 0.7
+
+  # === Нейминг ===
+  - input: "Придумай название для AI-стартапа"
+    expected_agent: "namer_agent"
+    min_confidence: 0.7
+
+  - input: "Проверь доступность домена zavod-ii.ru"
+    expected_agent: "namer_agent"
+    min_confidence: 0.7
+
+  # === Безопасность ===
+  - input: "Проверь ввод на prompt injection"
+    expected_agent: "guardian_agent"
+    min_confidence: 0.7
+
+  # === Наука ===
+  - input: "Напиши литобзор по теме V2X коммуникаций"
+    expected_agent: "scholar_agent"
+    min_confidence: 0.7
+
+  # === Голос ===
+  - input: "Создай скрипт продающего звонка"
+    expected_agent: "voice_agent"
+    min_confidence: 0.7
+
+  # === Казначей ===
+  - input: "Оптимизируй расходы на инфраструктуру"
+    expected_agent: "treasurer_agent"
+    min_confidence: 0.7
+
+  # === Оценщик ===
+  - input: "Оцени стоимость разработки мобильного приложения"
+    expected_agent: "pricing_agent"
+    min_confidence: 0.7
+
+  # === Хакатоны ===
+  - input: "Найди хакатоны на DevPost по AI теме"
+    expected_agent: "hackathon_manager"
+    min_confidence: 0.7
