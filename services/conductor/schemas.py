@@ -32,6 +32,8 @@ class AgentInfo:
     handler: str             # имя async-функции для вызова
     access_level: AccessLevel = AccessLevel.SIMPLE  # минимальный уровень доступа
     tier: str = "free"       # free / starter / pro / enterprise
+    credit_cost: int = 3     # стоимость в кредитах (1=простой, 3=средний, 8=тяжёлый)
+    criticality: str = "E"   # ГОСТ Р 51904: C=существенный, D=незначительный, E=без последствий
 
 
 # ─── Route Decision ──────────────────────────────────────────────────────────

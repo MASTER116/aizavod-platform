@@ -11,6 +11,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["стратег", "план", "приоритет", "направлен", "задач", "цел", "развит"],
         handler="_route_ceo",
         access_level=AccessLevel.PRO,
+        credit_cost=8,
+        criticality="D",
     ),
     AgentInfo(
         name="certifier",
@@ -27,6 +29,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_certifier",
         tier="enterprise",
+        credit_cost=8,
+        criticality="C",
     ),
     AgentInfo(
         name="opportunity_scanner",
@@ -36,6 +40,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["грант", "конкурс", "субсид", "фонд", "инвестиц", "финансир", "рнф", "фаси", "сколков"],
         handler="_route_opportunities",
         access_level=AccessLevel.PRO,
+        credit_cost=5,
+        criticality="D",
     ),
     AgentInfo(
         name="hackathon_manager",
@@ -48,6 +54,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_hackathon",
         access_level=AccessLevel.PRO,
+        credit_cost=3,
+        criticality="E",
     ),
     AgentInfo(
         name="idea_generator",
@@ -56,6 +64,8 @@ AGENTS: list[AgentInfo] = [
         description="Генерация идей заработка, монетизация, бизнес-модели",
         keywords=["идея", "заработ", "монетиз", "доход", "бизнес-модел", "как заработ"],
         handler="_route_ideas",
+        credit_cost=1,
+        criticality="E",
     ),
     AgentInfo(
         name="market_analyzer",
@@ -65,6 +75,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["рынок", "конкурент", "ниша", "анализ рынк", "заявк", "предложен"],
         handler="_route_market",
         tier="starter",
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="freelance_agent",
@@ -74,6 +86,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["фриланс", "заказ", "kwork", "upwork", "отклик", "услуг", "портфолио"],
         handler="_route_freelance",
         access_level=AccessLevel.PRO,
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="pricing_agent",
@@ -83,6 +97,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["цен", "стоимост", "оценк", "кп ", "коммерческ", "бюджет проект", "смет"],
         handler="_route_pricing",
         tier="starter",
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="outreach_agent",
@@ -92,6 +108,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["продаж", "лид", "клиент", "холодн", "письм", "email", "сегмент", "привлеч"],
         handler="_route_outreach",
         tier="starter",
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="content_factory",
@@ -101,6 +119,8 @@ AGENTS: list[AgentInfo] = [
         keywords=["контент", "инстаграм", "instagram", "tiktok", "пост", "рилс", "reels", "сторис", "публикац"],
         handler="_route_content",
         tier="starter",
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="lawyer_agent",
@@ -113,6 +133,8 @@ AGENTS: list[AgentInfo] = [
             "лицензи", "оквэд", "устав", "налогов спор", "открыть ип", "открыть ооо",
         ],
         handler="_route_lawyer",
+        credit_cost=3,
+        criticality="C",
     ),
     AgentInfo(
         name="accountant_agent",
@@ -125,6 +147,8 @@ AGENTS: list[AgentInfo] = [
             "касс", "бухучет", "баланс", "календарь отчет",
         ],
         handler="_route_accountant",
+        credit_cost=3,
+        criticality="C",
     ),
     AgentInfo(
         name="darwin_agent",
@@ -137,6 +161,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_darwin",
         access_level=AccessLevel.PRO,
+        credit_cost=5,
+        criticality="D",
     ),
     AgentInfo(
         name="guardian_agent",
@@ -149,6 +175,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_guardian",
         access_level=AccessLevel.PRO,
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="scholar_agent",
@@ -162,6 +190,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_scholar",
         tier="pro",
+        credit_cost=2,
+        criticality="E",
     ),
     AgentInfo(
         name="herald_agent",
@@ -175,6 +205,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_herald",
         tier="starter",
+        credit_cost=2,
+        criticality="D",
     ),
     AgentInfo(
         name="namer_agent",
@@ -186,6 +218,8 @@ AGENTS: list[AgentInfo] = [
             "бренд", "нейм", "как назвать",
         ],
         handler="_route_namer",
+        credit_cost=1,
+        criticality="E",
     ),
     AgentInfo(
         name="guardian_ip_agent",
@@ -198,6 +232,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_guardian_ip",
         tier="pro",
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="voice_agent",
@@ -210,6 +246,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_voice",
         tier="pro",
+        credit_cost=2,
+        criticality="E",
     ),
     AgentInfo(
         name="treasurer_agent",
@@ -223,6 +261,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_treasurer",
         access_level=AccessLevel.PRO,
+        credit_cost=3,
+        criticality="D",
     ),
     AgentInfo(
         name="oracle_agent",
@@ -237,6 +277,8 @@ AGENTS: list[AgentInfo] = [
         ],
         handler="_route_oracle",
         tier="pro",
+        credit_cost=3,
+        criticality="D",
     ),
 ]
 

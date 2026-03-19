@@ -359,16 +359,18 @@ class Conductor:
         except Exception:
             pass
 
-        # === 1. Metering: check limits ===
+        # === 1. Metering: check credit limits ===
         if user_id:
             try:
                 from services.billing.metering import get_usage_meter
                 meter = get_usage_meter()
-                can_call, limit_msg = meter.can_call(user_id, user_tier)
+                # Pre-classify to know which agent (and its credit cost)
+                pre_route = await self._classify(query)
+                can_call, limit_msg = meter.can_call(user_id, user_tier, agent_name=pre_route.agent)
                 if not can_call:
                     return ConductorResult(
                         query=query, route=RouteDecision(agent="system", confidence=1.0,
-                            reasoning="limit_exceeded", reformulated_query=query),
+                            reasoning="credit_limit_exceeded", reformulated_query=query),
                         response=limit_msg, agent_name="system",
                         department="billing", duration_ms=0,
                     )
@@ -547,12 +549,18 @@ class Conductor:
             except Exception:
                 pass
 
-        # === 9. Metering: record usage ===
+        # === 9. Metering: record credit usage ===
         if user_id:
             try:
                 from services.billing.metering import get_usage_meter
                 meter = get_usage_meter()
-                meter.record(user_id, tokens=0, cost_usd=0.0, tier=user_tier)
+                meter.record(
+                    user_id,
+                    agent_name=agent_info.name,
+                    tokens=0,
+                    cost_usd=0.0,
+                    tier=user_tier,
+                )
             except Exception:
                 pass
 
