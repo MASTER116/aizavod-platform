@@ -24,6 +24,8 @@ class AgentStatus(Enum):
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
     KILLED = "killed"
+    SUSPENDED = "suspended"    # Нет вызовов 30+ дней (#17 lifecycle)
+    RETIRED = "retired"        # Нет вызовов 90+ дней (#19 sprawl prevention)
 
 
 @dataclass
@@ -47,7 +49,7 @@ class AgentHealth:
 
     @property
     def is_alive(self) -> bool:
-        return self.status not in (AgentStatus.KILLED, AgentStatus.UNHEALTHY)
+        return self.status not in (AgentStatus.KILLED, AgentStatus.UNHEALTHY, AgentStatus.RETIRED)
 
 
 class HealthMonitor:
@@ -160,8 +162,26 @@ class HealthMonitor:
         if agent_name in self._kill_list:
             return False
         agent = self._agents.get(agent_name)
-        if agent and agent.status == AgentStatus.UNHEALTHY:
+        if agent and agent.status in (AgentStatus.UNHEALTHY, AgentStatus.KILLED, AgentStatus.RETIRED):
             return False
+        return True
+
+    def suspend(self, agent_name: str, reason: str = "No activity") -> bool:
+        """Приостановить агента (#17 lifecycle, #19 sprawl prevention)."""
+        self.register(agent_name)
+        agent = self._agents[agent_name]
+        agent.status = AgentStatus.SUSPENDED
+        self._audit("suspend", agent_name, reason)
+        logger.info("Agent %s SUSPENDED — %s", agent_name, reason)
+        return True
+
+    def retire(self, agent_name: str, reason: str = "No activity 90+ days") -> bool:
+        """Вывести агента из эксплуатации (#19 sprawl prevention)."""
+        self.register(agent_name)
+        agent = self._agents[agent_name]
+        agent.status = AgentStatus.RETIRED
+        self._audit("retire", agent_name, reason)
+        logger.warning("Agent %s RETIRED — %s", agent_name, reason)
         return True
 
     # === Reporting ===

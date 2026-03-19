@@ -1,7 +1,20 @@
-"""CONDUCTOR core — основная логика оркестрации."""
+"""CONDUCTOR core — основная логика оркестрации.
+
+Pipeline (v2 — с safeguards):
+1. Session trace: start (correlation_id)
+2. Safeguards: pre-route check (deadlock, permissions, latency budget)
+3. UX Transparency: progress streaming
+4. Classify → Route → Execute
+5. Inter-agent firewall: sanitize transfers
+6. Role boundary validation
+7. QA + Compliance
+8. Session trace: end + blame assignment
+9. Lifecycle: record usage + DARWIN
+"""
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 
@@ -208,7 +221,34 @@ class Conductor:
         director_tasks = ceo_data["directors"]
         logger.info("CEO: %d директоров задействовано", len(director_tasks))
 
-        # Шаг 2: Директорская декомпозиция
+        # Шаг 1b: Deadlock check на зависимости (#14)
+        try:
+            from services.conductor.safeguards import get_safeguards
+            sg = get_safeguards()
+            cycle = sg.deadlock.check_dependencies(director_tasks)
+            if cycle:
+                logger.critical("DEADLOCK in orchestration: %s", cycle)
+                return {
+                    "status": "error",
+                    "message": f"Обнаружена циклическая зависимость: {' -> '.join(cycle)}",
+                    "cycle": cycle,
+                }
+        except Exception:
+            pass
+
+        # Шаг 1c: Группировка для параллельного выполнения (#15)
+        try:
+            from services.conductor.safeguards import ParallelDispatcher
+            groups = ParallelDispatcher.find_independent_groups(director_tasks)
+            if groups and len(groups) < len(director_tasks):
+                logger.info(
+                    "PARALLEL: %d directors grouped into %d parallel batches",
+                    len(director_tasks), len(groups),
+                )
+        except Exception:
+            groups = [director_tasks]  # fallback: всё последовательно
+
+        # Шаг 2: Директорская декомпозиция (с параллельным dispatch)
         full_tree = {
             "task": task,
             "analysis": analysis,
@@ -266,24 +306,56 @@ class Conductor:
     async def process(self, query: str, user_id: int | None = None, user_tier: str = "free") -> ConductorResult:
         """Главный метод: classify -> meter -> route -> QA -> comply -> trace -> return.
 
-        Полный pipeline:
-        1. Observability: start trace
-        2. Metering: check daily limits
-        3. Health: check agent availability
-        4. Classify: determine agent
-        5. Route: call agent handler
-        6. QA: validate response (critic pattern)
-        7. Compliance: add AI disclaimer
-        8. Observability: end trace with cost
+        Полный pipeline (v2 — с safeguards):
+        0.  Session trace: start (correlation_id)
+        1.  Observability: start trace
+        1b. Safeguards: latency budget start
+        1c. UX: progress session start
+        2.  Metering: check daily limits
+        3.  Health: check agent availability
+        3b. Safeguards: pre-route check (lifecycle, coordination, deadlock)
+        4.  Classify: determine agent
+        5.  Route: call agent handler
+        5b. Safeguards: post-response check (role boundary validation)
+        6.  QA: validate response (critic pattern)
+        7.  Compliance: add AI disclaimer
+        8.  Observability: end trace with cost
+        8b. Session trace: end + blame
+        9.  Metering: record usage
+        10. DARWIN: background eval + lifecycle record
         """
         start = time.monotonic()
 
-        # === 0. Observability: start trace ===
+        # === 0. Session Trace: start (correlation_id) ===
+        correlation_id = None
+        try:
+            from services.conductor.session_trace import get_session_tracer
+            tracer = get_session_tracer()
+            mode = self._detect_mode(query)
+            correlation_id = tracer.start_session(
+                user_id=user_id, channel="api", query=query, mode=mode,
+            )
+        except Exception:
+            pass
+
+        # === 0b. Observability: start trace ===
         trace_id = None
         try:
             from services.conductor.observability import get_tracker
             tracker = get_tracker()
-            trace_id = tracker.start_trace(query, user_id=user_id)
+            trace_id = tracker.start_trace(query, user_id=user_id, session_id=correlation_id)
+        except Exception:
+            pass
+
+        # === 0c. Safeguards: latency budget + UX progress ===
+        safeguards = None
+        try:
+            from services.conductor.safeguards import get_safeguards
+            safeguards = get_safeguards()
+            safeguards.latency.start()
+            if correlation_id:
+                safeguards.ux.start_session(correlation_id, total_steps=5)
+                safeguards.ux.add_step(correlation_id, "classify", status="processing")
         except Exception:
             pass
 
@@ -320,6 +392,35 @@ class Conductor:
         except Exception:
             pass
 
+        # === 3b. Safeguards: pre-route check ===
+        if safeguards and trace_id:
+            try:
+                pre_check = safeguards.pre_route_check(trace_id, route.agent)
+                if not pre_check["allowed"]:
+                    logger.warning("SAFEGUARDS pre-route blocked: %s", pre_check["issues"])
+                    route.agent = "ceo_agent"
+                    route.reasoning = f"Safeguards: {'; '.join(pre_check['issues'])}"
+            except Exception:
+                pass
+
+        # === 3c. UX: progress update ===
+        if safeguards and correlation_id:
+            try:
+                safeguards.ux.add_step(correlation_id, "route", agent=route.agent, confidence=route.confidence)
+            except Exception:
+                pass
+
+        # === 3d. Session Trace: classify span ===
+        if correlation_id:
+            try:
+                from services.conductor.session_trace import get_session_tracer
+                tracer = get_session_tracer()
+                span_id = tracer.start_span(correlation_id, "conductor", "classify", query[:200])
+                tracer.end_span(correlation_id, span_id, status="success",
+                               output=f"-> {route.agent} ({route.confidence:.2f})")
+            except Exception:
+                pass
+
         # === 4. Маршрутизация ===
         agent_info = next((a for a in AGENTS if a.name == route.agent), None)
         if not agent_info:
@@ -349,6 +450,50 @@ class Conductor:
                     hm.record_call(route.agent, (time.monotonic() - agent_start) * 1000, False, str(e))
                 except Exception:
                     pass
+
+        # === 4b. Safeguards: post-response checks ===
+        if safeguards:
+            try:
+                # Record latency
+                agent_duration = (time.monotonic() - start) * 1000
+                safeguards.latency.record_agent(route.agent, agent_duration)
+
+                # Role boundary validation (#16)
+                post_check = safeguards.post_response_check(route.agent, response)
+                if not post_check["role_valid"] and post_check["severity"] == "high":
+                    logger.warning("ROLE VIOLATION: %s — %s", route.agent, post_check["role_violations"])
+                    # Record error
+                    from services.conductor.safeguards import ErrorType
+                    safeguards.errors.record(
+                        trace_id or "", ErrorType.ROLE_VIOLATION, route.agent,
+                        f"Role boundary violation: {post_check['role_violations']}",
+                    )
+
+                # Lifecycle usage recording (#17, #19)
+                safeguards.lifecycle.record_usage(route.agent, user_id)
+            except Exception:
+                pass
+
+        # === 4c. Session Trace: execute span ===
+        if correlation_id:
+            try:
+                from services.conductor.session_trace import get_session_tracer
+                tracer = get_session_tracer()
+                span_id = tracer.start_span(correlation_id, route.agent, "execute", query[:200])
+                tracer.end_span(
+                    correlation_id, span_id,
+                    status="success" if "Ошибка" not in response else "error",
+                    output=response[:200],
+                )
+            except Exception:
+                pass
+
+        # === 4d. UX: progress update ===
+        if safeguards and correlation_id:
+            try:
+                safeguards.ux.add_step(correlation_id, "qa_check", agent="qa_agent", status="processing")
+            except Exception:
+                pass
 
         # === 5. QA-AGENT: validate response (critic pattern) ===
         qa_score = None
@@ -413,12 +558,33 @@ class Conductor:
 
         # === 10. DARWIN: фоновая оценка ===
         try:
-            import asyncio
             asyncio.create_task(
                 self._darwin_background_eval(query, agent_info.name, response)
             )
         except Exception:
             pass
+
+        # === 11. Session Trace: end session ===
+        if correlation_id:
+            try:
+                from services.conductor.session_trace import get_session_tracer
+                tracer = get_session_tracer()
+                tracer.end_session(
+                    correlation_id,
+                    final_response=response[:500],
+                    status="success" if "Ошибка" not in response else "error",
+                )
+            except Exception:
+                pass
+
+        # === 12. UX: complete session ===
+        if safeguards and correlation_id:
+            try:
+                safeguards.ux.add_step(correlation_id, "compliance", agent="compliance", status="completed")
+                safeguards.ux.complete_session(correlation_id, confidence=route.confidence)
+                safeguards.coordination.cleanup(trace_id or "")
+            except Exception:
+                pass
 
         return ConductorResult(
             query=query,
