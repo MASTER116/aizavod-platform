@@ -76,7 +76,7 @@ async def on_free_text(message: Message):
 
 async def _handle_route(message: Message, query: str, conductor):
     """Режим роутера — направить к одному агенту."""
-    await message.answer("🔄 CONDUCTOR анализирует запрос...")
+    await message.answer("🔄 Шеф анализирует запрос...")
 
     user_id = message.from_user.id if message.from_user else None
     result = await conductor.process(query, user_id=user_id, user_tier="pro")
@@ -102,16 +102,16 @@ async def _handle_route(message: Message, query: str, conductor):
             for part in _split(sec_header + resp):
                 await message.answer(part, parse_mode="HTML")
 
-    await message.answer("⬆️ Ответ CONDUCTOR", reply_markup=main_menu_kb())
+    await message.answer("⬆️ Ответ от Шефа", reply_markup=main_menu_kb())
 
 
 async def _handle_orchestrate(message: Message, task: str, conductor):
     """Режим оркестратора — полная 3-уровневая декомпозиция."""
     await message.answer(
-        "🏗 <b>CONDUCTOR — Оркестрация</b>\n\n"
-        "Запускаю полную декомпозицию задачи:\n"
+        "🏗 <b>Шеф — полная декомпозиция</b>\n\n"
+        "Разбиваю задачу на подзадачи:\n"
         f"<i>{task[:200]}</i>\n\n"
-        "CEO → Директора → Отделы → Специалисты\n"
+        "Шеф → Директора → Отделы → Специалисты\n"
         "Это займёт 15-30 секунд...",
         parse_mode="HTML",
     )
@@ -165,4 +165,4 @@ async def _handle_orchestrate(message: Message, task: str, conductor):
     for part in _split(full_text):
         await message.answer(part, parse_mode="HTML")
 
-    await message.answer("⬆️ Оркестрация завершена", reply_markup=main_menu_kb())
+    await message.answer("⬆️ Шеф завершил декомпозицию", reply_markup=main_menu_kb())
