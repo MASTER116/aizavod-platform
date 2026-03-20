@@ -159,14 +159,19 @@ async def _handle_orchestrate(message: Message, task: str, conductor):
         for ns in report.get("next_steps", [])[:3]:
             lines.append(f"  ➡️ {ns[:80]}")
 
-    # Токены CEO
+    # Токены CEO + стоимость
     tokens = tree.get("tokens", {})
     if tokens.get("total", 0) > 0:
+        inp = tokens.get("input", 0)
+        out = tokens.get("output", 0)
+        total = tokens.get("total", 0)
+        # Claude Haiku 4.5: $0.80/1M input, $4.00/1M output
+        cost_usd = (inp * 0.80 + out * 4.00) / 1_000_000
         lines.append("")
         lines.append(
-            f"🔢 <b>Токены:</b> {tokens.get('input', 0):,} in + "
-            f"{tokens.get('output', 0):,} out = {tokens.get('total', 0):,} total"
+            f"🔢 <b>Токены:</b> {inp:,} in + {out:,} out = {total:,} total"
         )
+        lines.append(f"💲 <b>Стоимость:</b> ${cost_usd:.4f}")
 
     full_text = "\n".join(lines)
 

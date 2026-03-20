@@ -126,66 +126,66 @@ class CEOAgent:
         return response.content[0].text
 
     async def assign_task(self, task: str) -> str:
-        """Break down a task and assign to directors/agents."""
-        if not self._anthropic_key:
-            return "ANTHROPIC_API_KEY не настроен"
+        """Break down a task and assign to directors/agents.
 
-        import anthropic
+        Delegates to CONDUCTOR orchestrate() which has scope classifier,
+        project context, and scope guard to prevent scope creep.
+        """
+        from services.conductor import get_conductor
+        conductor = get_conductor()
+        tree = await conductor.orchestrate(task, depth=3)
 
-        prompt = f"""Ты — CEO-агент Zavod-ii. Основатель поставил задачу.
+        if tree.get("status") == "error":
+            return f"Ошибка декомпозиции: {tree.get('message', '?')}"
 
-{ORG_STRUCTURE}
+        # Format tree as readable text
+        lines = []
+        lines.append(f"📋 Задача: {task[:200]}")
+        lines.append(f"🔍 Тип: {tree.get('task_type', '?')}")
+        lines.append(f"📊 Анализ: {tree.get('analysis', '')[:300]}")
 
-ЗАДАЧА ОТ ОСНОВАТЕЛЯ:
-{task}
+        reuse = tree.get("reuse", [])
+        if reuse:
+            lines.append(f"♻️ Переиспользуем: {', '.join(reuse[:5])}")
 
-Составь план выполнения задачи:
+        lines.append("")
 
-## Анализ задачи
-(что нужно сделать, какая цель)
+        for d in tree.get("directors", []):
+            lines.append(f"👔 {d.get('title', d.get('role', '?'))}")
+            if d.get("justification"):
+                lines.append(f"   Зачем: {d['justification'][:100]}")
+            lines.append(f"   Задача: {d.get('task', '')[:200]}")
+            deliverables = d.get("deliverables", [])
+            if deliverables:
+                lines.append(f"   Результат: {', '.join(deliverables[:5])}")
+            hours = d.get("estimated_hours", 0)
+            if hours:
+                lines.append(f"   Время: {hours}ч")
 
-## Декомпозиция по директорам
+            for dept in d.get("departments", []):
+                lines.append(f"   📁 {dept.get('department', '?')}: {dept.get('task', '')[:80]}")
+                for spec in dept.get("specialists", []):
+                    lines.append(f"      👤 {spec.get('specialist', '?')}: {spec.get('task', '')[:60]}")
+            lines.append("")
 
-### 💰 Финансовый директор
-- Задачи для него (если есть)
-- Какие агенты задействовать
+        report = tree.get("report", {})
+        if report:
+            lines.append("─" * 30)
+            lines.append(f"📊 Итог: {report.get('summary', '')[:200]}")
+            for h in report.get("highlights", [])[:3]:
+                lines.append(f"  ✅ {h[:80]}")
+            for ns in report.get("next_steps", [])[:3]:
+                lines.append(f"  ➡️ {ns[:80]}")
 
-### 🛒 Директор по продажам
-- Задачи для него (если есть)
-- Какие агенты задействовать
+        tokens = tree.get("tokens", {})
+        if tokens.get("total", 0) > 0:
+            lines.append(f"\n🔢 Токены: {tokens['input']:,} in + {tokens['output']:,} out = {tokens['total']:,}")
 
-### 📱 Директор по контенту
-- Задачи для него (если есть)
-- Какие агенты задействовать
+        quality = tree.get("ceo_quality", {})
+        if quality:
+            lines.append(f"📈 Качество CEO: {quality.get('score', 0):.1f}/10")
 
-### 🔧 Технический директор
-- Задачи для него (если есть)
-- Какие агенты задействовать
-
-### 📋 Директор по продукту
-- Задачи для него (если есть)
-
-## Порядок выполнения
-(пронумерованный список шагов с зависимостями)
-
-## Критический путь
-(что блокирует остальное)
-
-## Оценка
-- Время: сколько вечеров/выходных
-- Риски: что может пойти не так
-- Результат: что получим в итоге
-
-Пиши конкретно, с привязкой к реальным агентам и модулям."""
-
-        client = anthropic.AsyncAnthropic(api_key=self._anthropic_key)
-        response = await client.messages.create(
-            model=self._model,
-            max_tokens=3000,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-        )
-        return response.content[0].text
+        return "\n".join(lines)
 
     async def strategic_plan(self) -> str:
         """Generate current strategic plan."""
