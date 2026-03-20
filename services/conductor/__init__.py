@@ -30,7 +30,8 @@ from services.conductor.hierarchy import DIRECTORS, DEPARTMENT_SPECIALISTS
 from services.conductor.llm_client import LLMClient, CircuitBreaker, get_llm_client
 from services.conductor.safeguards import SafeguardsManager, get_safeguards
 from services.conductor.session_trace import SessionTracer, get_session_tracer
-from services.conductor.scope_classifier import classify_task_scope, get_allowed_directors, filter_ceo_directors
+from services.conductor.scope_classifier import classify_task_scope, classify_task_type, get_allowed_directors, filter_ceo_directors
+from services.conductor.project_context import get_project_context_text
 
 __all__ = [
     "Conductor",

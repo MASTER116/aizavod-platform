@@ -36,7 +36,8 @@ from services.conductor.prompts import (
 )
 from services.conductor.routes import ROUTE_HANDLERS
 from services.conductor.llm_client import get_llm_client
-from services.conductor.scope_classifier import get_allowed_directors, filter_ceo_directors
+from services.conductor.scope_classifier import get_allowed_directors, filter_ceo_directors, classify_task_type
+from services.conductor.project_context import get_project_context_text
 
 logger = logging.getLogger("aizavod.conductor")
 
@@ -199,17 +200,24 @@ class Conductor:
         start = time.monotonic()
         logger.info("ORCHESTRATOR: начинаю декомпозицию (depth=%d): '%s'", depth, task[:100])
 
-        # Шаг 0: Scope classification — определяем допустимых директоров
+        # Шаг 0: Scope + task type classification
         allowed_directors = get_allowed_directors(task)
+        task_type = classify_task_type(task)
+
         directors_text = "\n".join(
             f"- {code}: {d['title']} — {d['scope']}"
+            + (f"\n  Возможности: {', '.join(d.get('capabilities', [])[:3])}" if d.get('capabilities') else "")
+            + (f"\n  Инструменты: {', '.join(d.get('existing_tools', [])[:3])}" if d.get('existing_tools') else "")
             for code, d in DIRECTORS.items()
             if code in allowed_directors
         )
-        logger.info("SCOPE: допустимые директора для задачи: %s", allowed_directors)
+        logger.info("SCOPE: directors=%s, task_type=%s", allowed_directors, task_type)
 
-        # Шаг 1: CEO-декомпозиция (CEO видит только допустимых директоров)
+        # Шаг 1: CEO-декомпозиция с полным контекстом проекта
+        project_context = get_project_context_text()
         ceo_prompt = CEO_DECOMPOSE_PROMPT.format(
+            project_context=project_context,
+            task_type=task_type,
             directors_list=directors_text,
             task=task,
         )
@@ -225,10 +233,13 @@ class Conductor:
 
         analysis = ceo_data.get("analysis", "")
 
-        # Шаг 1a: Scope Guard — фильтруем директоров, убираем лишних
+        # Шаг 1a: Оценка качества CEO
+        ceo_quality = self._evaluate_ceo_quality(task, ceo_data)
+
+        # Шаг 1b: Scope Guard — фильтруем директоров, убираем лишних
         director_tasks = filter_ceo_directors(task, ceo_data["directors"])
-        logger.info("CEO: %d директоров после scope guard (до: %d)",
-                     len(director_tasks), len(ceo_data["directors"]))
+        logger.info("CEO: %d директоров после scope guard (до: %d, quality=%.1f)",
+                     len(director_tasks), len(ceo_data["directors"]), ceo_quality["score"])
 
         # Шаг 1b: Deadlock check на зависимости (#14)
         try:
@@ -260,7 +271,10 @@ class Conductor:
         # Шаг 2: Директорская декомпозиция (с параллельным dispatch)
         full_tree = {
             "task": task,
+            "task_type": task_type,
             "analysis": analysis,
+            "reuse": ceo_data.get("reuse", []),
+            "ceo_quality": ceo_quality,
             "directors": [],
             "duration_ms": 0,
             "depth": depth,
@@ -613,6 +627,45 @@ class Conductor:
             secondary_responses=secondary_responses,
             qa_score=qa_score,
         )
+
+    def _evaluate_ceo_quality(self, task: str, ceo_data: dict) -> dict:
+        """Оценить качество CEO-декомпозиции (синхронно, без LLM)."""
+        score = 10.0
+        issues = []
+        directors = ceo_data.get("directors", [])
+
+        # Слишком много директоров?
+        if len(directors) > 2:
+            score -= 2.0
+            issues.append("too_many_directors")
+
+        # Директора без deliverables?
+        for d in directors:
+            if not d.get("deliverables"):
+                score -= 1.0
+                issues.append(f"no_deliverables_{d.get('role', '?')}")
+
+        # Директора без justification?
+        for d in directors:
+            if not d.get("justification"):
+                score -= 1.5
+                issues.append(f"no_justification_{d.get('role', '?')}")
+
+        # Нереалистичные часы (>8 для одной задачи)?
+        for d in directors:
+            hours = d.get("estimated_hours", 0)
+            if hours > 8:
+                score -= 1.0
+                issues.append(f"unrealistic_hours_{d.get('role', '?')}_{hours}h")
+
+        # Есть поле reuse?
+        if not ceo_data.get("reuse"):
+            score -= 1.0
+            issues.append("no_reuse_existing_services")
+
+        score = max(0.0, score)
+        logger.info("CEO QUALITY: %.1f/10 directors=%d issues=%s", score, len(directors), issues)
+        return {"score": score, "issues": issues, "director_count": len(directors)}
 
     async def _darwin_background_eval(self, query: str, agent_name: str, response: str):
         """Фоновая оценка качества через DARWIN."""

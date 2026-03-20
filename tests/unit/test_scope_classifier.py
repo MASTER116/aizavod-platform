@@ -4,10 +4,12 @@ import pytest
 
 from services.conductor.scope_classifier import (
     classify_task_scope,
+    classify_task_type,
     get_allowed_directors,
     filter_ceo_directors,
     MAX_DIRECTORS,
 )
+from services.conductor.project_context import get_project_context_text
 
 
 # ─── classify_task_scope ─────────────────────────────────────────────────────
@@ -160,3 +162,67 @@ class TestFilterCeoDirectors:
         assert "cmo" not in roles
         assert "chro" not in roles
         assert "cfo" not in roles
+
+
+# ─── classify_task_type ──────────────────────────────────────────────────────
+
+
+class TestClassifyTaskType:
+    """Тесты определения типа задачи BUILD/EXTEND/FIX/REFACTOR."""
+
+    def test_build_new_bot(self):
+        assert classify_task_type("Создай новый Telegram-бот") == "build"
+
+    def test_build_develop(self):
+        assert classify_task_type("Разработай микросервис авторизации") == "build"
+
+    def test_extend_add_button(self):
+        assert classify_task_type("Добавь кнопку Помощь в бота") == "extend"
+
+    def test_extend_integrate(self):
+        assert classify_task_type("Интегрируй оплату через YooKassa") == "extend"
+
+    def test_fix_bug(self):
+        assert classify_task_type("Исправь баг в API /health") == "fix"
+
+    def test_fix_broken(self):
+        assert classify_task_type("Бот не работает, сломалось после обновления") == "fix"
+
+    def test_fix_error(self):
+        assert classify_task_type("Ошибка 502 на сервере") == "fix"
+
+    def test_refactor(self):
+        assert classify_task_type("Рефактор conductor.py — разбить на модули") == "refactor"
+
+    def test_refactor_optimize(self):
+        assert classify_task_type("Оптимизируй запросы к БД") == "refactor"
+
+    def test_default_build(self):
+        assert classify_task_type("Сделай что-нибудь полезное") == "build"
+
+
+# ─── Project Context ─────────────────────────────────────────────────────────
+
+
+class TestProjectContext:
+    """Тесты контекста проекта."""
+
+    def test_context_contains_platform(self):
+        ctx = get_project_context_text()
+        assert "FastAPI" in ctx
+        assert "PostgreSQL" in ctx
+
+    def test_context_contains_agents(self):
+        ctx = get_project_context_text()
+        assert "certifier" in ctx
+        assert "opportunity_scanner" in ctx
+
+    def test_context_contains_constraints(self):
+        ctx = get_project_context_text()
+        assert "1 человек" in ctx
+        assert "0 руб" in ctx
+
+    def test_context_contains_services(self):
+        ctx = get_project_context_text()
+        assert "CONDUCTOR" in ctx
+        assert "QA-AGENT" in ctx

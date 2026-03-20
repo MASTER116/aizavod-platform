@@ -69,7 +69,51 @@ FULL_SCOPE_MARKERS = [
     "полная стратегия", "стратегический план",
 ]
 
+# ─── Task Type: BUILD / EXTEND / FIX / REFACTOR ─────────────────────────────
+
+TASK_TYPE_KEYWORDS: dict[str, list[str]] = {
+    "build": [
+        "создай", "разработай", "построй", "напиши новый", "новый бот",
+        "сделай с нуля", "новый сервис", "новый модуль", "спроектируй",
+    ],
+    "extend": [
+        "добавь", "расширь", "интегрируй", "подключи", "обнови",
+        "дополни", "улучши", "вставь", "подключ",
+    ],
+    "fix": [
+        "исправь", "почини", "баг", "ошибка", "не работает", "сломалось",
+        "crash", "500", "502", "timeout", "падает", "зависает",
+    ],
+    "refactor": [
+        "рефактор", "перепиши", "оптимизируй", "упрости", "вынеси",
+        "декомпозируй", "разбей на модули",
+    ],
+}
+
 MAX_DIRECTORS = 3
+
+
+def classify_task_type(task: str) -> str:
+    """Определить тип задачи: build, extend, fix, refactor.
+
+    Returns: "build", "extend", "fix", "refactor"
+    """
+    task_lower = task.lower()
+
+    scores: dict[str, int] = {}
+    for ttype, keywords in TASK_TYPE_KEYWORDS.items():
+        score = sum(1 for kw in keywords if kw in task_lower)
+        if score > 0:
+            scores[ttype] = score
+
+    if scores:
+        best = max(scores, key=scores.get)
+        logger.info("TASK_TYPE: %s (score=%d)", best, scores[best])
+        return best
+
+    # По умолчанию — build
+    logger.info("TASK_TYPE: build (default)")
+    return "build"
 
 
 def classify_task_scope(task: str) -> str:
