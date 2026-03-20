@@ -103,6 +103,28 @@ class QAVerdict(BaseModel):
     reasoning: str = ""
 
 
+# ─── CEO Decomposition (валидация scope) ─────────────────────────────────────
+
+class DirectorAssignment(BaseModel):
+    """Назначение директора в CEO-декомпозиции."""
+    role: str = Field(..., description="Код директора (cto, cfo, cmo, ...)")
+    justification: str = Field(default="", description="Почему этот директор нужен")
+    task: str = Field(..., description="Задача для директора")
+    priority: str = Field(default="normal", pattern="^(critical|high|normal|low)$")
+    estimated_hours: float = Field(default=2.0, ge=0.5, le=40)
+    deliverables: list[str] = Field(default_factory=list)
+    depends_on: list[str] = Field(default_factory=list)
+
+
+class CEODecomposition(BaseModel):
+    """Результат CEO-декомпозиции задачи."""
+    task_type: str = Field(default="technical", pattern="^(technical|product|business|marketing|legal|full)$")
+    analysis: str = Field(default="", description="Краткий анализ задачи")
+    directors: list[DirectorAssignment] = Field(..., max_length=3)
+
+
+# ─── Memory Entry ─────────────────────────────────────────────────────────────
+
 class MemoryEntry(BaseModel):
     """Запись в памяти агента."""
     memory_type: str = Field(..., pattern="^(episodic|factual|working)$")

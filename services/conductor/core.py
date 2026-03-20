@@ -36,6 +36,7 @@ from services.conductor.prompts import (
 )
 from services.conductor.routes import ROUTE_HANDLERS
 from services.conductor.llm_client import get_llm_client
+from services.conductor.scope_classifier import get_allowed_directors, filter_ceo_directors
 
 logger = logging.getLogger("aizavod.conductor")
 
@@ -198,11 +199,16 @@ class Conductor:
         start = time.monotonic()
         logger.info("ORCHESTRATOR: начинаю декомпозицию (depth=%d): '%s'", depth, task[:100])
 
-        # Шаг 1: CEO-декомпозиция
+        # Шаг 0: Scope classification — определяем допустимых директоров
+        allowed_directors = get_allowed_directors(task)
         directors_text = "\n".join(
             f"- {code}: {d['title']} — {d['scope']}"
             for code, d in DIRECTORS.items()
+            if code in allowed_directors
         )
+        logger.info("SCOPE: допустимые директора для задачи: %s", allowed_directors)
+
+        # Шаг 1: CEO-декомпозиция (CEO видит только допустимых директоров)
         ceo_prompt = CEO_DECOMPOSE_PROMPT.format(
             directors_list=directors_text,
             task=task,
@@ -218,8 +224,11 @@ class Conductor:
             }
 
         analysis = ceo_data.get("analysis", "")
-        director_tasks = ceo_data["directors"]
-        logger.info("CEO: %d директоров задействовано", len(director_tasks))
+
+        # Шаг 1a: Scope Guard — фильтруем директоров, убираем лишних
+        director_tasks = filter_ceo_directors(task, ceo_data["directors"])
+        logger.info("CEO: %d директоров после scope guard (до: %d)",
+                     len(director_tasks), len(ceo_data["directors"]))
 
         # Шаг 1b: Deadlock check на зависимости (#14)
         try:
