@@ -198,6 +198,7 @@ class Conductor:
     async def orchestrate(self, task: str, depth: int = 3) -> dict:
         """Полная оркестрация: CEO -> директора -> отделы -> специалисты."""
         start = time.monotonic()
+        self._llm.reset_session_tokens()
         logger.info("ORCHESTRATOR: начинаю декомпозицию (depth=%d): '%s'", depth, task[:100])
 
         # Шаг 0: Scope + task type classification
@@ -324,6 +325,7 @@ class Conductor:
         report = await self._collect_results(task, full_tree)
         full_tree["report"] = report
         full_tree["duration_ms"] = (time.monotonic() - start) * 1000
+        full_tree["tokens"] = self._llm.session_tokens
         return full_tree
 
     async def process(self, query: str, user_id: int | None = None, user_tier: str = "free") -> ConductorResult:

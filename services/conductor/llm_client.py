@@ -85,6 +85,9 @@ class LLMClient:
         self._ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self._call_count = 0
         self._cache_hits = 0
+        # Session token counters (reset per orchestration)
+        self._session_input_tokens = 0
+        self._session_output_tokens = 0
 
     async def call(
         self,
@@ -207,6 +210,9 @@ class LLMClient:
                     cache_creation, cache_read, caller,
                 )
             log_api_call(caller, model, input_tokens, output_tokens, duration_ms)
+            # Accumulate session tokens
+            self._session_input_tokens += input_tokens
+            self._session_output_tokens += output_tokens
         except Exception:
             pass
 
@@ -274,6 +280,20 @@ class LLMClient:
             system_prompt=system_prompt,
             use_thinking=True,
         )
+
+    def reset_session_tokens(self) -> None:
+        """Сбросить счётчик сессионных токенов (вызывать перед orchestrate)."""
+        self._session_input_tokens = 0
+        self._session_output_tokens = 0
+
+    @property
+    def session_tokens(self) -> dict:
+        """Токены текущей сессии (с последнего reset)."""
+        return {
+            "input": self._session_input_tokens,
+            "output": self._session_output_tokens,
+            "total": self._session_input_tokens + self._session_output_tokens,
+        }
 
     @property
     def stats(self) -> dict:

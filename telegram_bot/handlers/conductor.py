@@ -159,6 +159,15 @@ async def _handle_orchestrate(message: Message, task: str, conductor):
         for ns in report.get("next_steps", [])[:3]:
             lines.append(f"  ➡️ {ns[:80]}")
 
+    # Токены CEO
+    tokens = tree.get("tokens", {})
+    if tokens.get("total", 0) > 0:
+        lines.append("")
+        lines.append(
+            f"🔢 <b>Токены:</b> {tokens.get('input', 0):,} in + "
+            f"{tokens.get('output', 0):,} out = {tokens.get('total', 0):,} total"
+        )
+
     full_text = "\n".join(lines)
 
     for part in _split(full_text):
