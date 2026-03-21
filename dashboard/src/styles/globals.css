@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-zavod-bg: #09090b;
+  --color-zavod-card: rgba(255, 255, 255, 0.04);
+  --color-zavod-border: rgba(255, 255, 255, 0.08);
+  --color-zavod-gold: #d4a017;
+  --color-zavod-gold-light: #f0c040;
+  --color-zavod-text: #e4e4e7;
+  --color-zavod-muted: #71717a;
+  --color-status-healthy: #22c55e;
+  --color-status-degraded: #eab308;
+  --color-status-unhealthy: #ef4444;
+  --color-status-killed: #27272a;
+  --color-status-suspended: #6366f1;
+  --color-status-retired: #78716c;
+}
+
+body {
+  margin: 0;
+  background: var(--color-zavod-bg);
+  color: var(--color-zavod-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}

@@ -316,3 +316,6 @@ app.include_router(planning_router)
 
 from .routes.oracle import router as oracle_router
 app.include_router(oracle_router)
+
+from .routes.dashboard import router as dashboard_router
+app.include_router(dashboard_router)

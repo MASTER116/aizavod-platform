@@ -154,6 +154,7 @@ services:
       - ./media:/var/www/media:ro
       - ./static:/opt/zavod-ii/static:ro
       - ./deploy/ssl:/etc/nginx/ssl:ro
+      - ./dashboard/dist:/opt/zavod-ii/dashboard/dist:ro
     ports:
       - "80:80"
       - "443:443"
