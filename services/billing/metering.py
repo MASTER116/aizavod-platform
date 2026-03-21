@@ -52,7 +52,6 @@ AGENT_CREDITS: dict[str, int] = {
     "guardian_ip_agent": 3,
     "treasurer_agent": 3,
     "oracle_agent": 3,
-    "hackathon_manager": 3,
 
     # Тяжёлые (8 кредитов, ~$0.015 cost — RAG + длинный контекст)
     "certifier": 8,

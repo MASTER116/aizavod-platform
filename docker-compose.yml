@@ -102,10 +102,6 @@ services:
       REDIS_URL: redis://redis:6379/0
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITHUB_USERNAME: ${GITHUB_USERNAME:-azatmaster}
-      DEVPOST_EMAIL: ${DEVPOST_EMAIL:-}
-      DEVPOST_PASSWORD: ${DEVPOST_PASSWORD:-}
-    volumes:
-      - hackathon_projects:/opt/aizavod/hackathon_projects
     depends_on:
       - backend
     command: python -m telegram_bot.main
@@ -166,4 +162,3 @@ volumes:
   postgres_data:
   redis_data:
   n8n_data:
-  hackathon_projects:

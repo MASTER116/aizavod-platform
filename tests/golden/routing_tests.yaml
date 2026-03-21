@@ -90,7 +90,3 @@ tests:
     expected_agent: "pricing_agent"
     min_confidence: 0.7
 
-  # === Хакатоны ===
-  - input: "Найди хакатоны на DevPost по AI теме"
-    expected_agent: "hackathon_manager"
-    min_confidence: 0.7

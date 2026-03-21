@@ -232,14 +232,6 @@ async def _route_treasurer(query: str) -> str:
     return await agent.find_income_sources(query, "")
 
 
-async def _route_hackathon(query: str) -> str:
-    from services.hackathon_pipeline import launch_hackathon_pipeline, get_pipeline_status
-    q = query.lower()
-    if any(kw in q for kw in ["статус", "status", "прогресс", "как дела"]):
-        return await get_pipeline_status()
-    return await launch_hackathon_pipeline(query)
-
-
 async def _route_oracle(query: str) -> str:
     from services.oracle_agent import get_oracle_agent
     agent = get_oracle_agent()
@@ -267,6 +259,5 @@ ROUTE_HANDLERS = {
     "_route_guardian_ip": _route_guardian_ip,
     "_route_voice": _route_voice,
     "_route_treasurer": _route_treasurer,
-    "_route_hackathon": _route_hackathon,
     "_route_oracle": _route_oracle,
 }

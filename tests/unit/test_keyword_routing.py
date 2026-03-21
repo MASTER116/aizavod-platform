@@ -50,11 +50,6 @@ class TestKeywordRouting:
         assert agent == "namer_agent"
         assert score >= 1
 
-    def test_hackathon_routing(self):
-        agent, score = self._match("Хакатон на DevPost")
-        assert agent == "hackathon_manager"
-        assert score >= 1
-
     def test_fallback_to_ceo(self):
         agent, score = self._match("Расскажи анекдот про кота")
         assert agent == "ceo_agent"

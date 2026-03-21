@@ -51,20 +51,12 @@ async def auto_execute_cycle():
         ))
         db.commit()
 
-        # Выполнить: hackathon_manager задачи — через pipeline, остальные — через роутер
+        # Выполнить задачу через роутер
         conductor = get_conductor()
         try:
-            agent_name = task.agent_role
-            if task.agent_role == "hackathon_manager":
-                from services.hackathon_pipeline import execute_pipeline_stage
-                response_text = await execute_pipeline_stage(
-                    task.title, task.context or "{}", task.instructions or ""
-                )
-                response_text = response_text[:4000]
-            else:
-                result = await conductor.process(task.title)
-                response_text = result.response[:4000]
-                agent_name = result.agent_name
+            result = await conductor.process(task.title)
+            response_text = result.response[:4000]
+            agent_name = result.agent_name
 
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.utcnow()

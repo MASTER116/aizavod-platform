@@ -54,7 +54,6 @@ Zavod-ii (AI-Завод / "Заводи бизнес с AI") — единая п
 - `services/` — бизнес-логика агентов
   - `conductor_autonomy.py` — автономный режим (auto_execute_cycle каждые 10 мин)
   - `opportunity_scanner.py` — поиск грантов/конкурсов, DevPost API, deep_analyze
-  - `hackathon_pipeline.py` — полный цикл хакатонов (7 этапов)
   - `freelance_agent.py` — поиск заказов на фрилансе
   - `market_analyzer.py` — анализ рынка и конкурентов
   - `pdf_generator.py` — генерация PDF (fpdf2, DejaVu)
@@ -74,7 +73,7 @@ Zavod-ii (AI-Завод / "Заводи бизнес с AI") — единая п
 2. **Оркестратор**: задача → CEO-декомпозиция → директора → отделы → специалисты
 
 ### 8 директоров: CTO, CFO, CMO, COO, CPO, CDO, CHRO, CLO
-### 21+ агентов: ceo, certifier, opportunity_scanner, hackathon_manager, idea_generator, market_analyzer, freelance_agent, pricing_agent, outreach_agent, content_factory, lawyer_agent, accountant_agent, darwin_agent, guardian_agent, scholar_agent, herald_agent, namer_agent, guardian_ip_agent, voice_agent, treasurer_agent, oracle_agent
+### 20+ агентов: ceo, certifier, opportunity_scanner, idea_generator, market_analyzer, freelance_agent, pricing_agent, outreach_agent, content_factory, lawyer_agent, accountant_agent, darwin_agent, guardian_agent, scholar_agent, herald_agent, namer_agent, guardian_ip_agent, voice_agent, treasurer_agent, oracle_agent
 ### Новые системные агенты: qa_agent (critic), compliance_agent (152-ФЗ)
 
 ### Circuit Breaker (LLM Client)
@@ -114,11 +113,6 @@ Zavod-ii (AI-Завод / "Заводи бизнес с AI") — единая п
 - Инженер, нет PhD, нет публикаций, нет аффилиации с вузом
 - ООО нет (планируется август 2026), бюджет 0 руб
 - Варианты: напрямую (физлицо/ИП/ООО) или через вуз по ГПХ
-
-### Hackathon Pipeline (7 этапов)
-1. Discovery → 2. Analysis → 3. Ideation → 4. Planning → 5. Documents → 6. Development → 7. Submission
-- Автоматическое создание задач в conductor_tasks
-- auto_execute_cycle выполняет последовательно
 
 ### Фриланс (в разработке)
 - Kwork: автопоиск заказов >1000₽, анализ ТЗ, цена -10% от средней

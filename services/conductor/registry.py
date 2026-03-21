@@ -44,20 +44,6 @@ AGENTS: list[AgentInfo] = [
         criticality="D",
     ),
     AgentInfo(
-        name="hackathon_manager",
-        title="Менеджер хакатонов",
-        department="Хакатоны",
-        description="Полный цикл участия в хакатонах: поиск на DevPost, анализ, генерация идей, план, документы, разработка MVP, подача проекта",
-        keywords=[
-            "хакатон", "hackathon", "devpost", "подать заявк хакатон",
-            "участвовать в хакатон", "хакатон подач", "hackathon pipeline",
-        ],
-        handler="_route_hackathon",
-        access_level=AccessLevel.PRO,
-        credit_cost=3,
-        criticality="E",
-    ),
-    AgentInfo(
         name="idea_generator",
         title="Генератор идей",
         department="Финансы",

@@ -207,11 +207,6 @@ tests:
     quality_keywords: ["грант"]
     criticality: "D"
 
-  - input: "Какие хакатоны проходят на DevPost?"
-    expected_agent: "hackathon_manager"
-    quality_keywords: ["хакатон"]
-    criticality: "E"
-
   # === CEO (orchestration) ===
   - input: "Разработай стратегию выхода на рынок для Zavod-ii"
     expected_agent: "ceo_agent"
