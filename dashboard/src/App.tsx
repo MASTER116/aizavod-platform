@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { AgentsPage } from './pages/AgentsPage'
 import { TreePage } from './pages/TreePage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
+import { ChatPage } from './pages/ChatPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,10 +25,12 @@ function AppRoutes() {
     <HashRouter>
       <Routes>
         <Route element={<Layout />}>
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:agentName" element={<ChatPage />} />
           <Route path="/agents" element={<AgentsPage />} />
           <Route path="/tree" element={<TreePage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="*" element={<Navigate to="/agents" replace />} />
+          <Route path="*" element={<Navigate to="/chat" replace />} />
         </Route>
       </Routes>
     </HashRouter>

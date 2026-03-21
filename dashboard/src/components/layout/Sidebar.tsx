@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const NAV = [
+  { to: '/chat', label: 'Chat', icon: '💬' },
   { to: '/agents', label: 'Agents', icon: '🤖' },
   { to: '/tree', label: 'Tasks', icon: '🌳' },
   { to: '/analytics', label: 'Analytics', icon: '📊' },

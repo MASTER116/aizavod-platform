@@ -21,6 +21,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Generic request (for ad-hoc calls)
+  request: <T>(path: string, options?: RequestInit) => request<T>(path, options),
+
   // Auth
   login: (username: string, password: string) =>
     request<{ access_token: string }>('/admin/auth/login', {
