@@ -122,13 +122,12 @@ export function ChatPage() {
         case 'error':
           setTypingAgent(null)
           setSending(false)
-          const errMsg: ChatMsg = {
+          setMessages(prev => [...prev, {
             id: `msg_${Date.now()}_err`,
-            role: 'system',
+            role: 'system' as const,
             text: `Error: ${e.data.message}`,
             timestamp: new Date().toISOString(),
-          }
-          setMessages(prev => [...prev, errMsg])
+          }])
           break
       }
     })
@@ -138,20 +137,19 @@ export function ChatPage() {
   }, [selectedAgent, agents])
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-1 overflow-hidden">
+      {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile agent selector */}
-        <AgentSidebar
-          agents={agents}
-          selectedAgent={selectedAgent}
-          onSelect={setSelectedAgent}
-        />
+        {/* Mobile agent selector (horizontal scroll) */}
+        <div className="lg:hidden">
+          <AgentSidebar agents={agents} selectedAgent={selectedAgent} onSelect={setSelectedAgent} />
+        </div>
 
-        {/* Header */}
-        <div className="px-4 py-2 border-b border-zinc-800 flex items-center gap-2 bg-zinc-950/80">
+        {/* Chat header */}
+        <div className="px-4 py-2.5 border-b border-zinc-800 flex items-center gap-3 bg-zinc-950/80 shrink-0">
           {currentAgent ? (
             <>
-              <span className="text-lg">{currentAgent.avatar}</span>
+              <span className="text-xl">{currentAgent.avatar}</span>
               <div>
                 <div className="text-sm font-medium" style={{ color: currentAgent.color }}>
                   {currentAgent.title}
@@ -161,16 +159,16 @@ export function ChatPage() {
             </>
           ) : (
             <>
-              <span className="text-lg">🏭</span>
+              <span className="text-xl">🏭</span>
               <div>
                 <div className="text-sm font-medium text-[var(--color-zavod-gold)]">Team Chat</div>
-                <div className="text-[10px] text-zinc-500">CONDUCTOR автоматически выберет агента</div>
+                <div className="text-[10px] text-zinc-500">CONDUCTOR автоматически выберет нужного агента</div>
               </div>
             </>
           )}
         </div>
 
-        {/* Messages */}
+        {/* Messages area */}
         <ChatMessages
           messages={messages}
           typingAgent={typingAgent}
@@ -179,11 +177,7 @@ export function ChatPage() {
         />
 
         {/* Quick actions */}
-        <QuickActions
-          actions={quickActions}
-          onAction={handleSend}
-          disabled={sending}
-        />
+        <QuickActions actions={quickActions} onAction={handleSend} disabled={sending} />
 
         {/* Input */}
         <ChatInput
@@ -193,13 +187,35 @@ export function ChatPage() {
         />
       </div>
 
-      {/* Desktop agent sidebar */}
-      <div className="hidden lg:block">
-        <AgentSidebar
-          agents={agents}
-          selectedAgent={selectedAgent}
-          onSelect={setSelectedAgent}
-        />
+      {/* Desktop agent sidebar (right side) */}
+      <div className="hidden lg:flex flex-col w-56 border-l border-zinc-800 bg-zinc-950 overflow-y-auto shrink-0">
+        <div className="p-3 border-b border-zinc-800 text-xs font-medium text-zinc-400">
+          Agents ({agents.length})
+        </div>
+        <button
+          className={`w-full text-left px-3 py-2.5 text-xs transition-colors ${
+            !selectedAgent ? 'bg-zinc-900 text-[var(--color-zavod-gold)]' : 'text-zinc-400 hover:bg-zinc-900'
+          }`}
+          onClick={() => setSelectedAgent(null)}
+        >
+          🏭 Team Chat (auto-route)
+        </button>
+        {agents.map(a => (
+          <button
+            key={a.name}
+            className={`w-full text-left px-3 py-2 flex items-center gap-2 transition-colors ${
+              selectedAgent === a.name ? 'bg-zinc-900 border-l-2' : 'text-zinc-400 hover:bg-zinc-900/50'
+            }`}
+            style={selectedAgent === a.name ? { borderLeftColor: a.color, color: a.color } : {}}
+            onClick={() => setSelectedAgent(a.name)}
+          >
+            <span className="text-sm">{a.avatar}</span>
+            <div className="min-w-0">
+              <div className="text-xs truncate">{a.title}</div>
+              <div className="text-[10px] text-zinc-600 truncate">{a.department}</div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   )
