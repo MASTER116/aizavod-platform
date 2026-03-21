@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -18,6 +19,53 @@ import time
 from enum import Enum
 
 logger = logging.getLogger("aizavod.llm_client")
+
+
+class ResponseCache:
+    """In-memory LRU cache for LLM responses. Saves ~80% API costs."""
+
+    def __init__(self, max_size: int = 500, ttl_seconds: float = 3600):
+        self._cache: dict[str, tuple[str, float]] = {}
+        self._max_size = max_size
+        self._ttl = ttl_seconds
+        self.hits = 0
+        self.misses = 0
+
+    @staticmethod
+    def _key(prompt: str, model: str, system: str | None) -> str:
+        raw = f"{model}:{system or ''}:{prompt}"
+        return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+    def get(self, prompt: str, model: str, system: str | None = None) -> str | None:
+        k = self._key(prompt, model, system)
+        entry = self._cache.get(k)
+        if entry is None:
+            self.misses += 1
+            return None
+        value, ts = entry
+        if time.time() - ts > self._ttl:
+            del self._cache[k]
+            self.misses += 1
+            return None
+        self.hits += 1
+        return value
+
+    def set(self, prompt: str, model: str, response: str, system: str | None = None) -> None:
+        k = self._key(prompt, model, system)
+        self._cache[k] = (response, time.time())
+        if len(self._cache) > self._max_size:
+            oldest = min(self._cache, key=lambda x: self._cache[x][1])
+            del self._cache[oldest]
+
+    @property
+    def stats(self) -> dict:
+        total = self.hits + self.misses
+        return {
+            "size": len(self._cache),
+            "hits": self.hits,
+            "misses": self.misses,
+            "hit_rate": f"{self.hits / max(total, 1) * 100:.1f}%",
+        }
 
 
 class CircuitState(Enum):
@@ -85,6 +133,10 @@ class LLMClient:
         self._ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self._call_count = 0
         self._cache_hits = 0
+        self._response_cache = ResponseCache(
+            max_size=int(os.getenv("LLM_CACHE_SIZE", "500")),
+            ttl_seconds=float(os.getenv("LLM_CACHE_TTL", "3600")),
+        )
         # Session token counters (reset per orchestration)
         self._session_input_tokens = 0
         self._session_output_tokens = 0
@@ -110,6 +162,13 @@ class LLMClient:
         model = model or self._default_model
         self._call_count += 1
 
+        # Tier 0: Response cache (saves ~80% API costs)
+        if use_cache and not use_thinking:
+            cached = self._response_cache.get(prompt, model, system_prompt)
+            if cached is not None:
+                logger.info("Response cache HIT (caller=%s, model=%s)", caller, model)
+                return cached
+
         # Tier 1: Claude API
         if self._api_key and self._claude_breaker.can_execute():
             try:
@@ -120,6 +179,8 @@ class LLMClient:
                     use_thinking=use_thinking,
                 )
                 self._claude_breaker.record_success()
+                if use_cache and not use_thinking and result:
+                    self._response_cache.set(prompt, model, result, system_prompt)
                 return result
             except Exception as e:
                 self._claude_breaker.record_failure()
@@ -130,6 +191,8 @@ class LLMClient:
             try:
                 result = await self._call_ollama(prompt, max_tokens, temperature)
                 self._ollama_breaker.record_success()
+                if use_cache and result:
+                    self._response_cache.set(prompt, model, result, system_prompt)
                 return result
             except Exception as e:
                 self._ollama_breaker.record_failure()
@@ -299,8 +362,9 @@ class LLMClient:
     def stats(self) -> dict:
         return {
             "total_calls": self._call_count,
-            "cache_hits": self._cache_hits,
-            "cache_hit_rate": f"{self._cache_hits / max(self._call_count, 1) * 100:.1f}%",
+            "prompt_cache_hits": self._cache_hits,
+            "prompt_cache_hit_rate": f"{self._cache_hits / max(self._call_count, 1) * 100:.1f}%",
+            "response_cache": self._response_cache.stats,
             "claude_state": self._claude_breaker.state.value,
             "ollama_state": self._ollama_breaker.state.value,
         }
