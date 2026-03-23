@@ -9,9 +9,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def main_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="💰 Привлечь инвестиции", callback_data="menu_money")],
+        [InlineKeyboardButton(text="⭐ Менеджер отзывов", callback_data="menu_reviews")],
         [InlineKeyboardButton(text="🛒 Продажи и фриланс", callback_data="menu_sales")],
-        [InlineKeyboardButton(text="⚖️ Юрист / Бухгалтер", callback_data="menu_legal")],
         [InlineKeyboardButton(text="📱 Фабрика контента", callback_data="menu_content")],
         [InlineKeyboardButton(text="🧠 Задача / Запрос", callback_data="menu_task")],
         [InlineKeyboardButton(text="📊 Статус системы", callback_data="menu_status")],

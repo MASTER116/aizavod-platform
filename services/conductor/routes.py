@@ -232,6 +232,12 @@ async def _route_treasurer(query: str) -> str:
     return await agent.find_income_sources(query, "")
 
 
+async def _route_review_manager(query: str) -> str:
+    from services.review_manager_agent import get_review_manager_agent
+    agent = get_review_manager_agent()
+    return await agent.process_query(query)
+
+
 async def _route_oracle(query: str) -> str:
     from services.oracle_agent import get_oracle_agent
     agent = get_oracle_agent()
@@ -259,5 +265,6 @@ ROUTE_HANDLERS = {
     "_route_guardian_ip": _route_guardian_ip,
     "_route_voice": _route_voice,
     "_route_treasurer": _route_treasurer,
+    "_route_review_manager": _route_review_manager,
     "_route_oracle": _route_oracle,
 }

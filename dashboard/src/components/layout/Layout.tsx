@@ -12,7 +12,9 @@ export function Layout() {
       <div className="flex-1 ml-56 flex flex-col">
         <Header />
         {isChat ? (
-          <Outlet />
+          <div className="flex-1 flex flex-col min-h-0">
+            <Outlet />
+          </div>
         ) : (
           <main className="p-6 flex-1">
             <Outlet />

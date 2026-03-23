@@ -251,6 +251,20 @@ AGENTS: list[AgentInfo] = [
         criticality="D",
     ),
     AgentInfo(
+        name="review_manager",
+        title="Менеджер отзывов",
+        department="Продажи",
+        description="AI-ответы на отзывы Яндекс Карт и 2ГИС, аналитика тональности, управление репутацией",
+        keywords=[
+            "отзыв", "рецензи", "репутаци", "яндекс карт", "2гис", "рейтинг",
+            "ответ на отзыв", "негатив", "жалоб", "отзовик", "карты",
+            "review", "reputation", "orm",
+        ],
+        handler="_route_review_manager",
+        credit_cost=3,
+        criticality="D",
+    ),
+    AgentInfo(
         name="oracle_agent",
         title="Предиктивный аналитик",
         department="Аналитика",
