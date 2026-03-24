@@ -1,0 +1,23 @@
+{
+  "kompas_qc_version": "0.1.0",
+  "timestamp": "2026-03-24T18:56:30.180467",
+  "success": true,
+  "input_file": "tests\\test_gb_drawing.dxf",
+  "output_file": "tests\\output\\test_gb_drawing_GOST.dxf",
+  "summary": {
+    "texts_converted": 19,
+    "datums_converted": 0,
+    "materials_found": 0,
+    "materials_needing_review": 0
+  },
+  "materials": [],
+  "warnings": [],
+  "errors": [],
+  "mapper_stats": {
+    "total_processed": 0,
+    "found": 0,
+    "not_found": 0,
+    "low_confidence": 0,
+    "accuracy": 0.0
+  }
+}
