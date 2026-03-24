@@ -22,7 +22,13 @@ class KompasQCEngine:
 
     def __init__(self):
         self.mapper = MaterialMapper()
-        self.converter = DXFConverter()
+        self._converter = None
+
+    @property
+    def converter(self):
+        if self._converter is None:
+            self._converter = DXFConverter()
+        return self._converter
 
     def convert_file(self, input_path: str, output_dir: Optional[str] = None) -> dict:
         """
