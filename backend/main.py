@@ -319,3 +319,6 @@ app.include_router(oracle_router)
 
 from .routes.dashboard import router as dashboard_router
 app.include_router(dashboard_router)
+
+from .routes.kompas_qc import router as kompas_qc_router
+app.include_router(kompas_qc_router)
